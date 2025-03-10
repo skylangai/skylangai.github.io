@@ -1024,14 +1024,14 @@ nav.top-nav-collapse {
 }
 
 .section-light {
-    background: -webkit-linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/flow-2.jpg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
 .section-dark {
-    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/flow-2.jpg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
@@ -1279,14 +1279,14 @@ h5.less-mar-1 {
 #testimonial-and-client {}
 
 .tc-light-style {
-    background: -webkit-linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/flow-2.jpg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
 .tc-dark-style {
-    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/flow-2.jpg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
