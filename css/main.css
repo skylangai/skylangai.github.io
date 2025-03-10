@@ -210,10 +210,10 @@ section {
     #karbar-price-section {
         padding-bottom: 45px;
     }
-    #karbar-footer-section .bottom {
+    #contact-us .bottom {
         padding: 60px 40px 20px;
     }
-    #karbar-footer-section .subscribe-form {
+    #contact-us .subscribe-form {
         margin-bottom: 25px;
     }
 }
@@ -461,14 +461,16 @@ nav.top-nav-collapse {
 
 #slides .slide .slide-caption .container {
     text-align: center;
-    border: 1px solid #FFF;
+    /* border: 1px solid #FFF; */
     padding: 0.5em;
-    width: 800px;
+    width: 1000px;
 }
 
-#slides .slide .slide-caption .container .box {
+
+
+#slides .slide .slide-caption .container .box  {
     margin: 0 auto;
-    border: 1px solid #FFF;
+    /* border: 1px solid #FFF; */
     width: 100%;
     padding: 3em;
 }
@@ -806,6 +808,11 @@ nav.top-nav-collapse {
 
 ***/
 
+.enlarged-with-transform{
+    transform: scale(1);
+    transform-origin: top left;
+}
+
 .service-left-side:hover,
 .service-left-side.active {
     border: 1px solid #2098F5;
@@ -813,7 +820,7 @@ nav.top-nav-collapse {
     outline-style: double;
     outline-width: 1px;
     outline-offset: 7px;
-    background: url(../images/ce4-11-hover.png) right center no-repeat;
+    /* background: url(../images/ce4-11-hover.png) right center no-repeat; */
 }
 
 .service-right-side:hover,
@@ -823,22 +830,28 @@ nav.top-nav-collapse {
     outline-style: double;
     outline-width: 1px;
     outline-offset: 7px;
-    background: url(../images/ce4-11-hover.png) right center no-repeat;
+    /* background: url(../images/ce4-11-hover.png) right center no-repeat; */
 }
+
+.service-item-block {
+    margin-bottom: 30px;
+}
+
 
 .service-left-side {
     display: table;
     position: relative;
-    width: 92%;
+    width: 100%;
     float: left;
-    padding: 40px 160px 40px 40px;
+    /* padding: 40px 160px 40px 40px; */
+    padding: 40px 40px 40px 40px;
     background-color: #fff;
     border: 1px solid #ddd;
     outline-color: #ddd;
     outline-style: double;
     outline-width: 1px;
     outline-offset: 7px;
-    background: url(../images/ce4-11.png) right center no-repeat;
+    /* background: url(../images/ce4-11.png) right center no-repeat; */
     -webkit-transition: all 0.3s ease-out 0s;
     transition: all 0.3s ease-out 0s;
 }
@@ -898,9 +911,10 @@ nav.top-nav-collapse {
 .service-right-side {
     display: table;
     position: relative;
-    width: 92%;
+    width: 100%;
     float: right;
-    padding: 40px 40px 40px 160px;
+    /* padding: 40px 40px 40px 160px; */
+    padding: 40px 40px 40px 40px;
     background-color: #fff;
     border: 1px solid #ddd;
     outline-color: #ddd;
@@ -1799,7 +1813,7 @@ input[type="submit"] {
 
 ***/
 
-#karbar-footer-section {
+#contact-us {
     padding-bottom: 0px;
     background: #525252;
 }
