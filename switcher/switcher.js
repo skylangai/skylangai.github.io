@@ -9,7 +9,7 @@ jQuery(document).ready(function($) {
         left: '-134px'
     });
 
-    $('#custumize-style .switcher').click(function(e) {
+    $('#custumize-style .switcher').on('click', function(e) {
         e.preventDefault();
         var div = $('#custumize-style');
         if (div.css('left') === '-134px') {
@@ -37,7 +37,7 @@ jQuery(document).ready(function($) {
 	
 		
 	//Text Color change:
-    $("#custom-color li a").click(function() {
+    $("#custom-color li a").on('click', function() {
 		if($("#colors-style").length == 0) {
 			$('<link href="" rel="stylesheet" type="text/css" id="colors-style">').appendTo('body');
 		}
@@ -51,7 +51,7 @@ jQuery(document).ready(function($) {
 	
 	
 	//Background Image change:	
-    $('#bgimg li a').click(function(e) {
+    $('#bgimg li a').on('click', function(e) {
         e.preventDefault();
         $(this).parent().parent().find('a').removeClass('active');
         $(this).addClass('active');
@@ -64,7 +64,7 @@ jQuery(document).ready(function($) {
     });
 
 	//Background Solid Color change:	
-    $('#bgsolid li a').click(function(e) {
+    $('#bgsolid li a').on('click', function(e) {
         e.preventDefault();
         $(this).parent().parent().find('a').removeClass('active');
         $(this).addClass('active');
@@ -75,7 +75,7 @@ jQuery(document).ready(function($) {
     });
 	
 	//menu position change:	
-    $('.menu-position li a').click(function(e) {
+    $('.menu-position li a').on('click', function(e) {
         e.preventDefault();
         $(this).parent().parent().find('a').removeClass('active');
         $(this).addClass('active');
@@ -87,7 +87,7 @@ jQuery(document).ready(function($) {
     });
 	
 	//container-height change:	
-    $('.container-height li a').click(function(e) {
+    $('.container-height li a').on('click', function(e) {
         e.preventDefault();
         $(this).parent().parent().find('a').removeClass('active');
         $(this).addClass('active');
@@ -110,7 +110,7 @@ jQuery(document).ready(function($) {
     });
 
 	//button-reset:	
-    $('#button-reset a').click(function(e) {
+    $('#button-reset a').on('click', function(e) {
         $('body').css('background', '#fff');
         $("#colors-style").attr("href", folder_url + "yellow.css");
         //$.cookie('layout_color',  server_url + 'yellow.css');

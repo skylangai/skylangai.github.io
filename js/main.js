@@ -9,7 +9,7 @@
 	    Preloader -->
 	     =============================================== */
 
-	    $(window).load(function () {
+	    $(window).on('load', function () {
 	        $("#status").fadeOut();
 	        $("#preloader").delay(350).fadeOut("slow");
 	        $("body").delay(350).css({ "overflow": "visible" });
@@ -34,7 +34,7 @@
 	    Menu hide/show on scroll -->
 	     =============================================== */
 	    var ost = 0;
-	    $(window).scroll(function() {
+	    $(window).on('scroll', function() {
 
 	        var cOst = $(this).scrollTop();
 
@@ -66,7 +66,7 @@
 	     Target menu section  -->
 	     =============================================== */
 
-	  $('.navbar, .home-btn, .holder ').find('a[href*=#]:not([href=#])').on('click', function () {
+	  $('.navbar, .home-btn, .holder ').find('a[href*="#"]:not([href="#"])').on('click', function () {
 	        if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
 	            var target = $(this.hash);
 	            target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
