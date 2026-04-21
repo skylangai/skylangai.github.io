@@ -16,20 +16,6 @@
 
 	    });
 
-	   
-	   /* ==============================================
-	    Menu hide/show on scroll -->
-	     =============================================== */
-	
-		$('#slides').superslides({
-		  animation: 'fade',
-		  play:7000, // change value if you want to increase or decrese speed
-		  animation_speed:800 // change time interval during slide change
-		});
-
-
-
-
 	/* ==============================================
 	    Menu hide/show on scroll -->
 	     =============================================== */

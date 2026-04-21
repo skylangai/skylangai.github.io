@@ -366,10 +366,34 @@ nav.top-nav-collapse {
 
 #slides {
     position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100vh;
+    min-height: 600px;
 }
 
-.slide {
+#slides .slides-container,
+#slides .slide {
     position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Slide background image (animation lives inside the SVG itself) */
+#slides .slide .img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+}
+#slides .slide .img .slide-bg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .overlay {
@@ -387,70 +411,6 @@ nav.top-nav-collapse {
 .siv-dark-style {
     background: -webkit-linear-gradient( rgba(20, 20, 20, 0.8), rgba(20, 20, 20, 0.8)), url(../images/opaqueBG.png) 50% 0 repeat fixed;
     background: linear-gradient( rgba(20, 20, 20, 0.8), rgba(20, 20, 20, 0.8)), url(../images/opaqueBG.png) 50% 0 repeat fixed;
-}
-
-#slides .scrollable {
-    *zoom: 1;
-    position: relative;
-    top: 0;
-    left: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    height: 100%;
-}
-
-#slides .scrollable:after {
-    content: "";
-    display: table;
-    clear: both;
-}
-
-#slides .slides-navigation {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    position: absolute;
-    z-index: 3;
-    top: 48%;
-    width: 100%;
-}
-
-#slides .slides-navigation a {
-    position: absolute;
-    display: block;
-    color: #493c41;
-    opacity: 0.5;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
-    font-size: 2.65em;
-    text-align: center;
-}
-
-#slides .slides-navigation a i {
-    margin: 0;
-    color: #fff;
-}
-
-#slides .slides-navigation a.prev {
-    left: 0.75em;
-}
-
-#slides .slides-navigation a.next {
-    right: 0.75em;
-}
-
-#slides .slides-navigation a:hover {
-    opacity: 0.9;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=90)";
-    filter: alpha(opacity=90);
-}
-
-#slides .slides-pagination {
-    display: none;
-}
-
-#slides .slide {
-    position: relative;
 }
 
 .slide-caption {
@@ -507,73 +467,6 @@ nav.top-nav-collapse {
 #slides .slide .slide-caption .btn {
     border: none;
 }
-
-#slides .container-fluid {
-    padding: 0;
-}
-
-#slides .container-fluid > div {
-    padding: 0;
-    width: 49%;
-    min-height: 8.35em;
-}
-
-#slides .container-fluid > div.first {
-    margin-right: 2%;
-}
-
-.styled {
-    height: 100%;
-    width: 100%;
-    text-align: right;
-    padding: 1.35em 1em 0.85em;
-}
-
-.styled div {
-    display: inline-block;
-    font-size: 1em;
-    font-weight: 200;
-    line-height: 1em;
-    border: none;
-    padding: 0.3em 1em 0 1em;
-    height: 100%;
-    width: 20%;
-    text-align: center;
-    border-left: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.styled div span {
-    display: block;
-    font-size: 4.35em;
-    margin: 0 auto;
-    line-height: 0.85em;
-    color: #FFF;
-    text-align: center;
-}
-
-
-/* IE7 inline-block hack */
-
-* + html .styled div {
-    display: inline;
-    zoom: 1;
-}
-
-.styled div:first-child {
-    margin-left: 0;
-    border: 0;
-}
-
-.styled div strong {
-    display: block;
-    font-size: 16px;
-    padding: 0.45em 0.2em 0;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.7);
-    text-align: center;
-    letter-spacing: 5px;
-}
-
 
 /*Scorll arrow bottom animation*/
 
@@ -731,9 +624,6 @@ nav.top-nav-collapse {
     }
     #slides .slide .slide-caption .container span {
         font-size: 0.7em;
-    }
-    #slides .slides-navigation {
-        display: none;
     }
     #slides .holder {
         display: none;
@@ -1026,14 +916,14 @@ nav.top-nav-collapse {
 }
 
 .section-light {
-    background: -webkit-linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/bg-wave-a.svg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/bg-wave-a.svg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
 .section-dark {
-    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/bg-wave-a.svg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/bg-wave-a.svg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
@@ -1281,14 +1171,14 @@ h5.less-mar-1 {
 #testimonial-and-client {}
 
 .tc-light-style {
-    background: -webkit-linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(245, 245, 250, 0.82), rgba(245, 245, 250, 0.82)), url(../images/slider/bg-wave-c-light.svg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(245, 245, 250, 0.82), rgba(245, 245, 250, 0.82)), url(../images/slider/bg-wave-c-light.svg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
 .tc-dark-style {
-    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/flow-2.jpg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.55), rgba(20, 20, 20, 0.55)), url(../images/slider/bg-wave-c.svg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(20, 20, 20, 0.55), rgba(20, 20, 20, 0.55)), url(../images/slider/bg-wave-c.svg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
