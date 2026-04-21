@@ -455,6 +455,7 @@ nav.top-nav-collapse {
     color: #fff;
     line-height: 1.15em;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 #slides .slide .slide-caption .container p {
@@ -646,6 +647,20 @@ nav.top-nav-collapse {
     #slides .slide .slide-caption .container .box {
         padding: 1em;
     }
+}
+
+/* Slider hero h1 — keep on a single line across breakpoints (paired with white-space: nowrap above). */
+@media (max-width: 1199px) {
+    #slides .slide .slide-caption .container h1 { font-size: 3.6em; }
+}
+@media (max-width: 991px) {
+    #slides .slide .slide-caption .container h1 { font-size: 2.5em; }
+}
+@media (max-width: 767px) {
+    #slides .slide .slide-caption .container h1 { font-size: 1.7em; }
+}
+@media (max-width: 479px) {
+    #slides .slide .slide-caption .container h1 { font-size: 1.2em; }
 }
 
 
