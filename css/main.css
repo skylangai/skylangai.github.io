@@ -884,6 +884,23 @@ nav.top-nav-collapse {
     color: #ffffff;
     opacity: 1;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    /* Reset inherited box properties from .text-box .title rule
+       so flex centering keeps the text on the head's vertical axis */
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    text-align: left;
+    display: inline-flex;
+    align-items: center;
+}
+/* Make sure the head itself centers its children on the same axis
+   regardless of any text-align/baseline quirks */
+.case-chat-head {
+    align-items: center;
+    line-height: 1;
+}
+.case-chat-head .dot {
+    align-self: center;
 }
 
 .case-chat-body {
@@ -1090,6 +1107,392 @@ nav.top-nav-collapse {
     margin-bottom: 22px;
     color: #1a2a66;
     font-weight: 700;
+}
+
+/* ==========================================================
+   Claw 龙虾 - 定制专属智能 (How-it-works section)
+   ========================================================== */
+.claw-feature-row {
+    margin-top: 24px;
+}
+@media (min-width: 768px) {
+    .claw-feature-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+}
+
+.claw-feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.claw-feature-list li {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    padding: 22px 24px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(26, 42, 102, 0.10);
+    border-radius: 14px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 22px rgba(26, 42, 102, 0.06);
+    -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+    transition: transform 0.28s ease,
+                box-shadow 0.28s ease,
+                border-color 0.28s ease,
+                background 0.28s ease;
+}
+.claw-feature-list li:last-child { margin-bottom: 0; }
+
+.claw-feature-list li:hover {
+    transform: translateY(-3px);
+    border-color: rgba(67, 56, 202, 0.45);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 14px 30px rgba(26, 42, 102, 0.14);
+}
+
+.claw-feature-list .claw-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1a2a66 0%, #4338ca 60%, #7c3aed 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 6px 16px rgba(67, 56, 202, 0.32);
+}
+
+.claw-feature-list .claw-text { flex: 1; min-width: 0; }
+.claw-feature-list h4 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a2a66;
+    letter-spacing: 0.3px;
+}
+.claw-feature-list p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: #5a607a;
+}
+
+.claw-illustration-col {
+    text-align: center;
+}
+.claw-illustration {
+    position: relative;
+    display: inline-block;
+    padding: 28px;
+}
+.claw-illustration::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(closest-side,
+                rgba(124, 58, 237, 0.22) 0%,
+                rgba(67, 56, 202, 0.10) 45%,
+                rgba(124, 58, 237, 0) 75%);
+    border-radius: 50%;
+    z-index: 0;
+    -webkit-animation: clawHalo 6s ease-in-out infinite;
+            animation: clawHalo 6s ease-in-out infinite;
+}
+.claw-illustration img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    -webkit-animation: clawFloat 4s ease-in-out infinite;
+            animation: clawFloat 4s ease-in-out infinite;
+}
+@-webkit-keyframes clawFloat {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-14px) rotate(2deg); }
+}
+@keyframes clawFloat {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-14px) rotate(2deg); }
+}
+@-webkit-keyframes clawHalo {
+    0%, 100% { transform: scale(1);    opacity: 0.85; }
+    50%      { transform: scale(1.08); opacity: 1; }
+}
+@keyframes clawHalo {
+    0%, 100% { transform: scale(1);    opacity: 0.85; }
+    50%      { transform: scale(1.08); opacity: 1; }
+}
+
+@media (max-width: 991px) {
+    .claw-illustration img { max-width: 260px; }
+}
+@media (max-width: 767px) {
+    .claw-feature-list li { padding: 16px 18px; gap: 14px; }
+    .claw-feature-list .claw-icon { width: 42px; height: 42px; font-size: 18px; }
+    .claw-feature-list h4 { font-size: 16px; }
+    .claw-illustration { padding: 18px; margin-top: 18px; }
+    .claw-illustration img { max-width: 200px; }
+}
+
+/* ---- Claw CTA button (即刻体验 Demo) ---- */
+.claw-cta-wrap {
+    margin-top: 18px;
+    text-align: center;
+}
+.claw-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #1a2a66 0%, #4338ca 55%, #7c3aed 100%);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(67, 56, 202, 0.35);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+    -webkit-appearance: none;
+            appearance: none;
+    outline: none;
+}
+.claw-cta-btn i { font-size: 14px; }
+.claw-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 36px rgba(124, 58, 237, 0.45);
+    filter: brightness(1.05);
+}
+.claw-cta-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px rgba(67, 56, 202, 0.3);
+}
+.claw-cta-btn:focus-visible {
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.28),
+                0 12px 28px rgba(67, 56, 202, 0.35);
+}
+
+/* ==========================================================
+   Contact "即刻体验 Demo" Modal
+   ========================================================== */
+.contact-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+.contact-modal.is-open {
+    display: flex;
+    -webkit-animation: cmFadeIn 0.22s ease both;
+            animation: cmFadeIn 0.22s ease both;
+}
+.contact-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 22, 50, 0.55);
+    -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+}
+.contact-modal-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 30px 80px rgba(15, 22, 50, 0.45),
+                0 6px 18px rgba(15, 22, 50, 0.25);
+    padding: 32px 28px 24px;
+    -webkit-animation: cmPopIn 0.32s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+            animation: cmPopIn 0.32s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+    overflow: hidden;
+}
+.contact-modal-dialog::before {
+    /* Decorative gradient ribbon at top */
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #1a2a66 0%, #4338ca 50%, #7c3aed 100%);
+}
+.contact-modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(26, 42, 102, 0.06);
+    color: #4338ca;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+.contact-modal-close:hover {
+    background: rgba(124, 58, 237, 0.14);
+    color: #7c3aed;
+    transform: rotate(90deg);
+}
+.contact-modal-head {
+    text-align: center;
+    margin-bottom: 22px;
+}
+.contact-modal-icon {
+    width: 58px; height: 58px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #1a2a66 0%, #4338ca 55%, #7c3aed 100%);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 10px 24px rgba(67, 56, 202, 0.35);
+    margin: 6px auto 14px;
+}
+.contact-modal-title {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a2a66;
+    letter-spacing: 1px;
+}
+.contact-modal-sub {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7090;
+    line-height: 1.7;
+}
+
+.contact-modal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.contact-modal-list li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #f5f6fb;
+    border: 1px solid rgba(26, 42, 102, 0.08);
+    border-radius: 12px;
+    transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+}
+.contact-modal-list li:hover {
+    background: #ffffff;
+    border-color: rgba(67, 56, 202, 0.35);
+    transform: translateY(-1px);
+}
+.contact-modal-list .cm-icon {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4338ca, #7c3aed);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 6px 14px rgba(67, 56, 202, 0.28);
+}
+.contact-modal-list .cm-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.4;
+}
+.contact-modal-list .cm-label {
+    font-size: 11.5px;
+    color: #8a8fa8;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+}
+.contact-modal-list .cm-value {
+    font-size: 14.5px;
+    color: #1a2a66;
+    font-weight: 600;
+    text-decoration: none;
+    word-break: break-all;
+}
+.contact-modal-list .cm-value:hover { color: #4338ca; }
+.contact-modal-list .cm-copy {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(26, 42, 102, 0.10);
+    background: #ffffff;
+    color: #4338ca;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.contact-modal-list .cm-copy:hover {
+    background: linear-gradient(135deg, #4338ca, #7c3aed);
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.contact-modal-foot {
+    margin-top: 18px;
+    text-align: center;
+    min-height: 18px;
+}
+.cm-toast {
+    display: inline-block;
+    font-size: 12.5px;
+    color: #22a06b;
+    background: rgba(34, 160, 107, 0.10);
+    border: 1px solid rgba(34, 160, 107, 0.25);
+    padding: 4px 12px;
+    border-radius: 999px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.cm-toast.is-show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@-webkit-keyframes cmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cmFadeIn         { from { opacity: 0; } to { opacity: 1; } }
+@-webkit-keyframes cmPopIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes cmPopIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Lock body scroll while modal is open */
+body.contact-modal-open { overflow: hidden; }
+
+@media (max-width: 480px) {
+    .contact-modal-dialog { padding: 26px 20px 18px; border-radius: 14px; }
+    .contact-modal-title { font-size: 19px; }
+    .contact-modal-list .cm-value { font-size: 13.5px; }
 }
 
 
@@ -1645,15 +2048,49 @@ h6.less-mar-1 {
     color: #2098F5;
 }
 
+.testimonial-single .inner-box {
+    /* Smooth fade for hover gradient + lift */
+    transition: background 0.35s ease,
+                color 0.35s ease,
+                box-shadow 0.35s ease,
+                transform 0.35s ease;
+}
+
 .testimonial-single:hover,
 .testimonial-single.active {
-    border: 1px solid #2098F5;
+    border: 1px solid rgba(67, 56, 202, 0.55);
 }
 
 .testimonial-single:hover .inner-box,
 .testimonial-single.active .inner-box {
     color: #fff;
-    background-color: #2098F5;
+    background-color: #1a2a66; /* fallback for old browsers */
+    background-image: linear-gradient(135deg, #1a2a66 0%, #4338ca 55%, #7c3aed 100%);
+    box-shadow: 0 14px 32px rgba(26, 42, 102, 0.28),
+                0 4px 12px rgba(124, 58, 237, 0.18);
+    transform: translateY(-2px);
+}
+
+/* Make any text/links inside stay readable on the gradient */
+.testimonial-single:hover .inner-box a,
+.testimonial-single.active .inner-box a,
+.testimonial-single:hover .inner-box p,
+.testimonial-single.active .inner-box p,
+.testimonial-single:hover .inner-box h1,
+.testimonial-single.active .inner-box h1,
+.testimonial-single:hover .inner-box h2,
+.testimonial-single.active .inner-box h2,
+.testimonial-single:hover .inner-box h3,
+.testimonial-single.active .inner-box h3,
+.testimonial-single:hover .inner-box h4,
+.testimonial-single.active .inner-box h4,
+.testimonial-single:hover .inner-box h5,
+.testimonial-single.active .inner-box h5,
+.testimonial-single:hover .inner-box h6,
+.testimonial-single.active .inner-box h6,
+.testimonial-single:hover .inner-box span,
+.testimonial-single.active .inner-box span {
+    color: #fff;
 }
 
 .sec-padding {

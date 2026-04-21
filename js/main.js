@@ -212,13 +212,139 @@
 	        }
 	    });
 
+	    /* ---- Lock the tab container to the tallest pane so the page below
+	            never jumps as content streams in or as tabs cycle. ---- */
+	    function measureAndLockTabHeight() {
+	        var $container = $('.case-tabs-content');
+	        var $panes = $container.find('.case-tab-pane');
+	        if (!$container.length || !$panes.length) return;
+
+	        // Reset previously-set min-height so we measure natural sizes
+	        $container.css('min-height', '');
+	        var containerWidth = $container.width();
+
+	        var maxH = 0;
+	        $panes.each(function () {
+	            var pane = this;
+	            // Snapshot inline styles, then render this pane absolutely & invisibly
+	            var snap = {
+	                display:    pane.style.display,
+	                position:   pane.style.position,
+	                visibility: pane.style.visibility,
+	                left:       pane.style.left,
+	                top:        pane.style.top,
+	                width:      pane.style.width,
+	                animation:  pane.style.animation
+	            };
+	            pane.style.display    = 'block';
+	            pane.style.position   = 'absolute';
+	            pane.style.visibility = 'hidden';
+	            pane.style.left       = '0';
+	            pane.style.top        = '0';
+	            pane.style.width      = containerWidth + 'px';
+	            pane.style.animation  = 'none';
+
+	            var h = pane.offsetHeight;
+	            if (h > maxH) maxH = h;
+
+	            // Restore
+	            pane.style.display    = snap.display;
+	            pane.style.position   = snap.position;
+	            pane.style.visibility = snap.visibility;
+	            pane.style.left       = snap.left;
+	            pane.style.top        = snap.top;
+	            pane.style.width      = snap.width;
+	            pane.style.animation  = snap.animation;
+	        });
+
+	        if (maxH > 0) {
+	            $container.css('min-height', maxH + 'px');
+	        }
+	    }
+
+	    // Initial measurement + remeasure on resize (debounced)
+	    measureAndLockTabHeight();
+	    var resizeTimer;
+	    $(window).on('resize', function () {
+	        clearTimeout(resizeTimer);
+	        resizeTimer = setTimeout(measureAndLockTabHeight, 150);
+	    });
+
 	    // Kick off: stream the initially-active pane
 	    var $initActive = $('.case-tab-btn.active').first();
 	    if ($initActive.length) {
 	        streamPane($initActive.data('tab'));
 	    }
 	    /* End of Application case tabs */
-	    
+
+
+	    /* ==============================================
+	      Contact Us modal (即刻体验 Demo)
+	      =============================================== */
+	    var $contactModal = $('#contactModal');
+
+	    function openContactModal() {
+	        if (!$contactModal.length) return;
+	        $contactModal.addClass('is-open').attr('aria-hidden', 'false');
+	        $('body').addClass('contact-modal-open');
+	        // Focus close btn for keyboard users
+	        setTimeout(function () {
+	            $contactModal.find('.contact-modal-close').trigger('focus');
+	        }, 50);
+	    }
+	    function closeContactModal() {
+	        if (!$contactModal.length) return;
+	        $contactModal.removeClass('is-open').attr('aria-hidden', 'true');
+	        $('body').removeClass('contact-modal-open');
+	    }
+
+	    $(document).on('click', '[data-open-contact-modal]', function (e) {
+	        e.preventDefault();
+	        openContactModal();
+	    });
+	    $(document).on('click', '[data-close-contact-modal]', function (e) {
+	        e.preventDefault();
+	        closeContactModal();
+	    });
+	    $(document).on('keydown', function (e) {
+	        if (e.key === 'Escape' && $contactModal.hasClass('is-open')) {
+	            closeContactModal();
+	        }
+	    });
+
+	    // Copy-to-clipboard for contact items
+	    function showCopyToast() {
+	        var $toast = $('#cmToast');
+	        $toast.addClass('is-show');
+	        clearTimeout(showCopyToast._t);
+	        showCopyToast._t = setTimeout(function () {
+	            $toast.removeClass('is-show');
+	        }, 1600);
+	    }
+	    function copyText(text) {
+	        if (navigator.clipboard && window.isSecureContext) {
+	            navigator.clipboard.writeText(text).then(showCopyToast).catch(legacyCopy);
+	        } else {
+	            legacyCopy();
+	        }
+	        function legacyCopy() {
+	            var ta = document.createElement('textarea');
+	            ta.value = text;
+	            ta.style.position = 'fixed';
+	            ta.style.opacity = '0';
+	            document.body.appendChild(ta);
+	            ta.select();
+	            try { document.execCommand('copy'); showCopyToast(); } catch (err) {}
+	            document.body.removeChild(ta);
+	        }
+	    }
+	    $(document).on('click', '.cm-copy', function (e) {
+	        e.preventDefault();
+	        var text = $(this).data('copy');
+	        if (text) copyText(String(text));
+	    });
+	    /* End of Contact Us modal */
+
 
 	   /* ==============================================
 	     Target menu section  -->

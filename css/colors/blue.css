@@ -57,10 +57,11 @@
     color: #2098F5;
 }
 .testimonial-single:hover .inner-box, .testimonial-single.active .inner-box {
-    background-color: #2098F5;
+    background-color: #1a2a66;
+    background-image: linear-gradient(135deg, #1a2a66 0%, #4338ca 55%, #7c3aed 100%);
 }
 .testimonial-single:hover, .testimonial-single.active {
-    border: 1px solid #2098F5;
+    border: 1px solid rgba(67, 56, 202, 0.55);
 }
 
 .pricing-table .item ul li i {
