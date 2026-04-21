@@ -48,11 +48,133 @@
 	    /* End of Menu hide/show on scroll */ 
 
 	    /* ==============================================
-	      Application case tabs (with auto-rotate)
+	      Application case tabs
+	      - Streams each .chat-bubble inside the active pane character-by-character
+	        (preserving inner HTML structure: <p>, <ol>, <span class="hl">, etc.)
+	      - Auto-advances to the next tab after stream completes + short pause
+	      - Pauses cycle on hover; never interrupts an in-flight stream
 	      =============================================== */
-	    var caseAutoTimer = null;
-	    var caseAutoPaused = false;
-	    var CASE_INTERVAL = 7000; // ms
+	    var STREAM_USER_DELAY  = 20;    // ms per char for user bubbles (typing)
+	    var STREAM_AI_DELAY    = 9;    // ms per char for AI bubbles (faster stream)
+	    var STREAM_INTER_GAP   = 280;   // ms gap between consecutive bubbles
+	    var TAB_HOLD_AFTER_DONE = 2400; // ms to hold finished tab before advancing
+
+	    var caseAutoPaused   = false;
+	    var caseChainTimer   = null;   // schedules next tab after stream done
+	    var streamTickTimers = [];     // active per-character setTimeouts
+	    var streamingActive  = false;
+
+	    function clearStreamTimers() {
+	        while (streamTickTimers.length) {
+	            clearTimeout(streamTickTimers.shift());
+	        }
+	    }
+	    function clearChainTimer() {
+	        if (caseChainTimer) { clearTimeout(caseChainTimer); caseChainTimer = null; }
+	    }
+
+	    // Walk DOM, collect text nodes in document order
+	    function collectTextNodes(node, out) {
+	        if (node.nodeType === 3) {
+	            out.push(node);
+	        } else if (node.nodeType === 1) {
+	            for (var i = 0; i < node.childNodes.length; i++) {
+	                collectTextNodes(node.childNodes[i], out);
+	            }
+	        }
+	    }
+
+	    // Reset bubble to its original HTML, then blank out all text nodes;
+	    // returns an array of { node, text } snapshots to feed back gradually.
+	    function prepareBubbleForStream($bubble) {
+	        if (typeof $bubble.data('originalHtml') === 'undefined') {
+	            $bubble.data('originalHtml', $bubble.html());
+	        }
+	        $bubble.html($bubble.data('originalHtml'));
+	        var nodes = [];
+	        collectTextNodes($bubble[0], nodes);
+	        var snapshots = [];
+	        for (var i = 0; i < nodes.length; i++) {
+	            snapshots.push({ node: nodes[i], text: nodes[i].nodeValue });
+	            nodes[i].nodeValue = '';
+	        }
+	        return snapshots;
+	    }
+
+	    // Stream every bubble in the given pane, in DOM order, then schedule next tab.
+	    // All bubbles are blanked upfront so nothing leaks before its turn comes.
+	    function streamPane(target) {
+	        clearStreamTimers();
+	        clearChainTimer();
+	        streamingActive = false;
+
+	        var $pane = $('#' + target);
+	        if (!$pane.length) return;
+	        var $bubbles = $pane.find('.chat-bubble');
+	        if (!$bubbles.length) { scheduleNextTab(); return; }
+
+	        // Pre-blank every bubble + cache snapshots so later bubbles don't flash
+	        var queue = [];
+	        $bubbles.each(function () {
+	            queue.push({ $bubble: $(this), snapshots: prepareBubbleForStream($(this)) });
+	        });
+
+	        streamingActive = true;
+	        var idx = 0;
+	        function next() {
+	            if (idx >= queue.length) {
+	                streamingActive = false;
+	                scheduleNextTab();
+	                return;
+	            }
+	            var item = queue[idx];
+	            var isUser = item.$bubble.closest('.chat-msg').hasClass('user');
+	            var delay = isUser ? STREAM_USER_DELAY : STREAM_AI_DELAY;
+	            streamSnapshots(item.snapshots, delay, function () {
+	                idx++;
+	                streamTickTimers.push(setTimeout(next, STREAM_INTER_GAP));
+	            }, item.$bubble);
+	        }
+	        next();
+	    }
+
+	    // Stream pre-captured snapshots (after prepareBubbleForStream)
+	    function streamSnapshots(snapshots, charDelay, onDone, $bubble) {
+	        if ($bubble) $bubble.addClass('is-streaming');
+	        var ni = 0, ci = 0;
+	        function tick() {
+	            if (ni >= snapshots.length) {
+	                if ($bubble) $bubble.removeClass('is-streaming');
+	                if (onDone) onDone();
+	                return;
+	            }
+	            var s = snapshots[ni];
+	            if (ci < s.text.length) {
+	                var step = 1;
+	                while (ci + step < s.text.length &&
+	                       /\s/.test(s.text.charAt(ci + step - 1))) {
+	                    step++;
+	                }
+	                ci += step;
+	                s.node.nodeValue = s.text.substring(0, ci);
+	                streamTickTimers.push(setTimeout(tick, charDelay));
+	            } else {
+	                s.node.nodeValue = s.text;
+	                ni++; ci = 0;
+	                streamTickTimers.push(setTimeout(tick, charDelay));
+	            }
+	        }
+	        tick();
+	    }
+
+	    function scheduleNextTab() {
+	        clearChainTimer();
+	        if (caseAutoPaused) return;
+	        caseChainTimer = setTimeout(function () {
+	            if (caseAutoPaused) return;
+	            nextCaseTab();
+	        }, TAB_HOLD_AFTER_DONE);
+	    }
 
 	    function activateCaseTab($btn) {
 	        if (!$btn || !$btn.length) return;
@@ -61,6 +183,7 @@
 	        $btn.addClass('active');
 	        $('.case-tab-pane').removeClass('active');
 	        $('#' + target).addClass('active');
+	        streamPane(target);
 	    }
 
 	    function nextCaseTab() {
@@ -71,40 +194,29 @@
 	        activateCaseTab($btns.eq(next));
 	    }
 
-	    function startCaseAutoRotate() {
-	        stopCaseAutoRotate();
-	        if (caseAutoPaused) return;
-	        if (!$('.case-tab-btn').length) return;
-	        caseAutoTimer = setInterval(nextCaseTab, CASE_INTERVAL);
-	    }
-
-	    function stopCaseAutoRotate() {
-	        if (caseAutoTimer) {
-	            clearInterval(caseAutoTimer);
-	            caseAutoTimer = null;
-	        }
-	    }
-
-	    // Manual click — switch and restart timer so user gets full interval to read
+	    // Manual click — switch and restart cycle (re-streams new pane)
 	    $(document).on('click', '.case-tab-btn', function () {
 	        activateCaseTab($(this));
-	        startCaseAutoRotate();
 	    });
 
-	    // Pause on hover over tab bar OR active content pane
+	    // Pause cycle on hover; do NOT interrupt an ongoing stream
 	    $(document).on('mouseenter', '.case-tabs-nav, .case-tabs-content', function () {
 	        caseAutoPaused = true;
-	        stopCaseAutoRotate();
+	        clearChainTimer();
 	    });
 	    $(document).on('mouseleave', '.case-tabs-nav, .case-tabs-content', function () {
-	        // Only resume when mouse left BOTH zones
 	        if ($('.case-tabs-nav:hover, .case-tabs-content:hover').length === 0) {
 	            caseAutoPaused = false;
-	            startCaseAutoRotate();
+	            // If we're currently between streams (waiting), resume the schedule.
+	            if (!streamingActive) scheduleNextTab();
 	        }
 	    });
 
-	    startCaseAutoRotate();
+	    // Kick off: stream the initially-active pane
+	    var $initActive = $('.case-tab-btn.active').first();
+	    if ($initActive.length) {
+	        streamPane($initActive.data('tab'));
+	    }
 	    /* End of Application case tabs */
 	    
 
