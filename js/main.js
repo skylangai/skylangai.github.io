@@ -46,6 +46,66 @@
 	    });
 
 	    /* End of Menu hide/show on scroll */ 
+
+	    /* ==============================================
+	      Application case tabs (with auto-rotate)
+	      =============================================== */
+	    var caseAutoTimer = null;
+	    var caseAutoPaused = false;
+	    var CASE_INTERVAL = 7000; // ms
+
+	    function activateCaseTab($btn) {
+	        if (!$btn || !$btn.length) return;
+	        var target = $btn.data('tab');
+	        $('.case-tab-btn').removeClass('active');
+	        $btn.addClass('active');
+	        $('.case-tab-pane').removeClass('active');
+	        $('#' + target).addClass('active');
+	    }
+
+	    function nextCaseTab() {
+	        var $btns = $('.case-tab-btn');
+	        if (!$btns.length) return;
+	        var idx = $btns.index($btns.filter('.active'));
+	        var next = (idx + 1) % $btns.length;
+	        activateCaseTab($btns.eq(next));
+	    }
+
+	    function startCaseAutoRotate() {
+	        stopCaseAutoRotate();
+	        if (caseAutoPaused) return;
+	        if (!$('.case-tab-btn').length) return;
+	        caseAutoTimer = setInterval(nextCaseTab, CASE_INTERVAL);
+	    }
+
+	    function stopCaseAutoRotate() {
+	        if (caseAutoTimer) {
+	            clearInterval(caseAutoTimer);
+	            caseAutoTimer = null;
+	        }
+	    }
+
+	    // Manual click — switch and restart timer so user gets full interval to read
+	    $(document).on('click', '.case-tab-btn', function () {
+	        activateCaseTab($(this));
+	        startCaseAutoRotate();
+	    });
+
+	    // Pause on hover over tab bar OR active content pane
+	    $(document).on('mouseenter', '.case-tabs-nav, .case-tabs-content', function () {
+	        caseAutoPaused = true;
+	        stopCaseAutoRotate();
+	    });
+	    $(document).on('mouseleave', '.case-tabs-nav, .case-tabs-content', function () {
+	        // Only resume when mouse left BOTH zones
+	        if ($('.case-tabs-nav:hover, .case-tabs-content:hover').length === 0) {
+	            caseAutoPaused = false;
+	            startCaseAutoRotate();
+	        }
+	    });
+
+	    startCaseAutoRotate();
+	    /* End of Application case tabs */
 	    
 
 	   /* ==============================================

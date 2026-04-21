@@ -744,6 +744,109 @@ nav.top-nav-collapse {
     margin-bottom: 30px;
 }
 
+/* ==========================================================
+   Application case tabs (应用案例)
+   ========================================================== */
+.case-tabs-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin: 10px 0 45px;
+}
+
+.case-tab-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a2a66;
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(26, 42, 102, 0.18);
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    outline: none;
+    -webkit-appearance: none;
+            appearance: none;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: color 0.25s ease, background 0.25s ease,
+                border-color 0.25s ease, transform 0.25s ease,
+                box-shadow 0.25s ease;
+}
+
+.case-tab-btn i {
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+.case-tab-btn:hover {
+    color: #4338ca;
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(67, 56, 202, 0.45);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 42, 102, 0.14);
+}
+
+.case-tab-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.18);
+}
+
+.case-tab-btn.active {
+    color: #fff;
+    background: linear-gradient(135deg, #1a2a66 0%, #4338ca 55%, #7c3aed 100%);
+    border-color: transparent;
+    box-shadow: 0 8px 22px rgba(67, 56, 202, 0.35);
+}
+
+.case-tab-btn.active i {
+    opacity: 1;
+}
+
+.case-tab-btn.active:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px rgba(91, 33, 182, 0.42);
+}
+
+.case-tabs-content {
+    position: relative;
+}
+
+.case-tab-pane {
+    display: none;
+}
+
+.case-tab-pane.active {
+    display: block;
+    -webkit-animation: caseTabFade 0.4s ease both;
+            animation: caseTabFade 0.4s ease both;
+}
+
+@-webkit-keyframes caseTabFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes caseTabFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 767px) {
+    .case-tabs-nav {
+        gap: 8px;
+    }
+    .case-tab-btn {
+        padding: 9px 18px;
+        font-size: 13px;
+    }
+}
+
 
 .service-left-side {
     display: table;
