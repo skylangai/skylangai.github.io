@@ -915,18 +915,6 @@ nav.top-nav-collapse {
     background-color: #F5F5F5;
 }
 
-.section-light {
-    background: -webkit-linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/bg-wave-a.svg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(245, 245, 245, 0.9), rgba(245, 245, 245, 0.9)), url(../images/slider/bg-wave-a.svg) 50% 0 no-repeat fixed;
-    background-size: cover;
-}
-
-.section-dark {
-    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/bg-wave-a.svg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.9)), url(../images/slider/bg-wave-a.svg) 50% 0 no-repeat fixed;
-    background-size: cover;
-}
-
 .k-why-choose-us-main .k-why-choose-us {
     background-color: #eee;
     float: left;
@@ -1171,19 +1159,15 @@ h5.less-mar-1 {
 #testimonial-and-client {}
 
 .tc-light-style {
-    background: -webkit-linear-gradient( rgba(245, 245, 250, 0.82), rgba(245, 245, 250, 0.82)), url(../images/slider/bg-wave-c-light.svg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(245, 245, 250, 0.82), rgba(245, 245, 250, 0.82)), url(../images/slider/bg-wave-c-light.svg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(245, 245, 250, 0.82), rgba(245, 245, 250, 0.82)), url(../images/slider/bg-wave-light.svg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(245, 245, 250, 0.82), rgba(245, 245, 250, 0.82)), url(../images/slider/bg-wave-light.svg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
 .tc-dark-style {
-    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.55), rgba(20, 20, 20, 0.55)), url(../images/slider/bg-wave-c.svg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(20, 20, 20, 0.55), rgba(20, 20, 20, 0.55)), url(../images/slider/bg-wave-c.svg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.55), rgba(20, 20, 20, 0.55)), url(../images/slider/bg-wave.svg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(20, 20, 20, 0.55), rgba(20, 20, 20, 0.55)), url(../images/slider/bg-wave.svg) 50% 0 no-repeat fixed;
     background-size: cover;
-}
-
-.section-dark {
-    background-color: #101010;
 }
 
 .sec-title-container {
@@ -1642,7 +1626,7 @@ input[type="submit"] {
 }
 
 .contact-info {
-    background: #525252;
+    background: transparent;
 }
 
 .contact-info ul {
@@ -1650,9 +1634,9 @@ input[type="submit"] {
     max-width: 800px;
     margin: 0 auto;
     padding: 0;
-    background: #2098F5;
+    background: transparent;
     color: #fff;
-    border: 1px solid #6f6f6f;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-top: 0;
 }
 
@@ -1665,9 +1649,9 @@ input[type="submit"] {
     width: 50%;
     text-align: center;
     padding: 30px 10px;
-    color: #c7c7c7;
-    border-left: 1px solid #5c5c5c;
-    background-color: #414141;
+    color: #e8e8ec;
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.06);
 }
 
 .contact-info ul li i {
@@ -1707,7 +1691,6 @@ input[type="submit"] {
 
 #contact-us {
     padding-bottom: 0px;
-    background: #525252;
 }
 
 
@@ -1811,7 +1794,7 @@ input[type="submit"] {
 /*end subscribe*/
 
 .bottom {
-    background: #525252;
+    background: transparent;
     padding: 80px 40px 20px;
     text-align: center;
 }
