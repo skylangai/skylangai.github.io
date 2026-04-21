@@ -1,53 +1,24 @@
 ﻿<!doctype html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
-<!--[if gt IE 8]><!-->
-<html lang="zxx">
-<!--<![endif]-->
+<html lang="zh-CN">
 
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>苍穹智语</title>
+<title>凌云智能</title>
 <meta name="Robots" content="all">
-<meta name="description" content="苍穹智语是面向万千企业的大模型应用资深开发团队，支持对主流大模型的定制化应用开发和私有化部署，包括DeepSeek，OpenAI，Llama，通义千问等。">
+<meta name="description" content="凌云智能是面向万千企业的大模型应用资深开发团队，支持对主流大模型的定制化应用开发和私有化部署，包括DeepSeek，OpenAI，Llama，通义千问等。">
 <meta name="Keywords" content="DeepSeek本地部署与开发，大模型训练，智能客服，智能体开发，大模型知识库">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- favicon icon -->
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<!-- <link rel="icon" type="image/png" href="favicon.png"> -->
-<!-- <link rel="apple-touch-icon" href="apple-touch-icon.png"> -->
-<!-- <link rel="shortcut icon" type="image/png" href="favicon.ico" /> -->
-<!-- WEB FONTS -->
-<link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Oswald:300,400,700" rel="stylesheet">
 <!-- Stylesheets -->
 <link rel="stylesheet" href="css/font-awesome.min.css">
 <link rel="stylesheet" href="css/bootstrap.min.css">
-<link rel="stylesheet" href="css/bootstrap-theme.min.css">
-<!-- color css -->
-<link rel="stylesheet" href="switcher/switcher.css" />
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/colors/blue.css">
-<script src="js/modernizr-2.8.3-respond-1.4.2.min.js"></script>
 </head>
 
 <body data-spy="scroll" data-target=".navbar" data-offset="50" style="overflow: visible;">
-<!--[if lt IE 8]>
-		<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-	<![endif]-->
-
-<!-- ===========================
-			PRELOADER
-============================= -->
-
-<div id="preloader">
-	<div id="status"></div>
-</div>
-
-<!-- End Preloader -->
-
 
   <!-- =========================
 	  page header START
@@ -62,23 +33,43 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a href="#slides" class="brand-logo">
-					<img src="images/logo_light.png" alt="karbar logo">
+				<a href="#slides" class="brand-logo" aria-label="凌云智能 - 返回首页">
+					<svg class="brand-logo-svg" viewBox="0 0 220 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+						<defs>
+							<linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+								<stop offset="0%"  stop-color="#c7d2fe"/>
+								<stop offset="55%" stop-color="#a5b4fc"/>
+								<stop offset="100%" stop-color="#d8b4fe"/>
+							</linearGradient>
+							<linearGradient id="brandMarkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+								<stop offset="0%"  stop-color="#818cf8"/>
+								<stop offset="100%" stop-color="#c084fc"/>
+							</linearGradient>
+						</defs>
+						<!-- Brand mark: stylized "sky + spark" glyph -->
+						<g transform="translate(2, 4)">
+							<circle cx="20" cy="20" r="18" fill="url(#brandMarkGrad)" opacity="0.15"/>
+							<path d="M6 26 C 12 18, 18 18, 22 22 S 32 26, 36 20"
+								  fill="none" stroke="url(#brandMarkGrad)" stroke-width="2.6" stroke-linecap="round"/>
+							<circle cx="30" cy="12" r="2.2" fill="#ffffff"/>
+							<circle cx="14" cy="10" r="1.2" fill="#ffffff" opacity="0.85"/>
+						</g>
+						<!-- Brand wordmark: 凌云智能 -->
+						<text x="50" y="32" font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif"
+							  font-size="22" font-weight="700" letter-spacing="2" fill="url(#brandGrad)">凌云智能</text>
+					</svg>
 				</a>
 			</div>
 			<div class="collapse navbar-collapse" id="myNavbar">
 				<ul class="nav navbar-nav pull-right">
-					<!-- <li class="active">
-						<a href="#slides">首页</a>
-					</li> -->
 					<li>
-						<a href="#karbar-service-section"> <h5>产品服务</h5></a>
+						<a href="#karbar-service-section">产品服务</a>
 					</li>
 					<li>
-						<a href="#testimonial-and-client">  <h5>关于我们</h5> </a>
+						<a href="#testimonial-and-client">关于我们</a>
 					</li>
 					<li>
-						<a  href="#contact-us"><h5>合作咨询</h5></a>
+						<a href="#contact-us">合作咨询</a>
 					</li>
 				</ul>
 			</div>
@@ -93,41 +84,31 @@
  ============================== -->
 <section id="slides" class="pb">
 	<div class="slides-container">
-		<div class="slide active">
-			<div class="img"><img src="images/slider/star-1.png" alt="slide" class="img-responsive"></div>
-			<div class="overlay"></div>
-			<div class="slide-caption">
-				<div class="container">
-					<div class="box">
-						<h1>大模型时代</h1>
-						<h1>重新定义智能边界</h1>
-						<span> AI赋能企业，创造无限可能 </span>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- end slide1 -->
 		<div class="slide">
-			<div class="img"><img src="images/slider/flow-3.png" alt="slide" class="img-responsive"></div>
-			<div class="overlay"></div>
+			<div class="img">
+				<img class="slide-bg" src="images/slider/slide-bg.svg" alt="" aria-hidden="true">
+			</div>
 			<div class="slide-caption">
 				<div class="container">
 					<div class="box">
-						<h1>追赶AI浪潮</h1>
-						<h1>助力企业创造价值</h1>
-						<span>让AI离企业产品不再遥远</span>
+						<h1 class="hero-title hero-anim-1">懂业务的 AI 助理</h1>
+						<h1 class="hero-title hero-anim-2">助力AI到企业的最后一公里</h1>
+						<div class="hero-cta-group hero-anim-3">
+							<a href="#karbar-service-section" class="hero-btn hero-btn-primary">
+								<i class="fa fa-compass" aria-hidden="true"></i>
+								<span>了解服务</span>
+							</a>
+							<button type="button" class="hero-btn hero-btn-ghost" data-open-contact-modal>
+								<i class="fa fa-rocket" aria-hidden="true"></i>
+								<span>即刻体验 Demo</span>
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<!-- end slide2 -->
 	</div>
 	<!-- end slides-container -->
-	<div class="slides-navigation">
-		<a class="prev sqaureIconSec" href="#"> <i class="fa fa-chevron-left"></i></a>
-		<a class="next sqaureIconSec" href="#"> <i class="fa fa-chevron-right"></i></a>
-	</div>
-	<!-- end slides-navigation -->
 	<div class="holder">
 
 	  <span class="scroll-btn">
@@ -148,12 +129,12 @@
  <!-- =========================
 		service section
  ============================== -->  
-<section id="karbar-service-section">
+<section id="karbar-service-section" class="tc-light-style">
 	<div class="container">
 		<div class="row">
 			<!-- Section main title -->
 			<div class="col-xs-12 section-title-padding">
-				<div class="sec-title-container text-center">
+				<div class="sec-title-container text-center reveal">
 					<div class="title-line"></div>
 					<h2 class="uppercase font-weight-7 less-mar-1"> 应用案例 </h2>
 					<div class="clearfix"></div>
@@ -162,53 +143,244 @@
 			</div>
 			<div class="clearfix"></div>
 			<!--end title-->
-			<div class="item">
-				<div class="col-md-12 service-item-block">
-					<div class="service-left-side active reveal-right-delay">
-						<!-- <div class="circle"> <i class="fa fa-desktop"></i> </div> -->
-						<div class="text-box">
-							<h4 class="title">融合企业业务，精准智能客服问答</h4>
-							<img  class="enlarged-with-transform" src="images/case1.gif" loop="0" alt="slide" >
+
+			<!-- Tab navigation -->
+			<div class="case-tabs-nav reveal reveal-delay-1">
+				<button class="case-tab-btn active" type="button" data-tab="case-1">
+					<i class="fa fa-comments" aria-hidden="true"></i> 智能客服
+				</button>
+				<button class="case-tab-btn" type="button" data-tab="case-2">
+					<i class="fa fa-bar-chart" aria-hidden="true"></i> 数据分析
+				</button>
+				<button class="case-tab-btn" type="button" data-tab="case-3">
+					<i class="fa fa-file-text-o" aria-hidden="true"></i> 长文摘要
+				</button>
+				<button class="case-tab-btn" type="button" data-tab="case-4">
+					<i class="fa fa-graduation-cap" aria-hidden="true"></i> 行业专家
+				</button>
+			</div>
+
+			<!-- Tab content -->
+			<div class="case-tabs-content item">
+
+				<!-- ====== Case 1 : 智能客服 ====== -->
+				<div class="case-tab-pane active" id="case-1">
+					<div class="col-md-12 service-item-block">
+						<div class="service-left-side active">
+							<div class="text-box">
+								<h4 class="title">融合企业业务，精准智能客服问答</h4>
+								<div class="case-chat-card">
+									<div class="case-chat-head">
+										<span class="dot"></span>
+										<span class="title">在线客服 · 智能助手</span>
+									</div>
+									<div class="case-chat-body">
+										<div class="chat-msg user">
+											<div class="chat-avatar user"><i class="fa fa-user"></i></div>
+											<div class="chat-stack">
+												<div class="chat-bubble">我的行程取消了，请问该如何退订机票？</div>
+											</div>
+										</div>
+										<div class="chat-msg ai">
+											<div class="chat-avatar ai"><i class="fa fa-comments"></i></div>
+											<div class="chat-stack">
+												<div class="chat-bubble">
+													<p><span class="hl">退订机票</span>，可参考以下步骤：</p>
+													<ol>
+														<li><span class="hl">进入订单页面</span>：在 App 中点击右下角"我的"，选择"全部订单"；或者在官网点击"我的"进入个人中心，选择"订单管理"。</li>
+														<li><span class="hl">找到目标订单</span>：在订单列表里找到需要退票的机票订单。</li>
+														<li><span class="hl">申请退票</span>：点击订单旁的"退改签"按钮，进入订单详情页面后，点击"退票"按钮。</li>
+														<li><span class="hl">确认信息并提交</span>：系统会弹出退票申请对话框，显示退票费用及退款金额等信息，仔细核对确认无误后，点击"确认退票"提交申请。</li>
+														<li><span class="hl">等待审核与退款</span>：提交申请后，携程客服会进行审核，一般需 1-3 个工作日。审核通过后，航空公司处理退票请求，退款通常在 7-15 个工作日内到账。</li>
+													</ol>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
-				<!--end item-->
-				<div class="clearfix"></div>
-				<!-- <div class="col-divider-margin-3"></div> -->
-				<div class="col-md-12 service-item-block">
-					<div class="service-left-side  reveal-right-delay">
-						<!-- <div class="circle"> <i class="fa fa-tablet"></i> </div> -->
-						<div class="text-box">
-							<h4 class="title">出色数理能力，掌握商务报表分析</h4>
-							<img  class="enlarged-with-transform" src="images/case2.gif" loop="0" alt="slide" >
+
+				<!-- ====== Case 2 : 数据分析 ====== -->
+				<div class="case-tab-pane" id="case-2">
+					<div class="col-md-12 service-item-block">
+						<div class="service-left-side active">
+							<div class="text-box">
+								<h4 class="title">出色数理能力，掌握商务报表分析</h4>
+								<div class="case-chat-card">
+									<div class="case-chat-head">
+										<span class="dot"></span>
+										<span class="title">数据分析 · 智能助手</span>
+									</div>
+									<div class="case-chat-body">
+										<div class="chat-msg user">
+											<div class="chat-avatar user"><i class="fa fa-user"></i></div>
+											<div class="chat-stack">
+												<div class="chat-chart-card">
+													<div class="chart-top">
+														<span class="high">↑ 3494.87</span>
+														<span>K 线 · 日</span>
+													</div>
+													<svg viewBox="0 0 320 130" width="100%" height="130" xmlns="http://www.w3.org/2000/svg" aria-label="股票指数走势">
+														<defs>
+															<linearGradient id="maAreaGrad" x1="0" y1="0" x2="0" y2="1">
+																<stop offset="0%"  stop-color="#7c3aed" stop-opacity="0.25"/>
+																<stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+															</linearGradient>
+														</defs>
+														<!-- grid -->
+														<line x1="0" y1="30"  x2="320" y2="30"  stroke="#eef0f6" stroke-dasharray="3 3"/>
+														<line x1="0" y1="65"  x2="320" y2="65"  stroke="#eef0f6" stroke-dasharray="3 3"/>
+														<line x1="0" y1="100" x2="320" y2="100" stroke="#eef0f6" stroke-dasharray="3 3"/>
+														<!-- candlesticks: red = up, green = down -->
+														<g stroke-width="1">
+															<g stroke="#e84545" fill="#e84545">
+																<line x1="14"  y1="22"  x2="14"  y2="48"/>  <rect x="11"  y="28" width="6" height="14"/>
+																<line x1="28"  y1="20"  x2="28"  y2="52"/>  <rect x="25"  y="26" width="6" height="18"/>
+																<line x1="56"  y1="36"  x2="56"  y2="64"/>  <rect x="53"  y="40" width="6" height="14"/>
+																<line x1="98"  y1="56"  x2="98"  y2="86"/>  <rect x="95"  y="62" width="6" height="14"/>
+																<line x1="140" y1="66"  x2="140" y2="94"/>  <rect x="137" y="72" width="6" height="14"/>
+																<line x1="182" y1="60"  x2="182" y2="88"/>  <rect x="179" y="64" width="6" height="14"/>
+																<line x1="224" y1="58"  x2="224" y2="84"/>  <rect x="221" y="62" width="6" height="14"/>
+																<line x1="266" y1="50"  x2="266" y2="78"/>  <rect x="263" y="58" width="6" height="14"/>
+															</g>
+															<g stroke="#22a06b" fill="#22a06b">
+																<line x1="42"  y1="28"  x2="42"  y2="60"/>  <rect x="39"  y="32" width="6" height="22"/>
+																<line x1="70"  y1="42"  x2="70"  y2="76"/>  <rect x="67"  y="48" width="6" height="22"/>
+																<line x1="84"  y1="48"  x2="84"  y2="80"/>  <rect x="81"  y="54" width="6" height="20"/>
+																<line x1="112" y1="60"  x2="112" y2="92"/>  <rect x="109" y="66" width="6" height="20"/>
+																<line x1="126" y1="68"  x2="126" y2="100"/> <rect x="123" y="74" width="6" height="20"/>
+																<line x1="154" y1="74"  x2="154" y2="106"/> <rect x="151" y="80" width="6" height="22"/>
+																<line x1="168" y1="70"  x2="168" y2="100"/> <rect x="165" y="76" width="6" height="20"/>
+																<line x1="196" y1="64"  x2="196" y2="92"/>  <rect x="193" y="70" width="6" height="18"/>
+																<line x1="210" y1="68"  x2="210" y2="96"/>  <rect x="207" y="74" width="6" height="18"/>
+																<line x1="238" y1="62"  x2="238" y2="88"/>  <rect x="235" y="68" width="6" height="16"/>
+																<line x1="252" y1="66"  x2="252" y2="92"/>  <rect x="249" y="72" width="6" height="16"/>
+																<line x1="280" y1="56"  x2="280" y2="82"/>  <rect x="277" y="62" width="6" height="16"/>
+																<line x1="294" y1="60"  x2="294" y2="86"/>  <rect x="291" y="66" width="6" height="16"/>
+															</g>
+														</g>
+														<!-- MA line -->
+														<path d="M0,30 C30,35 50,42 80,55 S150,90 200,80 S270,70 320,72"
+															  fill="none" stroke="#7c3aed" stroke-width="1.6"/>
+														<path d="M0,30 C30,35 50,42 80,55 S150,90 200,80 S270,70 320,72 L320,130 L0,130 Z"
+															  fill="url(#maAreaGrad)"/>
+														<!-- low marker -->
+														<circle cx="154" cy="106" r="2.6" fill="#22a06b"/>
+														<text x="160" y="118" font-size="9" fill="#22a06b">3140.98</text>
+													</svg>
+													<div class="chart-bottom">
+														<span>2025-01</span>
+														<span>2025-02</span>
+														<span>2025-03</span>
+													</div>
+												</div>
+												<div class="chat-bubble">描述一下这支股票指数最近 3 个月的变化趋势。</div>
+											</div>
+										</div>
+										<div class="chat-msg ai">
+											<div class="chat-avatar ai"><i class="fa fa-bar-chart"></i></div>
+											<div class="chat-stack">
+												<div class="chat-bubble">
+													<p>从 <span class="hl">2025-01</span> 之前开始，股票指数呈现出先上升的趋势，达到 <span class="hl">3494.87</span> 的高点后开始下降，在下降过程中，中间有一些小的波动回升，但整体下降趋势明显，一直到 <span class="hl">2025-01 末</span>达到相对较低点 <span class="hl">3140.98</span>。</p>
+													<p><span class="hl">2025-02</span> 初开始，指数又有一定的回升波动，随后在 2025-02 期间整体处于波动状态，有涨有跌。</p>
+													<p><span class="hl">2025-03</span> 期间，指数依旧保持着较为频繁的涨跌波动。</p>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
-				<!--end item-->
-				<div class="clearfix"></div>
-				<!-- <div class="col-divider-margin-3"></div> -->
-				<div class="col-md-12 service-item-block">
-					<div class="service-left-side reveal-right-delay">
-						<!-- <div class="circle"> <i class="fa fa-picture-o"></i> </div> -->
-						<div class="text-box">
-							<h4 class="title">擅长在海量长文捕获重点，提升效率</h4>
-							<img class="enlarged-with-transform" src="images/case3.gif" loop="0" alt="slide" >
+
+				<!-- ====== Case 3 : 长文摘要 ====== -->
+				<div class="case-tab-pane" id="case-3">
+					<div class="col-md-12 service-item-block">
+						<div class="service-left-side active">
+							<div class="text-box">
+								<h4 class="title">擅长在海量长文捕获重点，提升效率</h4>
+								<div class="case-chat-card">
+									<div class="case-chat-head">
+										<span class="dot"></span>
+										<span class="title">合同分析 · 智能助手</span>
+									</div>
+									<div class="case-chat-body">
+										<div class="chat-msg user">
+											<div class="chat-avatar user"><i class="fa fa-user"></i></div>
+											<div class="chat-stack">
+												<div class="chat-file">
+													<div class="file-icon"><i class="fa fa-file-text-o"></i></div>
+													<div class="file-meta">
+														<span class="file-name">标准房屋租赁合同.txt</span>
+														<span class="file-size">txt · 6KB</span>
+													</div>
+												</div>
+												<div class="chat-bubble">这份合同的内容对乙方有什么潜在风险？</div>
+											</div>
+										</div>
+										<div class="chat-msg ai">
+											<div class="chat-avatar ai"><i class="fa fa-file-text-o"></i></div>
+											<div class="chat-stack">
+												<div class="chat-bubble">
+													<p>这份合同对乙方存在多方面潜在风险，涵盖<span class="hl">违约、房屋使用、费用承担、安全责任、合同解除</span>等，乙方在签署合同前应仔细考量，必要时与甲方协商修改。</p>
+													<ol>
+														<li><span class="hl">违约风险</span>：乙方在租金支付、房屋使用、续租等方面需严格遵守合同约定，否则将承担严重后果。若迟交租金，超过五天甲方有权收回房屋、没收押金并要求乙方立即搬离。</li>
+														<li><span class="hl">房屋使用风险</span>：乙方对房屋及其附属物品、设备设施的使用和维护负有责任。在租赁期间，若因乙方原因造成房屋或相关设施损坏，需负责修复并赔偿损失；租赁期满未按原状返还，也可能面临押金被扣除的情况。</li>
+														<li><span class="hl">费用风险</span>：乙方承担多项费用，包括水费、电费、电话费等。若对费用产生争议或遭遇不合理收费，需自行承担责任。此外，迟交租金还需支付滞纳金，增加经济负担。</li>
+														<li><span class="hl">安全责任风险</span>：租赁期间乙方承担全部安全责任，如发生火灾、高空坠物、入室盗窃等恶性事件，即使是因疏忽大意导致，也需承担全部责任，可能面临经济赔偿和法律责任。</li>
+													</ol>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
-				<!--end item-->
-				<div class="clearfix"></div>
-				<!-- <div class="col-divider-margin-3"></div> -->
-				<div class="col-md-12 service-item-block">
-					<div class="service-left-side reveal-right-delay">
-						<!-- <div class="circle"> <i class="fa fa-wordpress"></i> </div> -->
-						<div class="text-box">
-							<h4 class="title">学习行业知识库，成为专家式助手</h4>
-							<img  class="enlarged-with-transform" src="images/case4.gif" loop="0" alt="slide" >
+
+				<!-- ====== Case 4 : 行业专家 ====== -->
+				<div class="case-tab-pane" id="case-4">
+					<div class="col-md-12 service-item-block">
+						<div class="service-left-side active">
+							<div class="text-box">
+								<h4 class="title">学习行业知识库，成为专家式助手</h4>
+								<div class="case-chat-card">
+									<div class="case-chat-head">
+										<span class="dot"></span>
+										<span class="title">中医辨证 · 智能助手</span>
+									</div>
+									<div class="case-chat-body">
+										<div class="chat-msg user">
+											<div class="chat-avatar user"><i class="fa fa-user-md"></i></div>
+											<div class="chat-stack">
+												<div class="chat-bubble">我最近湿气严重，开具一下凉茶配方。</div>
+											</div>
+										</div>
+										<div class="chat-msg ai">
+											<div class="chat-avatar ai"><i class="fa fa-graduation-cap"></i></div>
+											<div class="chat-stack">
+												<div class="chat-bubble">
+													<div class="rx-block">
+														<div class="rx-row"><span class="rx-label">处方</span></div>
+														<div class="rx-row"><span class="rx-label">药材</span><span class="rx-value">茯苓 15g、薏苡仁 30g、苍术 10g、白术 15g、泽泻 10g、藿香 10g（后下）、佩兰 10g（后下）、陈皮 10g、厚朴 10g、炙甘草 6g。</span></div>
+														<div class="rx-row"><span class="rx-label">用法</span><span class="rx-value">上述药材以水 1000-1200ml 浸泡 30 分钟，然后大火煮开后转小火煎 30-40 分钟，取汁 300-400ml，分两次温服，早晚各一次。藿香和佩兰后下，即在其他药物煎好前 5-10 分钟加入，以免有效成分挥发过多。</span></div>
+														<div class="rx-row"><span class="rx-label">方解</span><span class="rx-value">方中<span class="hl">茯苓</span>利水渗湿、健脾宁心；<span class="hl">薏苡仁</span>利水渗湿、健脾止泻、除痹、排脓，二者共为君药，增强利水渗湿之力。<span class="hl">苍术、白术</span>燥湿健脾，助君药以祛湿健脾；<span class="hl">泽泻</span>利水渗湿，可使湿从小便而去，三者为臣药。<span class="hl">藿香、佩兰</span>芳香化湿，辟秽和中；<span class="hl">陈皮</span>理气健脾、燥湿化痰；<span class="hl">厚朴</span>燥湿消痰、下气除满，共助君臣药化湿行气，为佐药。<span class="hl">炙甘草</span>调和诸药，为使药。全方共奏<span class="hl">健脾祛湿、芳香化浊</span>之效。</span></div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
-				<!--end item-->
+
 			</div>
 		</div>
 	</div>
@@ -219,47 +391,61 @@
  <!-- =========================
 		How it works section
  ============================== -->   
- <section id="karbar-how-it-works-section" class="how-it-works section-bg-color">
+ <section id="karbar-how-it-works-section" class="how-it-works section-bg-color tc-light-style">
 	<div class="container">
 		<div class="row">
 			<!-- Section main title -->
 			<div class="col-xs-12 section-title-padding">
-				<div class="sec-title-container text-center">
+				<div class="sec-title-container text-center reveal">
 					<div class="title-line"></div>
-					<h2 class="font-weight-7 less-mar-1">支持模型定制/Agent应用开发</h2>
+					<h2 class="font-weight-7 less-mar-1"> 定制你的专属智能 - Claw 龙虾  </h2>
 					<div class="clearfix"></div>
-					<p class="by-sub-title"> AI 不再遥远，定制你的专属智能</p>
-					<p class="by-sub-title"> 让你的企业应用更加智能高效</p>
+					<p class="by-sub-title"> 结合企业业务场景，定制 Agent应用 </p>
 				</div>
 			</div>
 			<div class="clearfix"></div>
 			<div class="col-md-11 center-block">
-				<!--step 1-->
-				<div class="row">
-					<div class="col-md-2 reveal-left-fade">
-						<div class="step-number"><span>1</span></div>
-						<h4>需求评估</h4>
+				<div class="row claw-feature-row">
+					<!-- Left: feature list -->
+					<div class="col-md-6 col-sm-6 reveal reveal-delay-1">
+						<ul class="claw-feature-list">
+							<li>
+								<span class="claw-icon"><i class="fa fa-magic" aria-hidden="true"></i></span>
+								<div class="claw-text">
+									<h4>定制企业 AI 助理</h4>
+									<p>结合企业内部知识库与业务流程，打造专属对话助手，开箱即用。</p>
+								</div>
+							</li>
+							<li>
+								<span class="claw-icon"><i class="fa fa-cubes" aria-hidden="true"></i></span>
+								<div class="claw-text">
+									<h4>Open Claw 部署</h4>
+									<p>开源 Agent 框架，一键私有化部署，灵活对接各类大模型与业务系统。</p>
+								</div>
+							</li>
+							<li>
+								<span class="claw-icon"><i class="fa fa-server" aria-hidden="true"></i></span>
+								<div class="claw-text">
+									<h4>大模型本地化部署</h4>
+									<p>支持主流开源大模型本地推理，数据不出域，安全合规、自主可控。</p>
+								</div>
+							</li>
+						</ul>
 					</div>
-					<div class="col-md-4 eveal-left-fade">
-						<div class="step-number"><span>2</span></div>
-						<h4>支持多种大模型定制方案设计</h4>
-						<p> </p>
-						<p>模型微调（Fine-tuning）</p>
-						<p>强化学习（RLHF）</p>
-						<p>搜索增强（RAG）</p>
-						<p>企业知识库搭建与Prompt优化</p>
-					</div>
-					<div class="col-md-2 reveal-left-fade">
-						<div class="step-number"><span>3</span></div>
-						<h4>开发测试</h4>
-					</div>
-					<div class="col-md-2 eveal-left-fade">
-						<div class="step-number"><span>4</span></div>
-						<h4>部署优化</h4>
-					</div>
-					<div class="col-md-2 reveal-left-fade">
-						<div class="step-number"><span>5</span></div>
-						<h4>交付与培训</h4>
+					<!-- Right: cartoon lobster mascot + CTA -->
+					<div class="col-md-6 col-sm-6 claw-illustration-col reveal reveal-delay-2">
+						<div class="claw-illustration">
+							<img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f99e/512.gif"
+							     alt="Claw 龙虾吉祥物"
+							     loading="lazy"
+							     onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f99e.svg';">
+						</div>
+						<div class="claw-cta-wrap">
+							<button type="button" class="claw-cta-btn" data-open-contact-modal>
+								<i class="fa fa-rocket" aria-hidden="true"></i>
+								<span>即刻体验 Demo</span>
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -269,77 +455,16 @@
 <!--How it works end-->
 
 
-<!-- =========================
-	   team section
- ============================== -->  
-<section id="karbar-team-section" class="tc-light-style">
-	<div class="awesome-team-members">
-		<div class="container">
-			<div class="row">
-				<!-- Section main title -->
-				<div class="col-xs-12 section-title-padding">
-					<div class="sec-title-container text-center">
-						<div class="title-line"></div>
-						<h2 class=" font-weight-7 less-mar-1">大模型本地部署与业务接入</h2>
-						<div class="clearfix"></div>
-						<p class="by-sub-title">我们支持DeepSeek满血版等多种模型的私有化部署</p>
-						<p class="by-sub-title">企业信息更安全，服务质量更稳定。</p>
-					</div>
-				</div>
-				<div class="clearfix"></div>
-				
-				<div class="pricing-table">
-					<div class="col-sm-6 col-md-6">
-						<div class="item reveal-left-fade">
-							<h3>性能之选</h3>
-							<p class="price"> 9-28 <small>tokens/s/连接</small></p>
-							<p class="price"> 256 <small>并发数（短输入）</small></p>
-							<p class="price"> 32 <small>并发数（长输入）</small></p>
-							<ul>
-								<li> <h4 class="font-weight-7">H800 GPU 服务器</h4></li>	
-								<li>* 以 DeepSeek R1 满血版 671B，1台服务器 为例 </li>
-								<li>* 不同模型版本和服务器数量，性能不同 </li>
-							</ul>
-							<a href="#contact-us"> 
-								<button class="btn-theme">部署 / 联系我们</button>
-							</a>
-						</div>
-					</div>
-					<div class="col-sm-6 col-md-6">
-						<div class="item reveal-bottom-fade">
-							<h3>性价比之选 <span class="hot">热!</span> </h3>
-							<p class="price"> 9-23 <small>tokens/s/连接</small></p>
-							<p class="price"> 64 <small>并发数（短输入）</small></p>
-							<p class="price"> 32 <small>并发数（长输入）</small></p>
-							<p class="price">  </p>
-							<ul>
-								<li > <h4 class="font-weight-7">H20 GPU 服务器</h4> </li>
-								<li>* 以 DeepSeek R1 满血版 671B，2台服务器 为例 </li>
-								<li>* 不同模型版本和服务器数量，性能不同 </li>
-							</ul>
-							<a href="#contact-us"> 
-								<button class="btn-theme">部署 / 联系我们 </button>
-							</a>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</section>
-<!-- end team section -->
-
-
 
  <!-- =========================
 		client testimonial section
  ============================== -->  
-<section id="testimonial-and-client" class="tc-style">
+<section id="testimonial-and-client" class="tc-light-style">
 	<div class="container">
 		<div class="row">
 			<!-- Section main title -->
 			<div class="col-xs-12 section-title-padding">
-				<div class="sec-title-container text-center">
+				<div class="sec-title-container text-center reveal">
 					<div class="title-line"></div>
 					<h2 class="uppercase font-weight-7 less-mar-1"> 关于我们 </h2>
 					<div class="clearfix"></div>
@@ -347,11 +472,37 @@
 			</div>
 			<div class="clearfix"></div>
 			<!--end title-->
-			<div class="col-md-12 col-sm-12 col-xs-12">
+			<!-- Highlight badges -->
+			<div class="col-md-12 col-sm-12 col-xs-12 reveal reveal-delay-1">
+				<ul class="about-highlights">
+					<li>
+						<span class="ah-icon"><i class="fa fa-graduation-cap" aria-hidden="true"></i></span>
+						<div class="ah-text">
+							<strong>顶尖高校团队</strong>
+							<em>清华 · CMU 核心成员</em>
+						</div>
+					</li>
+					<li>
+						<span class="ah-icon"><i class="fa fa-server" aria-hidden="true"></i></span>
+						<div class="ah-text">
+							<strong>万卡集群训练</strong>
+							<em>H100 / A100 实战经验</em>
+						</div>
+					</li>
+					<li>
+						<span class="ah-icon"><i class="fa fa-rocket" aria-hidden="true"></i></span>
+						<div class="ah-text">
+							<strong>多领域落地成果</strong>
+							<em>问答搜索 · 智能创作</em>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div class="col-md-12 col-sm-12 col-xs-12 reveal reveal-delay-2">
 				<div class="testimonial-single margin-bottom">
 					<div class="inner-box">
-						<div class="imgbox-tiny left round overflow-hidden"><img src="images/tsinghua.jpg" alt="" class="img-responsive"></div>
-						<div class="text-box-right">
+						<div class="about-avatar"><img src="images/tsinghua.jpg" alt="清华大学校徽" class="img-responsive"></div>
+						<div class="about-text">
 							<p>我们的团队汇聚了一批行业内资深的软件开发者与算法研发专家，
 								成员均毕业于清华大学、卡内基梅隆大学（CMU）等国内外顶尖学府，学术底蕴深厚。</p>
 							<p>在人工智能与大模型领域，团队成员凭借卓越的专业素养和不懈的实践探索，积累了极为丰富的实战经验。
@@ -369,24 +520,21 @@
 
 
  <!-- =========================
-		Gmap, ContactForm section
- ============================== -->   
-<!--  -->
-<section id="contact-us">
+		Contact Us section
+ ============================== -->
+<section id="contact-us" class="tc-dark-style">
 	<div class="row">
 		<div class="col-sm-12 col-md-12">
-			<!-- <div id="gmap"></div> -->
 			<div class="col-xs-12 section-title-padding">
-				<div class="sec-title-container text-center">
+				<div class="sec-title-container text-center reveal">
 					<div class="title-line white"></div>
 					<h2 class="uppercase font-weight-7 less-mar-1 text-white"> 联系我们 </h2>
 					<div class="clearfix"></div>
 				</div>
 			</div>
 			<div class="clearfix"></div>
-			<div class="contact-info">
+			<div class="contact-info reveal reveal-delay-1">
 				<ul class="clearfix">
-				<ul >
 					<li><i class="fa fa-phone" aria-hidden="true"></i>
 						<p>刘生：13609756994</p>
 					</li>
@@ -401,31 +549,64 @@
 		<div class="row">
 			<div class="col-sm-12">
 				<div class="copyright">
-					<p class="copyright">Copyright &copy; 2025 苍穹智语 | 京ICP备2025115658号 </p>
+					<p class="copyright">Copyright &copy; 2025 凌云智能 | 京ICP备2025115658号 </p>
 				</div>
 			</div>
 		</div>
 	</div>
 </section>
-<!-- end Gmap ContactForm -->
+<!-- end Contact Us -->
 
-<script src="js/jquery-1.8.3.min.js"></script>
-<!-- plugin js -->
+<!-- ============== Contact Us modal ============== -->
+<div class="contact-modal" id="contactModal" aria-hidden="true" role="dialog" aria-labelledby="contactModalTitle" aria-modal="true">
+	<div class="contact-modal-backdrop" data-close-contact-modal></div>
+	<div class="contact-modal-dialog" role="document">
+		<button type="button" class="contact-modal-close" aria-label="关闭" data-close-contact-modal>
+			<i class="fa fa-times" aria-hidden="true"></i>
+		</button>
+		<div class="contact-modal-head">
+			<div class="contact-modal-icon">
+				<i class="fa fa-rocket" aria-hidden="true"></i>
+			</div>
+			<h3 id="contactModalTitle" class="contact-modal-title">联系我们</h3>
+			<p class="contact-modal-sub">欢迎随时联系，我们将为您安排 Demo 体验与方案咨询</p>
+		</div>
+		<ul class="contact-modal-list">
+			<li>
+				<span class="cm-icon"><i class="fa fa-phone" aria-hidden="true"></i></span>
+				<div class="cm-meta">
+					<span class="cm-label">联系电话</span>
+					<a class="cm-value" href="tel:13609756994">刘生 · 13609756994</a>
+				</div>
+				<button type="button" class="cm-copy" data-copy="13609756994" aria-label="复制电话">
+					<i class="fa fa-clone" aria-hidden="true"></i>
+				</button>
+			</li>
+			<li>
+				<span class="cm-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span>
+				<div class="cm-meta">
+					<span class="cm-label">邮箱</span>
+					<a class="cm-value" href="mailto:liujc19@tsinghua.org.cn">liujc19@tsinghua.org.cn</a>
+				</div>
+				<button type="button" class="cm-copy" data-copy="liujc19@tsinghua.org.cn" aria-label="复制邮箱">
+					<i class="fa fa-clone" aria-hidden="true"></i>
+				</button>
+			</li>
+		</ul>
+		<div class="contact-modal-foot">
+			<span class="cm-toast" id="cmToast">已复制到剪贴板</span>
+		</div>
+	</div>
+</div>
+
+<!-- Back to top button -->
+<button type="button" id="backToTop" class="back-to-top" aria-label="回到顶部">
+	<i class="fa fa-chevron-up" aria-hidden="true"></i>
+</button>
+
+<script src="js/jquery-3.7.1.min.js"></script>
 <script src="js/plugins.js"></script>
-<!-- super slider -->
-<script type="text/javascript" src="js/jquery.superslides.min.js"></script>
-<!-- contact js -->
-<script src="js/jquery-contact.js"></script>
-<!-- retina js -->
-<script src="js/retina.min.js"></script>
-<!-- mailchimp -->
-<script src="js/jquery.ajaxchimp.min.js"></script>
-<!-- scroll animatin JS -->
-<script src="js/scrollreveal.min.js"></script>
 <script src="js/main.js"></script>
-<!---<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB963i1T-nnKpiJjHmBfZq1zX9nEsgklhQ&callback=initMap" async defer></script>--->
-<!-- color js -->
-<script src="switcher/switcher.js"></script>
 
 </body>
 </html>
