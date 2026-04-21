@@ -334,10 +334,63 @@
 
 
 	   /* ==============================================
+	     Back-to-top button
+	     =============================================== */
+	    var $btt = $('#backToTop');
+	    if ($btt.length) {
+	        $(window).on('scroll', function () {
+	            if ($(this).scrollTop() > 400) {
+	                $btt.addClass('is-visible');
+	            } else {
+	                $btt.removeClass('is-visible');
+	            }
+	        });
+	        $btt.on('click', function () {
+	            $('html, body').animate({ scrollTop: 0 }, 700);
+	        });
+	    }
+	    /* End of Back-to-top */
+
+
+	   /* ==============================================
+	     Scroll-reveal via IntersectionObserver
+	     -- Any element with class .reveal fades + rises into view
+	        when it scrolls into the viewport. Animation runs once.
+	     =============================================== */
+	    (function initScrollReveal() {
+	        var els = document.querySelectorAll('.reveal');
+	        if (!els.length) return;
+
+	        // Prefers-reduced-motion: show immediately, skip observer
+	        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+	            els.forEach(function (el) { el.classList.add('reveal-in'); });
+	            return;
+	        }
+	        // No observer support: show immediately
+	        if (!('IntersectionObserver' in window)) {
+	            els.forEach(function (el) { el.classList.add('reveal-in'); });
+	            return;
+	        }
+
+	        var io = new IntersectionObserver(function (entries, obs) {
+	            entries.forEach(function (entry) {
+	                if (entry.isIntersecting) {
+	                    entry.target.classList.add('reveal-in');
+	                    obs.unobserve(entry.target);
+	                }
+	            });
+	        }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+	        els.forEach(function (el) { io.observe(el); });
+	    })();
+	    /* End of Scroll-reveal */
+
+
+	   /* ==============================================
 	     Target menu section  -->
 	     =============================================== */
 
-	  $('.navbar, .home-btn, .holder ').find('a[href*="#"]:not([href="#"])').on('click', function () {
+	  $('.navbar, .home-btn, .holder, .hero-cta-group').find('a[href*="#"]:not([href="#"])').on('click', function () {
 	        if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
 	            var target = $(this.hash);
 	            target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
