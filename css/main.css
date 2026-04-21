@@ -213,7 +213,7 @@ section {
         padding-bottom: 45px;
     }
     #contact-us .bottom {
-        padding: 60px 40px 20px;
+        padding: 20px 40px 12px;
     }
     #contact-us .subscribe-form {
         margin-bottom: 25px;
@@ -257,7 +257,7 @@ nav {
 }
 
 .nav-background {
-    background: rgba(32, 152, 245, 1);
+    background: rgba(26, 42, 102, 0.95);
     -webkit-transition: all 0.3s linear;
     transition: all 0.3s linear;
     box-shadow: 0 8px 6px -6px rgba(0, 0, 0, 0.5);
@@ -1648,7 +1648,7 @@ input[type="submit"] {
     float: left;
     width: 50%;
     text-align: center;
-    padding: 30px 10px;
+    padding: 15px 10px;
     color: #e8e8ec;
     border-left: 1px solid rgba(255, 255, 255, 0.12);
     background-color: rgba(255, 255, 255, 0.06);
@@ -1795,7 +1795,7 @@ input[type="submit"] {
 
 .bottom {
     background: transparent;
-    padding: 80px 40px 20px;
+    padding: 25px 40px 12px;
     text-align: center;
 }
 

@@ -1,62 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none">
   <defs>
-    <linearGradient id="bgCL" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0"    stop-color="#eef2fb"/>
-      <stop offset="0.55" stop-color="#e2e8f7"/>
-      <stop offset="1"    stop-color="#ecd9f4"/>
+    <linearGradient id="bgL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"    stop-color="#ffffff"/>
+      <stop offset="0.5"  stop-color="#f4f6fd"/>
+      <stop offset="1"    stop-color="#ecdff5"/>
     </linearGradient>
-    <linearGradient id="crestAL" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0"    stop-color="#1e3a8a" stop-opacity="0"/>
-      <stop offset="0.45" stop-color="#1e3a8a" stop-opacity="0.95"/>
-      <stop offset="0.55" stop-color="#1e3a8a" stop-opacity="0.95"/>
-      <stop offset="1"    stop-color="#1e3a8a" stop-opacity="0"/>
+
+    <!-- Multi-color gradient: navy → indigo → violet → purple, peak brightness in middle -->
+    <linearGradient id="ribbonTopL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#0a1346" stop-opacity="0"/>
+      <stop offset="0.12" stop-color="#1e3a8a" stop-opacity="0.85"/>
+      <stop offset="0.4"  stop-color="#4338ca" stop-opacity="1"/>
+      <stop offset="0.6"  stop-color="#7c3aed" stop-opacity="1"/>
+      <stop offset="0.88" stop-color="#5b21b6" stop-opacity="0.55"/>
+      <stop offset="1"    stop-color="#3d0f7a" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="crestBL" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0"   stop-color="#5b21b6" stop-opacity="0"/>
-      <stop offset="0.5" stop-color="#5b21b6" stop-opacity="0.9"/>
-      <stop offset="1"   stop-color="#5b21b6" stop-opacity="0"/>
+    <linearGradient id="ribbonBotL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#3d0f7a" stop-opacity="0"/>
+      <stop offset="0.1"  stop-color="#6d28d9" stop-opacity="0.85"/>
+      <stop offset="0.4"  stop-color="#a21caf" stop-opacity="1"/>
+      <stop offset="0.62" stop-color="#c026d3" stop-opacity="1"/>
+      <stop offset="0.9"  stop-color="#7e22ce" stop-opacity="0.45"/>
+      <stop offset="1"    stop-color="#3d0f7a" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="crestCL" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0"   stop-color="#9d174d" stop-opacity="0"/>
-      <stop offset="0.5" stop-color="#9d174d" stop-opacity="0.85"/>
-      <stop offset="1"   stop-color="#9d174d" stop-opacity="0"/>
-    </linearGradient>
-    <filter id="glowCL" x="-10%" y="-50%" width="120%" height="200%">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
-  <rect width="1920" height="1080" fill="url(#bgCL)"/>
+  <rect width="1920" height="1080" fill="url(#bgL)"/>
 
-  <!-- background soft crests (no glow, deeper for visibility) -->
-  <g fill="none" opacity="0.55">
-    <path d="M-100,300 C300,200 700,420 1000,300 S1620,200 2020,320" stroke="#3b5da3" stroke-width="1.2"/>
-    <path d="M-100,380 C300,280 700,500 1000,380 S1620,280 2020,400" stroke="#3b5da3" stroke-width="1.2"/>
-    <path d="M-100,820 C300,720 700,940 1000,820 S1620,720 2020,840" stroke="#7e57c2" stroke-width="1.2"/>
-    <path d="M-100,900 C300,800 700,1020 1000,900 S1620,800 2020,920" stroke="#7e57c2" stroke-width="1.2"/>
+  <!-- ================ TOP RIBBON ================
+       18 thin lines, y baselines 180..265 (step 5)
+       Shape: 1C + 2S chain → 3 full waves, amplitude ±180, ~740px per wave -->
+  <g fill="none" stroke="url(#ribbonTopL)" stroke-width="1">
+    <path d="M-100,180 C150,0   450,360 600,180 S1200,360 1350,180 S1950,360 2120,130"/>
+    <path d="M-100,185 C150,5   450,365 600,185 S1200,365 1350,185 S1950,365 2120,135"/>
+    <path d="M-100,190 C150,10  450,370 600,190 S1200,370 1350,190 S1950,370 2120,140"/>
+    <path d="M-100,195 C150,15  450,375 600,195 S1200,375 1350,195 S1950,375 2120,145"/>
+    <path d="M-100,200 C150,20  450,380 600,200 S1200,380 1350,200 S1950,380 2120,150"/>
+    <path d="M-100,205 C150,25  450,385 600,205 S1200,385 1350,205 S1950,385 2120,155"/>
+    <path d="M-100,210 C150,30  450,390 600,210 S1200,390 1350,210 S1950,390 2120,160"/>
+    <path d="M-100,215 C150,35  450,395 600,215 S1200,395 1350,215 S1950,395 2120,165"/>
+    <path d="M-100,220 C150,40  450,400 600,220 S1200,400 1350,220 S1950,400 2120,170"/>
+    <path d="M-100,225 C150,45  450,405 600,225 S1200,405 1350,225 S1950,405 2120,175"/>
+    <path d="M-100,230 C150,50  450,410 600,230 S1200,410 1350,230 S1950,410 2120,180"/>
+    <path d="M-100,235 C150,55  450,415 600,235 S1200,415 1350,235 S1950,415 2120,185"/>
+    <path d="M-100,240 C150,60  450,420 600,240 S1200,420 1350,240 S1950,420 2120,190"/>
+    <path d="M-100,245 C150,65  450,425 600,245 S1200,425 1350,245 S1950,425 2120,195"/>
+    <path d="M-100,250 C150,70  450,430 600,250 S1200,430 1350,250 S1950,430 2120,200"/>
+    <path d="M-100,255 C150,75  450,435 600,255 S1200,435 1350,255 S1950,435 2120,205"/>
+    <path d="M-100,260 C150,80  450,440 600,260 S1200,440 1350,260 S1950,440 2120,210"/>
+    <path d="M-100,265 C150,85  450,445 600,265 S1200,445 1350,265 S1950,445 2120,215"/>
   </g>
 
-  <!-- main crests (deep starry blue/purple, with subtle glow) -->
-  <g fill="none" filter="url(#glowCL)">
-    <path d="M-100,520 C260,400 640,640 1000,520 S1660,400 2020,540" stroke="url(#crestAL)" stroke-width="2.6"/>
-    <path d="M-100,600 C260,480 640,720 1000,600 S1660,480 2020,620" stroke="url(#crestBL)" stroke-width="2.2"/>
-    <path d="M-100,680 C260,560 640,800 1000,680 S1660,560 2020,700" stroke="url(#crestCL)" stroke-width="2"/>
-    <path d="M-100,440 C260,320 640,560 1000,440 S1660,320 2020,460" stroke="url(#crestAL)" stroke-width="1.6"/>
-  </g>
-
-  <!-- highlight points (deep dots like distant stars) -->
-  <g>
-    <circle cx="320"  cy="500" r="2.4" fill="#1e3a8a" opacity="0.85"/>
-    <circle cx="780"  cy="600" r="2"   fill="#5b21b6" opacity="0.75"/>
-    <circle cx="1240" cy="540" r="2.6" fill="#1e3a8a" opacity="0.85"/>
-    <circle cx="1620" cy="640" r="2"   fill="#5b21b6" opacity="0.75"/>
-    <circle cx="540"  cy="700" r="1.8" fill="#9d174d" opacity="0.7"/>
-    <circle cx="1080" cy="460" r="1.6" fill="#1e3a8a" opacity="0.7"/>
-    <circle cx="1480" cy="720" r="1.8" fill="#5b21b6" opacity="0.7"/>
+  <!-- ================ BOTTOM RIBBON ================
+       11 thin lines, y baselines 620..1420 (step 80) — halved from 22 lines
+       Shape: 1C + 3S chain, amplitude reduced to 60% (max crest ≈ Y-180)
+       Note: lines beyond y≈1080 fade off canvas bottom -->
+  <g fill="none" stroke="url(#ribbonBotL)" stroke-width="1">
+    <path d="M-100,620  C100,560  300,450  500,500  S850,440  1100,500  S1500,590  1700,530  S2050,650  2120,630"/>
+    <path d="M-100,700  C100,640  300,530  500,580  S850,520  1100,580  S1500,670  1700,610  S2050,730  2120,710"/>
+    <path d="M-100,780  C100,720  300,610  500,660  S850,600  1100,660  S1500,750  1700,690  S2050,810  2120,790"/>
+    <path d="M-100,860  C100,800  300,690  500,740  S850,680  1100,740  S1500,830  1700,770  S2050,890  2120,870"/>
+    <path d="M-100,940  C100,880  300,770  500,820  S850,760  1100,820  S1500,910  1700,850  S2050,970  2120,950"/>
+    <path d="M-100,1020 C100,960  300,850  500,900  S850,840  1100,900  S1500,990  1700,930  S2050,1050 2120,1030"/>
+    <path d="M-100,1100 C100,1040 300,930  500,980  S850,920  1100,980  S1500,1070 1700,1010 S2050,1130 2120,1110"/>
+    <path d="M-100,1180 C100,1120 300,1010 500,1060 S850,1000 1100,1060 S1500,1150 1700,1090 S2050,1210 2120,1190"/>
+    <path d="M-100,1260 C100,1200 300,1090 500,1140 S850,1080 1100,1140 S1500,1230 1700,1170 S2050,1290 2120,1270"/>
+    <path d="M-100,1340 C100,1280 300,1170 500,1220 S850,1160 1100,1220 S1500,1310 1700,1250 S2050,1370 2120,1350"/>
+    <path d="M-100,1420 C100,1360 300,1250 500,1300 S850,1240 1100,1300 S1500,1390 1700,1330 S2050,1450 2120,1430"/>
   </g>
 </svg>
