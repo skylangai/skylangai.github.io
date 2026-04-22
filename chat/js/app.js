@@ -702,7 +702,7 @@
         '<div class="session-parent">' +
           '<span class="session-icon">A</span>' +
           '<span class="session-title">' + ASSISTANT_NAME + '</span>' +
-          '<span class="unread">1</span>' +
+          '<span class="unread">2</span>' +
         '</div>'
       );
     }

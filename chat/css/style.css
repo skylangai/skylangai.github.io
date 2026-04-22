@@ -233,8 +233,44 @@ a { color: inherit; text-decoration: none; }
   border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
+  position: relative;
 }
 .session-parent:hover { background: var(--hover); }
+.session-parent .session-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 父级未读小红标：圆形、轻微上浮、外侧白圈 + 红色阴影，明显但不打扰 */
+.session-parent .unread {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef7544;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 2px #fff,                    /* 外侧白色描边，让红标"贴"在父项上 */
+    0 2px 6px rgba(239, 68, 68, 0.40); /* 红色柔光，强化"未读"提示 */
+  animation: session-unread-pulse 2.2s ease-out infinite;
+}
+@keyframes session-unread-pulse {
+  0%   { box-shadow: 0 0 0 2px #fff, 0 0 0 0 rgba(239, 68, 68, 0.55); }
+  70%  { box-shadow: 0 0 0 2px #fff, 0 0 0 8px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 2px #fff, 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+/* 数字 ≥ 10 时变胶囊形（自然撑开） */
 
 /* 用户 */
 .user {
