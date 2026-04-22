@@ -327,4 +327,69 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
+
+  /* =====================================================
+   * 「联系我们」弹窗（与主站 ../js/main.js 行为一致）
+   * ===================================================== */
+  var $contactModal = $('#contactModal');
+
+  function openContactModal() {
+    if (!$contactModal.length) return;
+    $contactModal.addClass('is-open').attr('aria-hidden', 'false');
+    $('body').addClass('contact-modal-open');
+    setTimeout(function () {
+      $contactModal.find('.contact-modal-close').trigger('focus');
+    }, 50);
+  }
+  function closeContactModal() {
+    if (!$contactModal.length) return;
+    $contactModal.removeClass('is-open').attr('aria-hidden', 'true');
+    $('body').removeClass('contact-modal-open');
+  }
+
+  $(document).on('click', '[data-open-contact-modal]', function (e) {
+    e.preventDefault();
+    openContactModal();
+  });
+  $(document).on('click', '[data-close-contact-modal]', function (e) {
+    e.preventDefault();
+    closeContactModal();
+  });
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape' && $contactModal.hasClass('is-open')) {
+      closeContactModal();
+    }
+  });
+
+  function showCopyToast() {
+    var $toast = $('#cmToast');
+    $toast.addClass('is-show');
+    clearTimeout(showCopyToast._t);
+    showCopyToast._t = setTimeout(function () {
+      $toast.removeClass('is-show');
+    }, 1600);
+  }
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(showCopyToast).catch(legacyCopy);
+    } else {
+      legacyCopy();
+    }
+    function legacyCopy() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showCopyToast(); } catch (err) {}
+      document.body.removeChild(ta);
+    }
+  }
+  $(document).on('click', '.cm-copy', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var text = $(this).data('copy');
+    if (text) copyText(String(text));
+  });
 })(jQuery);

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title> 凌云智能 - 生意助手 </title>
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="../css/font-awesome.min.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -56,6 +57,28 @@
 
     <!-- ============ 主区域 ============ -->
     <main class="main">
+      <!-- 右上角浮动按钮组 -->
+      <div class="float-actions">
+        <a class="float-btn" href="../index.html" aria-label="返回官网">
+          <svg class="float-btn-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M3.6 11.3 12 4l8.4 7.3" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.5 10.5V19a1 1 0 0 0 1 1h3.2v-4.8a1 1 0 0 1 1-1h2.6a1 1 0 0 1 1 1V20h3.2a1 1 0 0 0 1-1v-8.5"
+                  fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="float-btn-tip">返回官网</span>
+        </a>
+        <button type="button" class="float-btn" data-open-contact-modal aria-label="联系我们">
+          <svg class="float-btn-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5.5 4.5h3.2l1.6 4-2 1.3a12 12 0 0 0 5.9 5.9l1.3-2 4 1.6v3.2a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 4 6.1 1.5 1.5 0 0 1 5.5 4.5z"
+                  fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="float-btn-tip">联系我们</span>
+        </button>
+      </div>
+
       <!-- 欢迎页 -->
       <section class="welcome" id="welcomeView">
         <div class="welcome-inner">
@@ -162,6 +185,48 @@
         <div class="chat-footer">助手内容可能会出错，请仔细核对回复内容。</div>
       </section>
     </main>
+  </div>
+
+  <!-- ============== Contact Us modal ============== -->
+  <div class="contact-modal" id="contactModal" aria-hidden="true" role="dialog" aria-labelledby="contactModalTitle" aria-modal="true">
+    <div class="contact-modal-backdrop" data-close-contact-modal></div>
+    <div class="contact-modal-dialog" role="document">
+      <button type="button" class="contact-modal-close" aria-label="关闭" data-close-contact-modal>
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+      <div class="contact-modal-head">
+        <div class="contact-modal-icon">
+          <i class="fa fa-rocket" aria-hidden="true"></i>
+        </div>
+        <h3 id="contactModalTitle" class="contact-modal-title">联系我们</h3>
+        <p class="contact-modal-sub">欢迎随时联系，我们将为您安排 Demo 体验与方案咨询</p>
+      </div>
+      <ul class="contact-modal-list">
+        <li>
+          <span class="cm-icon"><i class="fa fa-phone" aria-hidden="true"></i></span>
+          <div class="cm-meta">
+            <span class="cm-label">联系电话</span>
+            <a class="cm-value" href="tel:13609756994">刘生 · 13609756994</a>
+          </div>
+          <button type="button" class="cm-copy" data-copy="13609756994" aria-label="复制电话">
+            <i class="fa fa-clone" aria-hidden="true"></i>
+          </button>
+        </li>
+        <li>
+          <span class="cm-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span>
+          <div class="cm-meta">
+            <span class="cm-label">邮箱</span>
+            <a class="cm-value" href="mailto:liujc19@tsinghua.org.cn">liujc19@tsinghua.org.cn</a>
+          </div>
+          <button type="button" class="cm-copy" data-copy="liujc19@tsinghua.org.cn" aria-label="复制邮箱">
+            <i class="fa fa-clone" aria-hidden="true"></i>
+          </button>
+        </li>
+      </ul>
+      <div class="contact-modal-foot">
+        <span class="cm-toast" id="cmToast">已复制到剪贴板</span>
+      </div>
+    </div>
   </div>
 
   <script src="../js/jquery-3.7.1.min.js"></script>
