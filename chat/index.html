@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> 凌云智能 - 生意助手 </title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="../css/font-awesome.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ============ 左侧侧边栏 ============ -->
+    <aside class="sidebar">
+      <div class="brand"> 凌云AI </div>
+
+      <nav class="nav">
+        <a class="nav-item nav-new" href="#" id="newChatBtn">
+          <span class="ic">＋</span>新消息
+        </a>
+        <div class="nav-group">
+          <a class="nav-item" href="#"><span class="ic">⚡</span>能力</a>
+          <div class="nav-sub">
+            <a href="#" data-open-skills><span class="ic">✦</span>技能</a>
+            <a href="#" data-demo-notice="定时任务"><span class="ic">⏱</span>定时任务</a>
+            <a href="#" data-demo-notice="应用授权"><span class="ic">🔗</span>应用授权</a>            
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title" id="msgSectionToggle">
+            <span class="caret" aria-hidden="true">
+              <svg class="caret-ic" viewBox="0 0 12 12" focusable="false">
+                <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor"
+                      stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span> 对话历史
+          </div>
+          <div class="nav-section-body" id="msgList">
+            <!-- 动态消息会话列表 -->
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title is-clickable" id="statsSectionToggle">
+            <span class="section-ic" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <rect x="4"  y="13" width="3.2" height="7" rx="1" fill="currentColor"/>
+                <rect x="10.4" y="9"  width="3.2" height="11" rx="1" fill="currentColor"/>
+                <rect x="16.8" y="5"  width="3.2" height="15" rx="1" fill="currentColor"/>
+              </svg>
+            </span> 使用统计
+          </div>
+        </div>
+      </nav>
+
+      <div class="user">
+        <div class="avatar avatar-user">L</div>
+        <div class="user-name">Lin Yun</div>
+      </div>
+    </aside>
+
+    <!-- ============ 主区域 ============ -->
+    <main class="main">
+      <!-- 右上角浮动按钮组 -->
+      <div class="float-actions">
+        <a class="float-btn" href="../index.html" aria-label="返回官网">
+          <svg class="float-btn-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M3.6 11.3 12 4l8.4 7.3" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.5 10.5V19a1 1 0 0 0 1 1h3.2v-4.8a1 1 0 0 1 1-1h2.6a1 1 0 0 1 1 1V20h3.2a1 1 0 0 0 1-1v-8.5"
+                  fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="float-btn-tip">返回官网</span>
+        </a>
+        <button type="button" class="float-btn" data-open-contact-modal aria-label="联系我们">
+          <svg class="float-btn-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5.5 4.5h3.2l1.6 4-2 1.3a12 12 0 0 0 5.9 5.9l1.3-2 4 1.6v3.2a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 4 6.1 1.5 1.5 0 0 1 5.5 4.5z"
+                  fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="float-btn-tip">联系我们</span>
+        </button>
+      </div>
+
+      <!-- 欢迎页 -->
+      <section class="welcome" id="welcomeView">
+        <div class="welcome-inner">
+          <div class="welcome-logo">
+            <img src="assets/logo.svg" alt="logo" />
+          </div>
+          <h1 class="welcome-title">
+            电商智能生意助手
+          </h1>
+
+          <!-- 输入框（欢迎页） -->
+          <div class="composer">
+            <textarea
+              class="composer-input"
+              id="welcomeInput"
+              rows="1"
+              placeholder="输入问题... "></textarea>
+
+            <!-- 待发送附件预览区（输入框下、工具栏上） -->
+            <div class="composer-attachments" id="welcomeAttachments" hidden></div>
+
+            <div class="composer-bottom">
+              <div class="composer-left">
+                <button type="button" class="chip chip-icon chip-upload" id="welcomeUploadBtn" title="上传文件" aria-label="上传文件">＋</button>
+              </div>
+              <div class="composer-right">
+                <!-- <button class="chip chip-perm">
+                  <span class="dot dot-green"></span>
+                  <span>完全访问权限</span>
+                  <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button> -->
+                <div class="chip-model-wrap">
+                  <button type="button" class="chip chip-model" data-model-trigger aria-haspopup="listbox" aria-expanded="false">
+                    <span class="model-ic">✧</span>
+                    <span class="chip-model-label" data-model-label>Auto</span>
+                    <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <div class="model-menu" role="listbox" aria-label="选择模型" hidden></div>
+                </div>
+                <button class="send-btn" id="welcomeSendBtn" title="发送">↑</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 分类 -->
+          <div class="tabs">
+            <button class="tab active" data-tab="market">
+              <span class="tab-ic">📊</span> 市场洞察
+            </button>
+            <button class="tab" data-tab="shop">
+              <span class="tab-ic">🏬</span> 店铺分析
+            </button>
+            <button class="tab" data-tab="publish">
+              <span class="tab-ic">📦</span> 智能发品
+            </button>
+            <button class="tab" data-tab="image">
+              <span class="tab-ic">🖼</span> 创意图片
+            </button>
+            <button class="tab" data-tab="video">
+              <span class="tab-ic">🎬</span> 创意视频
+            </button>
+            <button class="tab" data-tab="decor">
+              <span class="tab-ic">🎨</span> 店铺装修
+            </button>
+          </div>
+
+          <!-- 提示词列表 -->
+          <div class="prompts">
+            <div class="prompts-title">尝试以下提示词</div>
+            <ul class="prompts-list" id="promptsList">
+              <!-- 由 JS 渲染 -->
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 对话页 -->
+      <section class="chat hidden" id="chatView">
+        <div class="chat-scroll" id="chatScroll">
+          <div class="chat-day">今天</div>
+          <div class="chat-list" id="chatList">
+            <!-- 由 JS 渲染消息 -->
+          </div>
+        </div>
+
+        <!-- 输入框（对话页） -->
+        <div class="composer composer-bottom-fixed">
+          <textarea
+            class="composer-input"
+            id="chatInput"
+            rows="1"
+            placeholder="输入问题... "></textarea>
+
+          <!-- 待发送附件预览区（输入框下、工具栏上） -->
+          <div class="composer-attachments" id="chatAttachments" hidden></div>
+
+          <div class="composer-bottom">
+            <div class="composer-left">
+              <button type="button" class="chip chip-icon chip-upload" id="chatUploadBtn" title="上传文件" aria-label="上传文件">＋</button>
+            </div>
+            <div class="composer-right">
+              <!-- <button class="chip chip-perm">
+                <span class="dot dot-grey"></span>
+                <span>默认权限</span>
+                <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button> -->
+              <div class="chip-model-wrap">
+                <button type="button" class="chip chip-model" data-model-trigger aria-haspopup="listbox" aria-expanded="false">
+                  <span class="model-ic">✧</span>
+                  <span class="chip-model-label" data-model-label>Auto</span>
+                  <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="model-menu" role="listbox" aria-label="选择模型" hidden></div>
+              </div>
+              <button class="send-btn" id="chatSendBtn" title="发送">●</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-footer">助手内容可能会出错，请仔细核对回复内容。</div>
+      </section>
+
+      <!-- 使用统计页 -->
+      <section class="stats hidden" id="statsView">
+        <div class="stats-scroll">
+          <div class="stats-inner">
+            <header class="stats-header">
+              <h2 class="stats-title">使用统计</h2>
+              <span class="stats-period" id="statsPeriod">本月数据</span>
+            </header>
+
+            <!-- 上栏：5 张概览卡 -->
+            <div class="stats-cards" id="statsCards">
+              <!-- 由 JS 渲染 -->
+            </div>
+
+            <!-- 下栏：详细使用记录 -->
+            <section class="usage-section">
+              <div class="usage-section-head">
+                <span class="usage-section-title">
+                  <svg class="usage-section-ic" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor"
+                          stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  详细使用记录
+                </span>
+                <span class="usage-section-meta" id="usageMeta">共 0 条</span>
+              </div>
+
+              <div class="usage-table-wrap">
+                <table class="usage-table">
+                  <thead>
+                    <tr>
+                      <th class="col-time">请求时间</th>
+                      <th class="col-prompt">提问内容</th>
+                      <th class="col-tokens">总 Tokens</th>
+                      <th class="col-cost">费用</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usageTbody">
+                    <!-- 由 JS 渲染 -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 分页：每页 10 条 -->
+              <div class="usage-pager" id="usagePager">
+                <!-- 由 JS 渲染 -->
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============== 技能 (Skills) 管理弹窗 ============== -->
+  <div class="skills-modal" id="skillsModal" aria-hidden="true" role="dialog" aria-labelledby="skillsModalTitle" aria-modal="true">
+    <div class="skills-modal-backdrop" data-close-skills></div>
+    <div class="skills-modal-dialog" role="document">
+      <header class="skills-modal-head">
+        <div class="skills-modal-title" id="skillsModalTitle">
+          <span id="skillsCount">0</span> skills
+        </div>
+        <div class="skills-modal-tools">
+          <button type="button" class="skills-icon-btn" id="skillsRefreshBtn" title="刷新" aria-label="刷新">
+            <i class="fa fa-refresh" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="skills-add-btn" data-demo-notice="上传技能">
+            <i class="fa fa-arrow-up" aria-hidden="true"></i>
+            <span>上传技能</span>
+          </button>
+        </div>
+        <button type="button" class="skills-modal-close" aria-label="关闭" data-close-skills>
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="skills-modal-body" id="skillsList">
+        <!-- 由 JS 渲染 -->
+      </div>
+
+      <footer class="skills-modal-foot">
+        <button type="button" class="skills-save-btn" data-close-skills>
+          <i class="fa fa-check" aria-hidden="true"></i> 保存
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ============== Demo 功能受限提示 ============== -->
+  <div class="notice-modal" id="demoNoticeModal" aria-hidden="true" role="dialog" aria-labelledby="demoNoticeTitle" aria-modal="true">
+    <div class="notice-modal-backdrop" data-close-notice></div>
+    <div class="notice-modal-dialog" role="document">
+      <button type="button" class="notice-modal-close" aria-label="关闭" data-close-notice>
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+      <div class="notice-modal-icon" aria-hidden="true">
+        <i class="fa fa-info"></i>
+      </div>
+      <h3 id="demoNoticeTitle" class="notice-modal-title">功能暂未开放</h3>
+      <p class="notice-modal-sub">
+        <span id="demoNoticeFeature">该功能</span>
+        在 Demo 状态下暂不支持，欢迎联系我们了解完整版能力。
+      </p>
+      <div class="notice-modal-actions">
+        <button type="button" class="notice-btn notice-btn-ghost" data-close-notice>我知道了</button>
+        <button type="button" class="notice-btn notice-btn-primary" id="demoNoticeContact">联系我们</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== Contact Us modal ============== -->
+  <div class="contact-modal" id="contactModal" aria-hidden="true" role="dialog" aria-labelledby="contactModalTitle" aria-modal="true">
+    <div class="contact-modal-backdrop" data-close-contact-modal></div>
+    <div class="contact-modal-dialog" role="document">
+      <button type="button" class="contact-modal-close" aria-label="关闭" data-close-contact-modal>
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+      <div class="contact-modal-head">
+        <div class="contact-modal-icon">
+          <i class="fa fa-rocket" aria-hidden="true"></i>
+        </div>
+        <h3 id="contactModalTitle" class="contact-modal-title">联系我们</h3>
+        <p class="contact-modal-sub">欢迎随时联系，我们将为您安排 Demo 体验与方案咨询</p>
+      </div>
+      <ul class="contact-modal-list">
+        <li>
+          <span class="cm-icon"><i class="fa fa-phone" aria-hidden="true"></i></span>
+          <div class="cm-meta">
+            <span class="cm-label">联系电话</span>
+            <a class="cm-value" href="tel:13609756994">刘生 · 13609756994</a>
+          </div>
+          <button type="button" class="cm-copy" data-copy="13609756994" aria-label="复制电话">
+            <i class="fa fa-clone" aria-hidden="true"></i>
+          </button>
+        </li>
+        <li>
+          <span class="cm-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span>
+          <div class="cm-meta">
+            <span class="cm-label">邮箱</span>
+            <a class="cm-value" href="mailto:liujc19@tsinghua.org.cn">liujc19@tsinghua.org.cn</a>
+          </div>
+          <button type="button" class="cm-copy" data-copy="liujc19@tsinghua.org.cn" aria-label="复制邮箱">
+            <i class="fa fa-clone" aria-hidden="true"></i>
+          </button>
+        </li>
+      </ul>
+      <div class="contact-modal-foot">
+        <span class="cm-toast" id="cmToast">已复制到剪贴板</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 共用的隐藏文件选择器（点 ＋ 时触发原生选择对话框） -->
+  <input type="file" id="hiddenFileInput" multiple hidden />
+
+  <script src="../js/jquery-3.7.1.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -177,7 +177,7 @@ section {
     padding-bottom: 80px;
 }
 
-#karbar-service-section {
+#service {
     padding-bottom: 50px;
 }
 
@@ -197,28 +197,20 @@ section {
     .section-title-padding {
         padding-top: 60px;
     }
-    #karbar-how-it-works-section {
+    #claw-ai {
         padding-bottom: 50px;
     }
-    #karbar-service-section {
+    #service {
         padding-bottom: 30px;
     }
     .why-choose-us {
         padding-top: 90px;
-    }
-    #karbar-why-choose-section {
-        padding-bottom: 50px;
     }
     #contact-us .bottom {
         padding: 20px 40px 12px;
     }
 }
 
-@media (max-width: 767px) {
-    #karbar-why-choose-section {
-        padding-bottom: 25px;
-    }
-}
 
 .section-bg-gray {
     background: #F7F8FA;
@@ -1685,17 +1677,17 @@ h5.less-mar-1 {
 
 ***/
 
-#testimonial-and-client {}
+
 
 .tc-light-style {
-    background: -webkit-linear-gradient( rgba(245, 245, 250, 0.82), rgba(245, 245, 250, 0.82)), url(../images/slider/bg-wave-light.svg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(245, 245, 250, 0.82), rgba(245, 245, 250, 0.82)), url(../images/slider/bg-wave-light.svg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(245, 245, 250, 0.72), rgba(245, 245, 250, 0.72)), url(../images/slider/bg-wave-light.svg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(245, 245, 250, 0.72), rgba(245, 245, 250, 0.72)), url(../images/slider/bg-wave-light.svg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
 .tc-dark-style {
-    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.55), rgba(20, 20, 20, 0.55)), url(../images/slider/bg-wave.svg) 50% 0 no-repeat fixed;
-    background: linear-gradient( rgba(20, 20, 20, 0.55), rgba(20, 20, 20, 0.55)), url(../images/slider/bg-wave.svg) 50% 0 no-repeat fixed;
+    background: -webkit-linear-gradient( rgba(20, 20, 20, 0.72), rgba(20, 20, 20, 0.72)), url(../images/slider/bg-wave.svg) 50% 0 no-repeat fixed;
+    background: linear-gradient( rgba(20, 20, 20, 0.72), rgba(20, 20, 20, 0.72)), url(../images/slider/bg-wave.svg) 50% 0 no-repeat fixed;
     background-size: cover;
 }
 
