@@ -18,23 +18,18 @@
         <a class="nav-item nav-new" href="#" id="newChatBtn">
           <span class="ic">＋</span>新消息
         </a>
-        <a class="nav-item" href="#"><span class="ic">◈</span>智能体</a>
-
         <div class="nav-group">
           <a class="nav-item" href="#"><span class="ic">⚡</span>能力</a>
           <div class="nav-sub">
-            <a href="#"><span class="ic">⏱</span>定时任务</a>
-            <a href="#"><span class="ic">🔗</span>应用授权</a>
-            <a href="#"><span class="ic">✦</span>技能</a>
-            <a href="#"><span class="ic">⎈</span>插件</a>
-            <a href="#"><span class="ic">◎</span>消息渠道</a>
-            <a href="#"><span class="ic">👥</span>配对授权</a>
+            <a href="#" data-open-skills><span class="ic">✦</span>技能</a>
+            <a href="#" data-demo-notice="定时任务"><span class="ic">⏱</span>定时任务</a>
+            <a href="#" data-demo-notice="应用授权"><span class="ic">🔗</span>应用授权</a>            
           </div>
         </div>
 
         <div class="nav-section">
           <div class="nav-section-title" id="msgSectionToggle">
-            <span class="caret">▾</span> Messages
+            <span class="caret">▾</span> 对话历史
           </div>
           <div class="nav-section-body" id="msgList">
             <!-- 动态消息会话列表 -->
@@ -42,8 +37,14 @@
         </div>
 
         <div class="nav-section">
-          <div class="nav-section-title">
-            <span class="caret">▸</span> 团队 <span class="badge">Beta</span>
+          <div class="nav-section-title is-clickable" id="statsSectionToggle">
+            <span class="section-ic" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <rect x="4"  y="13" width="3.2" height="7" rx="1" fill="currentColor"/>
+                <rect x="10.4" y="9"  width="3.2" height="11" rx="1" fill="currentColor"/>
+                <rect x="16.8" y="5"  width="3.2" height="15" rx="1" fill="currentColor"/>
+              </svg>
+            </span> 使用统计
           </div>
         </div>
       </nav>
@@ -184,7 +185,115 @@
 
         <div class="chat-footer">助手内容可能会出错，请仔细核对回复内容。</div>
       </section>
+
+      <!-- 使用统计页 -->
+      <section class="stats hidden" id="statsView">
+        <div class="stats-scroll">
+          <div class="stats-inner">
+            <header class="stats-header">
+              <h2 class="stats-title">使用统计</h2>
+              <span class="stats-period" id="statsPeriod">本月数据</span>
+            </header>
+
+            <!-- 上栏：5 张概览卡 -->
+            <div class="stats-cards" id="statsCards">
+              <!-- 由 JS 渲染 -->
+            </div>
+
+            <!-- 下栏：详细使用记录 -->
+            <section class="usage-section">
+              <div class="usage-section-head">
+                <span class="usage-section-title">
+                  <svg class="usage-section-ic" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor"
+                          stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  详细使用记录
+                </span>
+                <span class="usage-section-meta" id="usageMeta">共 0 条</span>
+              </div>
+
+              <div class="usage-table-wrap">
+                <table class="usage-table">
+                  <thead>
+                    <tr>
+                      <th class="col-time">请求时间</th>
+                      <th class="col-prompt">提问内容</th>
+                      <th class="col-tokens">总 Tokens</th>
+                      <th class="col-cost">费用</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usageTbody">
+                    <!-- 由 JS 渲染 -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 分页：每页 10 条 -->
+              <div class="usage-pager" id="usagePager">
+                <!-- 由 JS 渲染 -->
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
     </main>
+  </div>
+
+  <!-- ============== 技能 (Skills) 管理弹窗 ============== -->
+  <div class="skills-modal" id="skillsModal" aria-hidden="true" role="dialog" aria-labelledby="skillsModalTitle" aria-modal="true">
+    <div class="skills-modal-backdrop" data-close-skills></div>
+    <div class="skills-modal-dialog" role="document">
+      <header class="skills-modal-head">
+        <div class="skills-modal-title" id="skillsModalTitle">
+          <span id="skillsCount">0</span> skills
+        </div>
+        <div class="skills-modal-tools">
+          <button type="button" class="skills-icon-btn" id="skillsRefreshBtn" title="刷新" aria-label="刷新">
+            <i class="fa fa-refresh" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="skills-add-btn" data-demo-notice="上传技能">
+            <i class="fa fa-arrow-up" aria-hidden="true"></i>
+            <span>上传技能</span>
+          </button>
+        </div>
+        <button type="button" class="skills-modal-close" aria-label="关闭" data-close-skills>
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="skills-modal-body" id="skillsList">
+        <!-- 由 JS 渲染 -->
+      </div>
+
+      <footer class="skills-modal-foot">
+        <button type="button" class="skills-save-btn" data-close-skills>
+          <i class="fa fa-check" aria-hidden="true"></i> 保存
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ============== Demo 功能受限提示 ============== -->
+  <div class="notice-modal" id="demoNoticeModal" aria-hidden="true" role="dialog" aria-labelledby="demoNoticeTitle" aria-modal="true">
+    <div class="notice-modal-backdrop" data-close-notice></div>
+    <div class="notice-modal-dialog" role="document">
+      <button type="button" class="notice-modal-close" aria-label="关闭" data-close-notice>
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+      <div class="notice-modal-icon" aria-hidden="true">
+        <i class="fa fa-info"></i>
+      </div>
+      <h3 id="demoNoticeTitle" class="notice-modal-title">功能暂未开放</h3>
+      <p class="notice-modal-sub">
+        <span id="demoNoticeFeature">该功能</span>
+        在 Demo 状态下暂不支持，欢迎联系我们了解完整版能力。
+      </p>
+      <div class="notice-modal-actions">
+        <button type="button" class="notice-btn notice-btn-ghost" data-close-notice>我知道了</button>
+        <button type="button" class="notice-btn notice-btn-primary" id="demoNoticeContact">联系我们</button>
+      </div>
+    </div>
   </div>
 
   <!-- ============== Contact Us modal ============== -->

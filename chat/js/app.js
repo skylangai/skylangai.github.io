@@ -29,7 +29,41 @@
     '建议优先布局 SKU、配套发布短视频素材，并结合店铺装修做主题专区，以承接增量流量。';
 
   // 助手元信息
-  var ASSISTANT_NAME = '国际站生意助手';
+  var ASSISTANT_NAME = '电商智能生意助手';
+
+  // 会话标题相关
+  var DEFAULT_SESSION_TITLE = '新对话';
+  var TITLE_MAX_LEN = 8;
+
+  // 使用统计：mock 概览数据（接真实接口时直接替换 USAGE_STATS / USAGE_RECORDS）
+  var USAGE_STATS = {
+    quotaTotal:   1000,        // 本月总额度（USD）
+    quotaUsed:    22.39,       // 本月已使用（USD）
+    requestCount: 581,
+    inputTokens:  27881065,
+    outputTokens: 342057
+  };
+
+  // 使用统计：mock 明细记录（生成后按请求时间倒序，最新在前）
+  var USAGE_RECORDS = generateMockUsageRecords(15);
+  var USAGE_PAGE_SIZE = 10;
+  var usagePage = 1;
+
+  // 技能列表 mock 数据（接真实接口时替换为 ajax 拉取结果）
+  var SKILLS = [
+    { id: 1,  title: '国际站广告分析',     desc: '管理国际站广告产品能力（数据报告 / 智能诊断等）。当用户需要进行数据查询、账户诊断、计划诊断。', enabled: true },
+    { id: 2,  title: '亚马逊数据查询',     version: 'v1.0.0', desc: '基于 Jungle Scout 工具的亚马逊市场数据分析工具集，支持关键词搜索量、ASIN 反查词、竞品销量估算。', enabled: true },
+    { id: 3,  title: '国际站店铺经营分析', desc: '集成国际站店铺数据，支持店铺经营分析建议，支持查询商品、转化、沟通询盘、交易订单、物流、广告等。', enabled: true },
+    { id: 4,  title: '蓝海机会发掘',       desc: '分析供需错配、发现高潜力低竞争品类，给出差异化路径和国际站发品策略，供给侧始终用阿里国际站 MC。', enabled: true },
+    { id: 5,  title: '品牌广告智能推词',   desc: '阿里巴巴国际站品牌广告关键词推荐助手。基于客户画像和营销意图，智能筛选推荐最符合业务目标的品牌词。', enabled: true },
+    { id: 6,  title: '国际站知识查询',     version: 'v1.0.0', desc: '阿里巴巴国际站知识库查询助手。根据用户查询 query，自动调用 mcp 工具检索知识库相关知识。', enabled: true },
+    { id: 7,  title: '国际站订单拒付申诉', desc: '根据电商平台拒付申诉 AI 助手。当用户询问拒付相关问题、咨询特定订单的拒付状态，或者输入「订单 ID」。', enabled: true },
+    { id: 8,  title: 'Listing 优化助手',  desc: '基于平台收录、转化数据自动给出标题 / 五点描述 / A+ 内容优化建议。', enabled: false },
+    { id: 9,  title: '广告投放诊断',       desc: '诊断 Sponsored Products 投放表现，给出预算分配与关键词调整建议。', enabled: true },
+    { id: 10, title: '关键词蓝海挖掘',     desc: '在亚马逊 / 国际站找出搜索量上升但竞争度仍低的长尾关键词。', enabled: false },
+    { id: 11, title: '退款风控分析',       desc: '识别异常退款集中行为与高风险账户，自动汇总周报。', enabled: true },
+    { id: 12, title: '竞品价格监控',       desc: '每日抓取指定竞品价格变化，超过阈值自动推送提醒。', enabled: true }
+  ];
 
   // 推荐提示词
   var PROMPTS = [
@@ -44,6 +78,7 @@
   /* ----------- DOM 缓存 ----------- */
   var $welcomeView   = $('#welcomeView');
   var $chatView      = $('#chatView');
+  var $statsView     = $('#statsView');
   var $welcomeInput  = $('#welcomeInput');
   var $welcomeSend   = $('#welcomeSendBtn');
   var $chatInput     = $('#chatInput');
@@ -54,10 +89,17 @@
   var $msgList       = $('#msgList');
   var $msgToggle     = $('#msgSectionToggle');
   var $newChatBtn    = $('#newChatBtn');
+  var $statsToggle   = $('#statsSectionToggle');
+  var $statsCards    = $('#statsCards');
+  var $usageTbody    = $('#usageTbody');
+  var $usagePager    = $('#usagePager');
+  var $usageMeta     = $('#usageMeta');
 
   /* ----------- 状态 ----------- */
-  var currentSessionId = null;   // 当前会话 id
-  var sessions = {};             // sessionId -> { title, messages: [] }
+  // 当前激活的会话 id；为 null 表示尚未发起任何会话（停留在欢迎页）
+  var currentSessionId = null;
+  // 全部会话存储：sessionId -> { id, title, messages: [{role, content}], $item }
+  var sessions = {};
 
   /* ===================================================
    * 初始化
@@ -134,15 +176,89 @@
       $caret.text($msgList.is(':visible') ? '▾' : '▸');
     });
 
-    // 新消息：回到欢迎页
+    // 「+ 新消息」：开启新会话槽位，回到欢迎页
+    // 历史会话保留在 sessions 里，侧边栏不变；新 sessionId 会在用户首次发消息时分配
     $newChatBtn.on('click', function (e) {
       e.preventDefault();
-      currentSessionId = null;
-      $('.session-item').removeClass('active');
-      $chatView.addClass('hidden');
-      $welcomeView.removeClass('hidden');
-      $welcomeInput.val('').css('height', 'auto').focus();
+      goToWelcome();
     });
+
+    // 侧边栏会话项点击：切到该会话
+    // 用事件委托，自动覆盖动态新增的 .session-item
+    $msgList.on('click', '.session-item', function () {
+      var id = $(this).data('id');
+      if (id) loadSession(String(id));
+    });
+
+    // 「使用统计」点击：切到统计页
+    $statsToggle.on('click', function (e) {
+      e.preventDefault();
+      goToStats();
+    });
+  }
+
+  /* ===================================================
+   * 视图切换：回到欢迎页（保留所有历史会话）
+   * ================================================= */
+  function goToWelcome() {
+    currentSessionId = null;
+    $msgList.find('.session-item').removeClass('active');
+    $statsToggle.removeClass('is-active');
+    $chatView.addClass('hidden');
+    $statsView.addClass('hidden');
+    $welcomeView.removeClass('hidden');
+    $chatList.empty();              // 清掉对话视图，避免下一次加载时叠加
+    $chatInput.val('').css('height', 'auto');
+    $welcomeInput.val('').css('height', 'auto').focus();
+  }
+
+  /* ===================================================
+   * 视图切换：加载并渲染指定 session 的全部历史
+   * ================================================= */
+  function loadSession(id) {
+    var sess = sessions[id];
+    if (!sess) return;
+
+    currentSessionId = id;
+
+    // 切换到对话视图
+    $welcomeView.addClass('hidden');
+    $statsView.addClass('hidden');
+    $chatView.removeClass('hidden');
+    $statsToggle.removeClass('is-active');
+
+    // 重渲染消息列表
+    $chatList.empty();
+    sess.messages.forEach(function (m) {
+      if (m.role === 'user') {
+        appendUserMessage(m.content);
+      } else if (m.role === 'assistant') {
+        appendFinalAssistantMessage(m.content);
+      }
+    });
+
+    // 侧边栏 active 高亮
+    $msgList.find('.session-item').removeClass('active');
+    if (sess.$item) sess.$item.addClass('active');
+
+    // 输入区清空 + 聚焦，便于继续追问
+    $chatInput.val('').css('height', 'auto').focus();
+    scrollToBottom();
+  }
+
+  /* ===================================================
+   * 视图切换：使用统计页
+   * ================================================= */
+  function goToStats() {
+    currentSessionId = null;
+    $msgList.find('.session-item').removeClass('active');
+    $welcomeView.addClass('hidden');
+    $chatView.addClass('hidden');
+    $statsView.removeClass('hidden');
+    $statsToggle.addClass('is-active');
+
+    renderStatsCards();
+    renderUsageTable();
   }
 
   /* ===================================================
@@ -155,27 +271,46 @@
       $chatView.removeClass('hidden');
     }
 
-    // 2. 创建会话（如不存在）
+    // 2. 准备 session：不存在则创建（默认标题），存在则沿用
+    var isFirstMessage = false;
     if (!currentSessionId) {
       currentSessionId = 's_' + Date.now();
-      var title = text.length > 18 ? text.slice(0, 18) + '…' : text;
-      sessions[currentSessionId] = { title: title, messages: [] };
+      sessions[currentSessionId] = {
+        id: currentSessionId,
+        title: DEFAULT_SESSION_TITLE,
+        messages: [],
+        $item: null
+      };
       ensureSessionsParent();
-      addSessionItem(currentSessionId, title);
+      addSessionItem(currentSessionId, DEFAULT_SESSION_TITLE);
+      isFirstMessage = true;
+    } else if (sessions[currentSessionId].messages.length === 0) {
+      // 同一 sessionId 下首条消息（理论分支，保险）
+      isFirstMessage = true;
     }
 
-    // 3. 渲染用户消息
+    // 3. 首条消息：用前 8 字（或不足直接用）覆盖默认标题
+    if (isFirstMessage) {
+      var newTitle = text.length > TITLE_MAX_LEN
+        ? text.slice(0, TITLE_MAX_LEN) + '…'
+        : text;
+      sessions[currentSessionId].title = newTitle;
+      updateSessionItemTitle(currentSessionId, newTitle);
+    }
+
+    // 4. 渲染 + 持久化用户消息
     appendUserMessage(text);
     sessions[currentSessionId].messages.push({ role: 'user', content: text });
 
-    // 4. 清空输入框
+    // 5. 清空输入框
     $welcomeInput.val('').css('height', 'auto');
     $chatInput.val('').css('height', 'auto');
 
-    // 5. 渲染助手占位（带工具调用 + loading）
+    // 6. 渲染助手占位（带工具调用 + loading）
     var $assistant = appendAssistantPlaceholder();
 
-    // 6. 发起「假 URL」HTTP 请求
+    // 7. 捕获本次发送时的 sessionId，避免回调时用户已切到别的会话
+    var sessionIdAtSend = currentSessionId;
     var startedAt = Date.now();
 
     $.ajax({
@@ -183,27 +318,34 @@
       method: 'POST',
       contentType: 'application/json',
       data: JSON.stringify({
-        sessionId: currentSessionId,
+        sessionId: sessionIdAtSend,
         message: text,
         timestamp: startedAt
       }),
       timeout: 15000
     })
-      .done(function (resp) {
+      .done(function (/* resp */) {
         // 真实场景：使用 resp 渲染。当前演示固定回答。
-        // console.log('[fake-api] response:', resp);
       })
       .fail(function (xhr, status) {
-        // 失败也用固定回答兜底
         console.warn('[fake-api] request failed:', status);
       })
       .always(function () {
         var elapsed = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
-        finalizeAssistantMessage($assistant, FIXED_ANSWER, elapsed);
-        sessions[currentSessionId].messages.push({
-          role: 'assistant',
-          content: FIXED_ANSWER
-        });
+
+        // 永远写入原 session（即使用户已切换走）
+        if (sessions[sessionIdAtSend]) {
+          sessions[sessionIdAtSend].messages.push({
+            role: 'assistant',
+            content: FIXED_ANSWER
+          });
+        }
+
+        // 仅当用户仍停留在该 session 时，才在 DOM 里替换占位
+        if (currentSessionId === sessionIdAtSend) {
+          finalizeAssistantMessage($assistant, FIXED_ANSWER, elapsed);
+        }
+        // 否则占位节点已被切换会话时的 $chatList.empty() 清掉，无需操作
       });
   }
 
@@ -268,13 +410,31 @@
   }
 
   /* ===================================================
-   * 渲染：助手最终答案
+   * 渲染：助手最终答案（更新进行中的占位节点）
    * ================================================= */
   function finalizeAssistantMessage($node, answer, elapsedSec) {
     $node.find('.js-status-text').text('已处理 ' + elapsedSec + '秒');
     $node.find('.js-loading').remove();
     $node.find('.js-text').show().text(answer);
     scrollToBottom();
+  }
+
+  /* ===================================================
+   * 渲染：从历史回放助手最终答案（无工具调用、无 loading）
+   * ================================================= */
+  function appendFinalAssistantMessage(answer) {
+    var html =
+      '<div class="msg msg-assistant">' +
+        '<div class="avatar"><img src="assets/logo.svg" alt="bot"/></div>' +
+        '<div class="msg-body">' +
+          '<div class="msg-header"><span class="name">' + ASSISTANT_NAME + '</span></div>' +
+          '<div class="msg-text"></div>' +
+        '</div>' +
+      '</div>';
+    var $node = $(html);
+    $node.find('.msg-text').text(answer);
+    $chatList.append($node);
+    return $node;
   }
 
   /* ===================================================
@@ -293,7 +453,7 @@
   }
 
   function addSessionItem(id, title) {
-    $('.session-item').removeClass('active');
+    $msgList.find('.session-item').removeClass('active');
     var $item = $(
       '<div class="session-item active" data-id="' + id + '">' +
         '<span class="session-title"></span>' +
@@ -303,11 +463,13 @@
     $item.find('.session-title').text(title);
     $msgList.append($item);
 
-    $item.on('click', function () {
-      // 简化版：仅切换样式，不重新渲染历史
-      $('.session-item').removeClass('active');
-      $(this).addClass('active');
-    });
+    if (sessions[id]) sessions[id].$item = $item;
+    // 点击切换由 bindMisc 里的事件委托统一处理
+  }
+
+  function updateSessionItemTitle(id, title) {
+    var sess = sessions[id];
+    if (sess && sess.$item) sess.$item.find('.session-title').text(title);
   }
 
   /* ===================================================
@@ -326,6 +488,224 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  /* =====================================================
+   * 使用统计：渲染上栏概览卡 + 下栏明细表 + 分页
+   * ===================================================== */
+  function renderStatsCards() {
+    var s = USAGE_STATS;
+    var remaining = Math.max(0, s.quotaTotal - s.quotaUsed);
+    var remainPct = s.quotaTotal > 0 ? (remaining / s.quotaTotal) * 100 : 0;
+
+    var cards = [
+      {
+        tone: 'tone-balance',
+        label: '本月剩余额度',
+        value: '$' + formatMoney(remaining),
+        sub:
+          '<div class="stat-card-bar"><div class="stat-card-bar-fill" style="width:' +
+          remainPct.toFixed(1) + '%"></div></div>' +
+          '<span>' + remainPct.toFixed(1) + '% / $' + formatMoney(s.quotaTotal) + '</span>',
+        icon:
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+            '<rect x="3" y="6" width="14" height="12" rx="2"/>' +
+            '<rect x="17" y="9" width="3" height="6" rx="1"/>' +
+          '</svg>'
+      },
+      {
+        tone: 'tone-cost',
+        label: '总费用',
+        value: '$' + formatMoney(s.quotaUsed),
+        sub: '本月累计消费',
+        icon:
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M12 4v16M16 8c0-2-2-3-4-3s-4 1-4 3 2 3 4 3 4 1 4 3-2 3-4 3-4-1-4-3"/>' +
+          '</svg>'
+      },
+      {
+        tone: 'tone-req',
+        label: '总请求数',
+        value: formatNumber(s.requestCount),
+        sub: '次调用',
+        icon:
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+            '<rect x="4"  y="13" width="3" height="7" rx="1"/>' +
+            '<rect x="10.5" y="9"  width="3" height="11" rx="1"/>' +
+            '<rect x="17" y="5"  width="3" height="15" rx="1"/>' +
+          '</svg>'
+      },
+      {
+        tone: 'tone-in',
+        label: '输入 Tokens',
+        value: formatNumber(s.inputTokens),
+        sub: 'Prompt 总量',
+        icon:
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M12 4v14M6 12l6 6 6-6"/>' +
+          '</svg>'
+      },
+      {
+        tone: 'tone-out',
+        label: '输出 Tokens',
+        value: formatNumber(s.outputTokens),
+        sub: '回复总量',
+        icon:
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M12 20V6M6 12l6-6 6 6"/>' +
+          '</svg>'
+      }
+    ];
+
+    var html = cards.map(function (c) {
+      return (
+        '<div class="stat-card ' + c.tone + '">' +
+          '<div class="stat-card-head">' +
+            '<span class="stat-card-ic">' + c.icon + '</span>' +
+            '<span class="stat-card-label">' + escapeHtml(c.label) + '</span>' +
+          '</div>' +
+          '<div class="stat-card-value">' + c.value + '</div>' +
+          '<div class="stat-card-sub">' + c.sub + '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    $statsCards.html(html);
+  }
+
+  function renderUsageTable() {
+    var total = USAGE_RECORDS.length;
+    var pageSize = USAGE_PAGE_SIZE;
+    var totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (usagePage > totalPages) usagePage = totalPages;
+    if (usagePage < 1) usagePage = 1;
+
+    $usageMeta.text('共 ' + total + ' 条 · 第 ' + usagePage + ' / ' + totalPages + ' 页');
+
+    var start = (usagePage - 1) * pageSize;
+    var slice = USAGE_RECORDS.slice(start, start + pageSize);
+
+    if (slice.length === 0) {
+      $usageTbody.html('<tr><td colspan="4" class="usage-empty">暂无使用记录</td></tr>');
+    } else {
+      var rowsHtml = slice.map(function (r) {
+        return (
+          '<tr>' +
+            '<td class="cell-time">' + escapeHtml(r.time) + '</td>' +
+            '<td class="cell-prompt" title="' + escapeHtml(r.prompt) + '">' + escapeHtml(r.prompt) + '</td>' +
+            '<td class="cell-tokens">' + formatNumber(r.tokens) + '</td>' +
+            '<td class="cell-cost">$' + formatMoney(r.cost) + '</td>' +
+          '</tr>'
+        );
+      }).join('');
+      $usageTbody.html(rowsHtml);
+    }
+
+    renderUsagePager(totalPages);
+  }
+
+  function renderUsagePager(totalPages) {
+    var html = '';
+    html += '<span class="page-info">每页 ' + USAGE_PAGE_SIZE + ' 条</span>';
+    html += '<button type="button" data-page="prev"' + (usagePage <= 1 ? ' disabled' : '') + '>上一页</button>';
+
+    // 紧凑分页：始终显示首末页 + 当前页前后各 1 页，中间用 …
+    var pages = buildPageList(usagePage, totalPages);
+    pages.forEach(function (p) {
+      if (p === '…') {
+        html += '<span class="page-ellipsis">…</span>';
+      } else {
+        html += '<button type="button" data-page="' + p + '"' +
+                (p === usagePage ? ' class="is-active"' : '') + '>' + p + '</button>';
+      }
+    });
+
+    html += '<button type="button" data-page="next"' + (usagePage >= totalPages ? ' disabled' : '') + '>下一页</button>';
+    $usagePager.html(html);
+  }
+
+  // 生成紧凑页码序列：1 ... cur-1 cur cur+1 ... N
+  function buildPageList(cur, total) {
+    if (total <= 7) {
+      var arr = [];
+      for (var i = 1; i <= total; i++) arr.push(i);
+      return arr;
+    }
+    var pages = new Set([1, total, cur, cur - 1, cur + 1]);
+    var sorted = Array.from(pages).filter(function (p) { return p >= 1 && p <= total; }).sort(function (a, b) { return a - b; });
+    var result = [];
+    for (var j = 0; j < sorted.length; j++) {
+      if (j > 0 && sorted[j] - sorted[j - 1] > 1) result.push('…');
+      result.push(sorted[j]);
+    }
+    return result;
+  }
+
+  // 分页按钮事件委托
+  $(document).on('click', '#usagePager button', function () {
+    var raw = $(this).data('page');
+    var totalPages = Math.max(1, Math.ceil(USAGE_RECORDS.length / USAGE_PAGE_SIZE));
+    if (raw === 'prev') usagePage = Math.max(1, usagePage - 1);
+    else if (raw === 'next') usagePage = Math.min(totalPages, usagePage + 1);
+    else usagePage = parseInt(raw, 10) || 1;
+    renderUsageTable();
+    // 滚回表格顶部，避免长页时翻页后视觉迷失
+    var scroll = $('#statsView .stats-scroll')[0];
+    if (scroll) scroll.scrollTo({ top: scroll.scrollTop, behavior: 'auto' });
+  });
+
+  /* —— 数字 / 金额格式化 —— */
+  function formatNumber(n) {
+    return Number(n).toLocaleString('en-US');
+  }
+  function formatMoney(n) {
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  /* —— 生成 mock 使用明细：随机分布在过去 7 天，最后按时间倒序排列 —— */
+  function generateMockUsageRecords(count) {
+    var sample = [
+      '列出近一个月国际站热卖的彩妆类商品，并简要分析其热销原因及当前竞争热度',
+      '请检索在 amazon 上热销，但在国际站供给规模较小的家居清洁类，输出 Top 5 蓝海单品',
+      '帮我分析下日本市场最近 30 天的母婴用品搜索趋势，重点看月销量增速 Top 10',
+      '为我的店铺写一段 LED 灯具的 SEO 标题与描述，关键词包含 dimmable / smart',
+      '请基于上传的图片生成 5 张电商主图候选，要求干净背景、左下角加品牌水印',
+      '总结昨天的店铺运营情况，包括询盘数、转化率、客单价的环比变化',
+      '生成一段 30 秒短视频脚本，用于推广夏季防晒喷雾，目标是北美 Z 世代',
+      '帮我做一个店铺装修建议，主题色用我品牌的薄荷绿，整体风格干净极简',
+      '列出本月 Top 5 询盘客户，按所在国家、产品类目、近 7 天活跃度排序',
+      '把这份英文产品手册翻译成西班牙语和阿拉伯语，并保留原 Markdown 结构',
+      '分析最近 14 天的广告投放 ROAS，按渠道拆分，找出表现最差的 3 个广告组',
+      '给"户外便携咖啡机"写 5 条小红书风格的种草文案，每条 100 字以内',
+      '检测我店铺商品的违禁词风险，重点关注美妆与保健品类目的合规性',
+      '生成一份"竞品价格监控周报"模板，要包含 5 个核心指标的图表占位'
+    ];
+    var now = Date.now();
+    var windowMs = 7 * 24 * 60 * 60 * 1000;   // 过去 7 天
+
+    var arr = [];
+    for (var i = 0; i < count; i++) {
+      var ts = now - Math.floor(Math.random() * windowMs);
+      var tokens = 1500 + Math.round(Math.random() * 6500);
+      var cost = +(tokens / 1000 * 0.003).toFixed(2);   // 单价：每 1k tokens $0.003
+      arr.push({
+        ts: ts,
+        time: formatDateTime(new Date(ts)),
+        prompt: sample[i % sample.length],
+        tokens: tokens,
+        cost: cost
+      });
+    }
+
+    // 按时间戳倒序：最新请求排在最前
+    arr.sort(function (a, b) { return b.ts - a.ts; });
+    return arr;
+  }
+
+  function formatDateTime(d) {
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+           ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
   }
 
   /* =====================================================
@@ -391,5 +771,145 @@
     e.stopPropagation();
     var text = $(this).data('copy');
     if (text) copyText(String(text));
+  });
+
+  /* =====================================================
+   * 「技能」管理弹窗
+   * ===================================================== */
+  var $skillsModal = $('#skillsModal');
+  var $skillsList  = $('#skillsList');
+  var $skillsCount = $('#skillsCount');
+
+  function openSkillsModal() {
+    if (!$skillsModal.length) return;
+    renderSkills();
+    $skillsModal.addClass('is-open').attr('aria-hidden', 'false');
+    $('body').addClass('skills-modal-open');
+  }
+  function closeSkillsModal() {
+    if (!$skillsModal.length) return;
+    $skillsModal.removeClass('is-open').attr('aria-hidden', 'true');
+    $('body').removeClass('skills-modal-open');
+  }
+
+  function renderSkills() {
+    $skillsCount.text(SKILLS.length);
+    if (SKILLS.length === 0) {
+      $skillsList.html('<div class="skills-empty">暂无已安装的技能</div>');
+      return;
+    }
+    var html = SKILLS.map(function (s) {
+      var version = s.version
+        ? '<span class="skill-version">' + escapeHtml(s.version) + '</span>'
+        : '';
+      return (
+        '<div class="skill-row' + (s.enabled ? '' : ' is-disabled') + '" data-skill-id="' + s.id + '">' +
+          '<span class="skill-icon" aria-hidden="true">' +
+            '<i class="fa fa-file-text-o"></i>' +
+          '</span>' +
+          '<div class="skill-meta">' +
+            '<div class="skill-title-row">' +
+              '<span class="skill-title">' + escapeHtml(s.title) + '</span>' +
+              version +
+            '</div>' +
+            '<div class="skill-desc" title="' + escapeHtml(s.desc) + '">' + escapeHtml(s.desc) + '</div>' +
+          '</div>' +
+          '<label class="skill-toggle" aria-label="启用/停用 ' + escapeHtml(s.title) + '">' +
+            '<input type="checkbox"' + (s.enabled ? ' checked' : '') + ' />' +
+            '<span class="slider"></span>' +
+          '</label>' +
+          '<button type="button" class="skill-remove" aria-label="移除该技能" title="移除">' +
+            '<i class="fa fa-times"></i>' +
+          '</button>' +
+        '</div>'
+      );
+    }).join('');
+    $skillsList.html(html);
+  }
+
+  /* —— 事件绑定（事件委托） —— */
+  $(document).on('click', '[data-open-skills]', function (e) {
+    e.preventDefault();
+    openSkillsModal();
+  });
+  $(document).on('click', '[data-close-skills]', function (e) {
+    e.preventDefault();
+    closeSkillsModal();
+  });
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape' && $skillsModal.hasClass('is-open')) closeSkillsModal();
+  });
+
+  // 切换技能开关
+  $skillsList.on('change', '.skill-toggle input', function () {
+    var id = parseInt($(this).closest('.skill-row').data('skill-id'), 10);
+    var skill = SKILLS.find(function (s) { return s.id === id; });
+    if (skill) {
+      skill.enabled = this.checked;
+      $(this).closest('.skill-row').toggleClass('is-disabled', !skill.enabled);
+    }
+  });
+
+  // 移除技能（直接从列表里删，演示用；真实场景建议二次确认）
+  $skillsList.on('click', '.skill-remove', function () {
+    var $row = $(this).closest('.skill-row');
+    var id = parseInt($row.data('skill-id'), 10);
+    SKILLS = SKILLS.filter(function (s) { return s.id !== id; });
+    $row.css({ transition: 'opacity 180ms ease, transform 180ms ease', opacity: 0, transform: 'translateX(8px)' });
+    setTimeout(function () {
+      $row.remove();
+      $skillsCount.text(SKILLS.length);
+      if (SKILLS.length === 0) {
+        $skillsList.html('<div class="skills-empty">暂无已安装的技能</div>');
+      }
+    }, 180);
+  });
+
+  // 刷新按钮：纯视觉旋转一圈，作为反馈
+  $(document).on('click', '#skillsRefreshBtn', function () {
+    var $btn = $(this);
+    if ($btn.hasClass('is-spinning')) return;
+    $btn.addClass('is-spinning');
+    setTimeout(function () { $btn.removeClass('is-spinning'); }, 700);
+  });
+
+  /* =====================================================
+   * Demo 受限功能提示弹窗
+   * 任何带 [data-demo-notice="<feature名>"] 的元素被点击后弹窗
+   * ===================================================== */
+  var $demoNotice = $('#demoNoticeModal');
+  var $demoNoticeFeature = $('#demoNoticeFeature');
+
+  function openDemoNotice(featureName) {
+    if (!$demoNotice.length) return;
+    $demoNoticeFeature.text(featureName ? '「' + featureName + '」' : '该功能');
+    $demoNotice.addClass('is-open').attr('aria-hidden', 'false');
+    $('body').addClass('notice-modal-open');
+    setTimeout(function () {
+      $demoNotice.find('.notice-btn-ghost').trigger('focus');
+    }, 50);
+  }
+  function closeDemoNotice() {
+    if (!$demoNotice.length) return;
+    $demoNotice.removeClass('is-open').attr('aria-hidden', 'true');
+    $('body').removeClass('notice-modal-open');
+  }
+
+  $(document).on('click', '[data-demo-notice]', function (e) {
+    e.preventDefault();
+    openDemoNotice($(this).data('demo-notice'));
+  });
+  $(document).on('click', '[data-close-notice]', function (e) {
+    e.preventDefault();
+    closeDemoNotice();
+  });
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape' && $demoNotice.hasClass('is-open')) closeDemoNotice();
+  });
+  // 弹窗里的「联系我们」：先关 notice，再开 contact
+  $(document).on('click', '#demoNoticeContact', function (e) {
+    e.preventDefault();
+    closeDemoNotice();
+    openContactModal();
   });
 })(jQuery);
