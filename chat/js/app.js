@@ -26,7 +26,8 @@
     '2. 高显色哑光唇泥（询盘量周环比 +27%）\n' +
     '3. 防晒妆前乳（受夏季节性需求拉动，访客 +45%）\n' +
     '4. 多色眼影盘（北美与中东市场表现突出）\n\n' +
-    '建议优先布局 SKU、配套发布短视频素材，并结合店铺装修做主题专区，以承接增量流量。';
+    '建议优先布局 SKU、配套发布短视频素材，并结合店铺装修做主题专区，以承接增量流量。\n\n' +
+    '在 Demo 状态下，以上回答内容是 Demo 固定回答，仅供参考。欢迎联系我们了解完整版能力。';
 
   // 助手元信息
   var ASSISTANT_NAME = '电商智能生意助手';
@@ -94,12 +95,38 @@
   var $usageTbody    = $('#usageTbody');
   var $usagePager    = $('#usagePager');
   var $usageMeta     = $('#usageMeta');
+  var $hiddenFileInput   = $('#hiddenFileInput');
+  var $welcomeAttachments = $('#welcomeAttachments');
+  var $chatAttachments    = $('#chatAttachments');
 
   /* ----------- 状态 ----------- */
   // 当前激活的会话 id；为 null 表示尚未发起任何会话（停留在欢迎页）
   var currentSessionId = null;
-  // 全部会话存储：sessionId -> { id, title, messages: [{role, content}], $item }
+  // 全部会话存储：sessionId -> { id, title, messages: [{role, content, attachments?}], $item }
   var sessions = {};
+
+  // 待发送的附件队列（共用：欢迎页 / 对话页同时只可见一个 composer）
+  // 每条：{ id, file, name, size, type }
+  // 注意：file 是浏览器原生 File 对象，仅在「点 + 选择 → 点发送」之间短暂持有，
+  // 一经发送就会被清空，且**不会**写入 sessions[*].messages（历史只保留元数据）。
+  var pendingAttachments = [];
+
+  // 真实上传开关：当 FAKE_API_URL 被替换成真实接口后，把它改为 true，
+  // uploadAttachments() 就会以 multipart/form-data 真实发送文件。
+  var ENABLE_REAL_UPLOAD = false;
+  // 真实上传地址（与 FAKE_API_URL 解耦，便于后端路由分离）
+  var UPLOAD_API_URL = '/api/upload';
+
+  // 可选模型列表（接真后端时直接替换 MODELS / 把 currentModelId 持久化到 localStorage 即可）
+  var MODELS = [
+    { id: 'auto',         label: 'Auto' },
+    { id: 'deepseek-3.2', label: 'DeepSeek V3.2' },
+    { id: 'qwen-3.5',     label: 'Qwen 3.5' },
+    { id: 'doubao-2.0',   label: 'Doubao 2.0' },
+    { id: 'kimi-2.5',     label: 'Kimi K2.5' },
+    { id: 'glm-4.7',      label: 'GLM 4.7' }
+  ];
+  var currentModelId = 'auto';
 
   /* ===================================================
    * 初始化
@@ -109,6 +136,8 @@
     bindTabs();
     bindComposer($welcomeInput, $welcomeSend);
     bindComposer($chatInput, $chatSend);
+    bindUploads();
+    bindModelMenu();
     bindMisc();
   });
 
@@ -155,25 +184,210 @@
       if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
         e.preventDefault();
         var text = $.trim($input.val());
-        if (text) sendMessage(text);
+        if (text || pendingAttachments.length > 0) sendMessage(text);
       }
     });
 
     $sendBtn.on('click', function () {
       var text = $.trim($input.val());
-      if (text) sendMessage(text);
+      if (text || pendingAttachments.length > 0) sendMessage(text);
     });
+  }
+
+  /* ===================================================
+   * 文件上传相关绑定（＋ 按钮 → 调起原生选择对话框）
+   * ================================================= */
+  function bindUploads() {
+    // 两个 composer 上的 ＋ 按钮共用同一个隐藏 file input
+    $(document).on('click', '.chip-upload', function (e) {
+      e.preventDefault();
+      // 清掉 value，确保连续选同一个文件也能触发 change
+      $hiddenFileInput.val('').trigger('click');
+    });
+
+    // 选完文件 → 入队 → 渲染 chip
+    $hiddenFileInput.on('change', function () {
+      var files = this.files;
+      if (!files || files.length === 0) return;
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i];
+        pendingAttachments.push({
+          id: 'att_' + Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2, 6),
+          file: f,
+          name: f.name,
+          size: f.size,
+          type: f.type || ''
+        });
+      }
+      renderAttachmentChips();
+    });
+
+    // 删除某条待发送附件
+    $(document).on('click', '.attachment-chip-remove', function (e) {
+      e.preventDefault();
+      var id = $(this).closest('.attachment-chip').data('id');
+      pendingAttachments = pendingAttachments.filter(function (a) {
+        return String(a.id) !== String(id);
+      });
+      renderAttachmentChips();
+    });
+  }
+
+  /* —— 把 pendingAttachments 同步渲染到两个 composer 的预览区 —— */
+  function renderAttachmentChips() {
+    var $containers = $welcomeAttachments.add($chatAttachments);
+    if (pendingAttachments.length === 0) {
+      $containers.empty().attr('hidden', 'hidden');
+      $('.chip-upload').removeClass('has-attachments');
+      return;
+    }
+    var html = pendingAttachments.map(function (a) {
+      return (
+        '<div class="attachment-chip" data-id="' + a.id + '" title="' + escapeHtml(a.name) + '">' +
+          '<span class="ac-ic"><i class="fa fa-paperclip"></i></span>' +
+          '<span class="ac-name">' + escapeHtml(a.name) + '</span>' +
+          '<span class="ac-size">' + formatFileSize(a.size) + '</span>' +
+          '<button type="button" class="attachment-chip-remove" aria-label="移除">' +
+            '<i class="fa fa-times"></i>' +
+          '</button>' +
+        '</div>'
+      );
+    }).join('');
+    $containers.html(html).removeAttr('hidden');
+    $('.chip-upload').addClass('has-attachments');
+  }
+
+  /* —— 文件大小友好显示 —— */
+  function formatFileSize(bytes) {
+    if (bytes == null || isNaN(bytes)) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+  }
+
+  /* ===================================================
+   * 真实上传接口预留
+   * 演示模式 (ENABLE_REAL_UPLOAD = false) 下不会真正打到 UPLOAD_API_URL，
+   * 直接 resolve 一个 { skipped: true } 占位结果。
+   * 未来切到真后端：把 ENABLE_REAL_UPLOAD 设 true，并把 UPLOAD_API_URL 指向真接口即可。
+   * ================================================= */
+  function uploadAttachments(attachments, sessionId) {
+    var dfd = $.Deferred();
+    if (!attachments || attachments.length === 0) {
+      return dfd.resolve({ skipped: true, reason: 'empty' }).promise();
+    }
+    if (!ENABLE_REAL_UPLOAD) {
+      return dfd.resolve({ skipped: true, reason: 'demo' }).promise();
+    }
+    var formData = new FormData();
+    formData.append('sessionId', sessionId);
+    attachments.forEach(function (a) {
+      if (a.file) formData.append('files', a.file, a.name);
+    });
+    return $.ajax({
+      url: UPLOAD_API_URL,
+      method: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      timeout: 60000
+    });
+  }
+
+  /* ===================================================
+   * 模型下拉：点 chip-model 弹出/收起，选完同步两个 composer
+   * ================================================= */
+  function bindModelMenu() {
+    // 进页时先把两个菜单内容渲染出来
+    renderModelMenus();
+    syncModelLabels();
+
+    // 触发器（事件委托：两个 composer 共用同一处理）
+    $(document).on('click', '[data-model-trigger]', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var $btn  = $(this);
+      var $menu = $btn.siblings('.model-menu');
+      var open  = $btn.hasClass('is-open');
+      // 先全部收起，再视情况打开当前
+      closeAllModelMenus();
+      if (!open) openModelMenu($btn, $menu);
+    });
+
+    // 点菜单项
+    $(document).on('click', '.model-menu-item', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var id = $(this).data('model-id');
+      if (id) selectModel(String(id));
+      closeAllModelMenus();
+    });
+
+    // 点弹层内部不关
+    $(document).on('click', '.model-menu', function (e) {
+      e.stopPropagation();
+    });
+
+    // 点空白处 / 按 ESC 关
+    $(document).on('click', function () { closeAllModelMenus(); });
+    $(document).on('keydown', function (e) {
+      if (e.key === 'Escape') closeAllModelMenus();
+    });
+  }
+
+  function renderModelMenus() {
+    var html = MODELS.map(function (m) {
+      var selected = (m.id === currentModelId);
+      return (
+        '<button type="button" class="model-menu-item' + (selected ? ' is-selected' : '') + '" ' +
+                'role="option" aria-selected="' + selected + '" data-model-id="' + m.id + '">' +
+          '<span class="mm-ic">✧</span>' +
+          '<span class="mm-name">' + escapeHtml(m.label) + '</span>' +
+          '<span class="mm-check"><i class="fa fa-check"></i></span>' +
+        '</button>'
+      );
+    }).join('');
+    $('.model-menu').html(html);
+  }
+
+  function openModelMenu($btn, $menu) {
+    $btn.addClass('is-open').attr('aria-expanded', 'true');
+    $menu.removeAttr('hidden');
+    // 下一帧再加 is-open，触发过渡动画
+    requestAnimationFrame(function () { $menu.addClass('is-open'); });
+  }
+
+  function closeAllModelMenus() {
+    $('.chip-model.is-open').removeClass('is-open').attr('aria-expanded', 'false');
+    $('.model-menu.is-open').removeClass('is-open');
+    // 等过渡结束再 hidden，防闪烁
+    setTimeout(function () {
+      $('.model-menu').not('.is-open').attr('hidden', 'hidden');
+    }, 160);
+  }
+
+  function selectModel(id) {
+    var m = MODELS.find(function (x) { return x.id === id; });
+    if (!m) return;
+    currentModelId = id;
+    syncModelLabels();
+    renderModelMenus();   // 重新渲染所有菜单的勾选态
+  }
+
+  function syncModelLabels() {
+    var m = MODELS.find(function (x) { return x.id === currentModelId; }) || MODELS[0];
+    $('[data-model-label]').text(m.label);
   }
 
   /* ===================================================
    * 其它绑定
    * ================================================= */
   function bindMisc() {
-    // Messages 区折叠
+    // Messages 区折叠：用 class 控制 SVG 旋转，避免重写 .caret 内容
     $msgToggle.on('click', function () {
-      var $caret = $(this).find('.caret');
-      $msgList.toggle();
-      $caret.text($msgList.is(':visible') ? '▾' : '▸');
+      $msgList.slideToggle(160);
+      $(this).toggleClass('is-collapsed');
     });
 
     // 「+ 新消息」：开启新会话槽位，回到欢迎页
@@ -231,7 +445,7 @@
     $chatList.empty();
     sess.messages.forEach(function (m) {
       if (m.role === 'user') {
-        appendUserMessage(m.content);
+        appendUserMessage(m.content, m.attachments || []);
       } else if (m.role === 'assistant') {
         appendFinalAssistantMessage(m.content);
       }
@@ -265,6 +479,11 @@
    * 发送消息主流程
    * ================================================= */
   function sendMessage(text) {
+    // 0. 快照本次发送携带的附件，并立即清空待发送队列 + UI
+    var attachmentsAtSend = pendingAttachments.slice();
+    pendingAttachments = [];
+    renderAttachmentChips();
+
     // 1. 切换到对话视图（首条消息时）
     if ($welcomeView.is(':visible')) {
       $welcomeView.addClass('hidden');
@@ -289,18 +508,27 @@
       isFirstMessage = true;
     }
 
-    // 3. 首条消息：用前 8 字（或不足直接用）覆盖默认标题
+    // 3. 首条消息：用前 8 字（或不足直接用）覆盖默认标题；
+    //    若用户没输入文字仅发了附件，用首个文件名做标题
     if (isFirstMessage) {
-      var newTitle = text.length > TITLE_MAX_LEN
-        ? text.slice(0, TITLE_MAX_LEN) + '…'
-        : text;
+      var titleSource = text || (attachmentsAtSend[0] && attachmentsAtSend[0].name) || DEFAULT_SESSION_TITLE;
+      var newTitle = titleSource.length > TITLE_MAX_LEN
+        ? titleSource.slice(0, TITLE_MAX_LEN) + '…'
+        : titleSource;
       sessions[currentSessionId].title = newTitle;
       updateSessionItemTitle(currentSessionId, newTitle);
     }
 
     // 4. 渲染 + 持久化用户消息
-    appendUserMessage(text);
-    sessions[currentSessionId].messages.push({ role: 'user', content: text });
+    //    注意：只把元数据 (name/size/type) 写进历史，不持有原始 File 对象
+    appendUserMessage(text, attachmentsAtSend);
+    sessions[currentSessionId].messages.push({
+      role: 'user',
+      content: text,
+      attachments: attachmentsAtSend.map(function (a) {
+        return { name: a.name, size: a.size, type: a.type };
+      })
+    });
 
     // 5. 清空输入框
     $welcomeInput.val('').css('height', 'auto');
@@ -313,6 +541,11 @@
     var sessionIdAtSend = currentSessionId;
     var startedAt = Date.now();
 
+    // 7.1 附件上传（演示模式下是 no-op；接真后端时自动生效）
+    //     这里不 await，按 fire-and-forget 处理；如未来需要"先上传完再触发对话"，
+    //     可改成 uploadAttachments(...).done(function(){ $.ajax(...) })。
+    uploadAttachments(attachmentsAtSend, sessionIdAtSend);
+
     $.ajax({
       url: FAKE_API_URL,
       method: 'POST',
@@ -320,6 +553,11 @@
       data: JSON.stringify({
         sessionId: sessionIdAtSend,
         message: text,
+        model: currentModelId,
+        // 仅传元数据给对话接口，真正的文件由 uploadAttachments 负责
+        attachments: attachmentsAtSend.map(function (a) {
+          return { name: a.name, size: a.size, type: a.type };
+        }),
         timestamp: startedAt
       }),
       timeout: 15000
@@ -352,17 +590,35 @@
   /* ===================================================
    * 渲染：用户消息
    * ================================================= */
-  function appendUserMessage(text) {
+  function appendUserMessage(text, attachments) {
+    var hasText = !!(text && String(text).length > 0);
+    var hasAtts = attachments && attachments.length > 0;
+
     var html =
       '<div class="msg msg-user">' +
         '<div class="avatar avatar-user">L</div>' +
         '<div class="msg-body">' +
-          '<div class="user-name-tag">Lin Xie</div>' +
-          '<div class="bubble"></div>' +
+          '<div class="user-name-tag">Lin Yun</div>' +
+          (hasAtts ? '<div class="user-attachments"></div>' : '') +
+          (hasText ? '<div class="bubble"></div>' : '') +
         '</div>' +
       '</div>';
     var $node = $(html);
-    $node.find('.bubble').text(text);
+    if (hasText) $node.find('.bubble').text(text);
+    if (hasAtts) {
+      var attHtml = attachments.map(function (a) {
+        return (
+          '<div class="user-attachment-chip" title="' + escapeHtml(a.name) + '">' +
+            '<span class="att-ic"><i class="fa fa-file-o"></i></span>' +
+            '<span class="att-meta">' +
+              '<span class="att-name">' + escapeHtml(a.name) + '</span>' +
+              '<span class="att-size">' + formatFileSize(a.size) + '</span>' +
+            '</span>' +
+          '</div>'
+        );
+      }).join('');
+      $node.find('.user-attachments').html(attHtml);
+    }
     $chatList.append($node);
     scrollToBottom();
   }
@@ -396,7 +652,7 @@
               '<span class="tool-ic">›</span>' +
               '<span class="tool-name">Bash</span>' +
               '<span class="tool-arg">Read skill memory for hot product insight</span>' +
-              '<span class="tool-arg">python /Users/linxie/.claw/accounts/1755404055/agen…</span>' +
+              '<span class="tool-arg">python /Users/linyun/.claw/accounts/1755404055/agen…</span>' +
             '</div>' +
           '</div>' +
           '<div class="loading-dots js-loading"><span></span><span></span><span></span></div>' +

@@ -29,7 +29,12 @@
 
         <div class="nav-section">
           <div class="nav-section-title" id="msgSectionToggle">
-            <span class="caret">▾</span> 对话历史
+            <span class="caret" aria-hidden="true">
+              <svg class="caret-ic" viewBox="0 0 12 12" focusable="false">
+                <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor"
+                      stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span> 对话历史
           </div>
           <div class="nav-section-body" id="msgList">
             <!-- 动态消息会话列表 -->
@@ -51,8 +56,7 @@
 
       <div class="user">
         <div class="avatar avatar-user">L</div>
-        <div class="user-name">Lin Xie</div>
-        <div class="user-arrow">⌃</div>
+        <div class="user-name">Lin Yun</div>
       </div>
     </aside>
 
@@ -87,7 +91,7 @@
             <img src="assets/logo.svg" alt="logo" />
           </div>
           <h1 class="welcome-title">
-            电商智能生意助手 <span class="title-caret">▾</span>
+            电商智能生意助手
           </h1>
 
           <!-- 输入框（欢迎页） -->
@@ -96,21 +100,29 @@
               class="composer-input"
               id="welcomeInput"
               rows="1"
-              placeholder="输入问题... (@ 引用文件)"></textarea>
+              placeholder="输入问题... "></textarea>
+
+            <!-- 待发送附件预览区（输入框下、工具栏上） -->
+            <div class="composer-attachments" id="welcomeAttachments" hidden></div>
+
             <div class="composer-bottom">
               <div class="composer-left">
-                <button class="chip chip-icon" title="添加">＋</button>
-                <button class="chip chip-folder">
-                  <span class="folder-ic">📁</span> project
-                </button>
+                <button type="button" class="chip chip-icon chip-upload" id="welcomeUploadBtn" title="上传文件" aria-label="上传文件">＋</button>
               </div>
               <div class="composer-right">
-                <button class="chip chip-perm">
-                  <span class="dot dot-green"></span> 完全访问权限 <span class="caret-sm">▾</span>
-                </button>
-                <button class="chip chip-model">
-                  <span class="model-ic">✧</span> Auto <span class="caret-sm">▾</span>
-                </button>
+                <!-- <button class="chip chip-perm">
+                  <span class="dot dot-green"></span>
+                  <span>完全访问权限</span>
+                  <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button> -->
+                <div class="chip-model-wrap">
+                  <button type="button" class="chip chip-model" data-model-trigger aria-haspopup="listbox" aria-expanded="false">
+                    <span class="model-ic">✧</span>
+                    <span class="chip-model-label" data-model-label>Auto</span>
+                    <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <div class="model-menu" role="listbox" aria-label="选择模型" hidden></div>
+                </div>
                 <button class="send-btn" id="welcomeSendBtn" title="发送">↑</button>
               </div>
             </div>
@@ -164,20 +176,28 @@
             id="chatInput"
             rows="1"
             placeholder="输入问题... (@ 引用文件)"></textarea>
+
+          <!-- 待发送附件预览区（输入框下、工具栏上） -->
+          <div class="composer-attachments" id="chatAttachments" hidden></div>
+
           <div class="composer-bottom">
             <div class="composer-left">
-              <button class="chip chip-icon" title="添加">＋</button>
-              <button class="chip chip-folder">
-                <span class="folder-ic">📁</span> project
-              </button>
+              <button type="button" class="chip chip-icon chip-upload" id="chatUploadBtn" title="上传文件" aria-label="上传文件">＋</button>
             </div>
             <div class="composer-right">
-              <button class="chip chip-perm">
-                <span class="dot dot-grey"></span> 默认权限 <span class="caret-sm">▾</span>
-              </button>
-              <button class="chip chip-model">
-                <span class="model-ic">✧</span> Auto <span class="caret-sm">▾</span>
-              </button>
+              <!-- <button class="chip chip-perm">
+                <span class="dot dot-grey"></span>
+                <span>默认权限</span>
+                <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button> -->
+              <div class="chip-model-wrap">
+                <button type="button" class="chip chip-model" data-model-trigger aria-haspopup="listbox" aria-expanded="false">
+                  <span class="model-ic">✧</span>
+                  <span class="chip-model-label" data-model-label>Auto</span>
+                  <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="model-menu" role="listbox" aria-label="选择模型" hidden></div>
+              </div>
               <button class="send-btn" id="chatSendBtn" title="发送">●</button>
             </div>
           </div>
@@ -337,6 +357,9 @@
       </div>
     </div>
   </div>
+
+  <!-- 共用的隐藏文件选择器（点 ＋ 时触发原生选择对话框） -->
+  <input type="file" id="hiddenFileInput" multiple hidden />
 
   <script src="../js/jquery-3.7.1.min.js"></script>
   <script src="js/app.js"></script>
