@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> 凌云智能 - 生意助手 </title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ============ 左侧侧边栏 ============ -->
+    <aside class="sidebar">
+      <div class="brand"> 凌云AI </div>
+
+      <nav class="nav">
+        <a class="nav-item nav-new" href="#" id="newChatBtn">
+          <span class="ic">＋</span>新消息
+        </a>
+        <a class="nav-item" href="#"><span class="ic">◈</span>智能体</a>
+
+        <div class="nav-group">
+          <a class="nav-item" href="#"><span class="ic">⚡</span>能力</a>
+          <div class="nav-sub">
+            <a href="#"><span class="ic">⏱</span>定时任务</a>
+            <a href="#"><span class="ic">🔗</span>应用授权</a>
+            <a href="#"><span class="ic">✦</span>技能</a>
+            <a href="#"><span class="ic">⎈</span>插件</a>
+            <a href="#"><span class="ic">◎</span>消息渠道</a>
+            <a href="#"><span class="ic">👥</span>配对授权</a>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title" id="msgSectionToggle">
+            <span class="caret">▾</span> Messages
+          </div>
+          <div class="nav-section-body" id="msgList">
+            <!-- 动态消息会话列表 -->
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span class="caret">▸</span> 团队 <span class="badge">Beta</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="user">
+        <div class="avatar avatar-user">L</div>
+        <div class="user-name">Lin Xie</div>
+        <div class="user-arrow">⌃</div>
+      </div>
+    </aside>
+
+    <!-- ============ 主区域 ============ -->
+    <main class="main">
+      <!-- 欢迎页 -->
+      <section class="welcome" id="welcomeView">
+        <div class="welcome-inner">
+          <div class="welcome-logo">
+            <img src="assets/logo.svg" alt="logo" />
+          </div>
+          <h1 class="welcome-title">
+            电商智能生意助手 <span class="title-caret">▾</span>
+          </h1>
+
+          <!-- 输入框（欢迎页） -->
+          <div class="composer">
+            <textarea
+              class="composer-input"
+              id="welcomeInput"
+              rows="1"
+              placeholder="输入问题... (@ 引用文件)"></textarea>
+            <div class="composer-bottom">
+              <div class="composer-left">
+                <button class="chip chip-icon" title="添加">＋</button>
+                <button class="chip chip-folder">
+                  <span class="folder-ic">📁</span> project
+                </button>
+              </div>
+              <div class="composer-right">
+                <button class="chip chip-perm">
+                  <span class="dot dot-green"></span> 完全访问权限 <span class="caret-sm">▾</span>
+                </button>
+                <button class="chip chip-model">
+                  <span class="model-ic">✧</span> Auto <span class="caret-sm">▾</span>
+                </button>
+                <button class="send-btn" id="welcomeSendBtn" title="发送">↑</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 分类 -->
+          <div class="tabs">
+            <button class="tab active" data-tab="market">
+              <span class="tab-ic">📊</span> 市场洞察
+            </button>
+            <button class="tab" data-tab="shop">
+              <span class="tab-ic">🏬</span> 店铺分析
+            </button>
+            <button class="tab" data-tab="publish">
+              <span class="tab-ic">📦</span> 智能发品
+            </button>
+            <button class="tab" data-tab="image">
+              <span class="tab-ic">🖼</span> 创意图片
+            </button>
+            <button class="tab" data-tab="video">
+              <span class="tab-ic">🎬</span> 创意视频
+            </button>
+            <button class="tab" data-tab="decor">
+              <span class="tab-ic">🎨</span> 店铺装修
+            </button>
+          </div>
+
+          <!-- 提示词列表 -->
+          <div class="prompts">
+            <div class="prompts-title">尝试以下提示词</div>
+            <ul class="prompts-list" id="promptsList">
+              <!-- 由 JS 渲染 -->
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 对话页 -->
+      <section class="chat hidden" id="chatView">
+        <div class="chat-scroll" id="chatScroll">
+          <div class="chat-day">今天</div>
+          <div class="chat-list" id="chatList">
+            <!-- 由 JS 渲染消息 -->
+          </div>
+        </div>
+
+        <!-- 输入框（对话页） -->
+        <div class="composer composer-bottom-fixed">
+          <textarea
+            class="composer-input"
+            id="chatInput"
+            rows="1"
+            placeholder="输入问题... (@ 引用文件)"></textarea>
+          <div class="composer-bottom">
+            <div class="composer-left">
+              <button class="chip chip-icon" title="添加">＋</button>
+              <button class="chip chip-folder">
+                <span class="folder-ic">📁</span> project
+              </button>
+            </div>
+            <div class="composer-right">
+              <button class="chip chip-perm">
+                <span class="dot dot-grey"></span> 默认权限 <span class="caret-sm">▾</span>
+              </button>
+              <button class="chip chip-model">
+                <span class="model-ic">✧</span> Auto <span class="caret-sm">▾</span>
+              </button>
+              <button class="send-btn" id="chatSendBtn" title="发送">●</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-footer">助手内容可能会出错，请仔细核对回复内容。</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../js/jquery-3.7.1.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
