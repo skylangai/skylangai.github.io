@@ -66,3 +66,45 @@ function onSubmit(payload) {
     <div class="chat-footer">助手内容可能会出错，请仔细核对回复内容。</div>
   </section>
 </template>
+
+<style scoped>
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-main);
+}
+.chat-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 0 16px;
+}
+.chat-day {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-bottom: 16px;
+}
+.chat-day::before, .chat-day::after { content: ""; }
+
+.chat-list {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.chat-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 0 0 12px;
+}
+
+@media (max-width: 720px) {
+  .chat-list { padding: 0 12px; }
+}
+</style>

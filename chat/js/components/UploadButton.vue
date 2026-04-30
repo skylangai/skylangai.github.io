@@ -28,3 +28,17 @@ function onChange(e) {
     <input ref="inputRef" type="file" multiple hidden @change="onChange" />
   </button>
 </template>
+
+<style scoped>
+/* .chip / .chip-icon 是公共原子类，定义在 css/style.css */
+.chip-upload {
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms, background 120ms;
+}
+.chip-upload:hover { color: var(--text); }
+.chip-upload.has-attachments {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: rgba(255, 106, 26, 0.06);
+}
+</style>

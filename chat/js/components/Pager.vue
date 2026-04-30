@@ -53,3 +53,51 @@ function buildPageList(cur, total) {
     <button type="button" :disabled="page >= totalPages" @click="go('next')">下一页</button>
   </div>
 </template>
+
+<style scoped>
+.usage-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 14px 18px;
+  background: #fafbfc;
+  border-top: 1px solid var(--border);
+}
+.usage-pager .page-info {
+  margin-right: auto;
+  font-size: 12.5px;
+  color: var(--text-sub);
+}
+.usage-pager button {
+  min-width: 32px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.usage-pager button:hover:not([disabled]):not(.is-active) {
+  background: var(--hover);
+  border-color: var(--border-strong);
+}
+.usage-pager button.is-active {
+  background: var(--text);
+  color: #ffffff;
+  border-color: var(--text);
+  cursor: default;
+}
+.usage-pager button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.usage-pager .page-ellipsis {
+  color: var(--text-muted);
+  padding: 0 4px;
+  user-select: none;
+}
+</style>

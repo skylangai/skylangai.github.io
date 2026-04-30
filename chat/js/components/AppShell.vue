@@ -162,3 +162,21 @@ function finalize(sessionId, placeholder, startTs) {
     <NoticeModal  v-model:open="noticeOpen" :feature="noticeFeature" @contact="onNoticeContact" />
   </div>
 </template>
+
+<style scoped>
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-main);
+  position: relative;
+  overflow: hidden;
+}
+</style>

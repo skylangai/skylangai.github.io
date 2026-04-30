@@ -26,3 +26,93 @@ function openContact() { emit('open-contact'); }
     </button>
   </div>
 </template>
+
+<style scoped>
+.float-actions {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.float-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  box-shadow: var(--shadow-sm);
+  transition: transform 160ms ease, box-shadow 160ms ease,
+              border-color 160ms ease, color 160ms ease;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.float-btn:hover {
+  color: #818cf8;
+  border-color: #c7d2fe;
+  box-shadow: 0 6px 18px rgba(129, 140, 248, 0.18);
+  transform: translateY(-1px);
+}
+.float-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+.float-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.28);
+}
+.float-btn-ic {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* tooltip：hover 时从按钮左侧淡入（避免遮挡下方按钮） */
+.float-btn-tip {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 10px);
+  transform: translateY(-50%) translateX(4px);
+  white-space: nowrap;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1;
+  color: #ffffff;
+  background: #1f2329;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+.float-btn-tip::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  background: #1f2329;
+  transform: translateY(-50%) rotate(45deg);
+  border-radius: 1px;
+}
+.float-btn:hover .float-btn-tip,
+.float-btn:focus-visible .float-btn-tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+@media (max-width: 720px) {
+  .float-actions { top: 10px; right: 12px; gap: 8px; }
+  .float-btn { width: 34px; height: 34px; }
+  .float-btn-ic { width: 16px; height: 16px; }
+}
+</style>

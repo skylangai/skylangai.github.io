@@ -65,3 +65,105 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* .chip 基础形态由 css/style.css 提供，这里只放 model 触发器特化样式 */
+.chip-model-wrap {
+  position: relative;
+  display: inline-block;
+}
+.chip-model { cursor: pointer; }
+.chip-model.is-open {
+  background: var(--hover);
+  border-color: #b9bcc4;
+}
+.chip-model.is-open .chip-caret {
+  transform: rotate(180deg);
+  color: var(--text);
+}
+.chip-model-label {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-ic { color: var(--text-sub); }
+
+/* chip 上的小箭头 */
+.chip-caret {
+  width: 11px;
+  height: 11px;
+  margin-left: 4px;
+  color: var(--text-sub);
+  flex-shrink: 0;
+  transition: transform 160ms ease, color 160ms ease;
+  display: inline-block;
+  vertical-align: middle;
+}
+.chip-model:hover .chip-caret { color: var(--text); }
+
+/* 弹层 */
+.model-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  min-width: 200px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
+  z-index: 60;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  pointer-events: none;
+}
+.model-menu[hidden] { display: none !important; }
+.model-menu.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.model-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+  line-height: 1.3;
+  transition: background 100ms;
+}
+.model-menu-item:hover { background: var(--hover); }
+.model-menu-item .mm-ic {
+  width: 16px;
+  color: var(--text-sub);
+  flex-shrink: 0;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.model-menu-item .mm-name { flex: 1; min-width: 0; }
+.model-menu-item .mm-check {
+  width: 14px;
+  color: var(--primary);
+  opacity: 0;
+  flex-shrink: 0;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.model-menu-item.is-selected .mm-check { opacity: 1; }
+.model-menu-item.is-selected .mm-name { color: var(--primary); font-weight: 600; }
+.model-menu-item.is-selected .mm-ic { color: var(--primary); }
+</style>

@@ -81,3 +81,13 @@ onBeforeUnmount(() => {
     </div>
   </Teleport>
 </template>
+
+<!--
+  说明：BaseModal 渲染的 div class 是动态拼接的（contact-modal / notice-modal / skills-modal …），
+  而具体子 modal 的样式来自 ContactModal/NoticeModal/SkillsModal。如果用 scoped，子组件
+  scoped 选择器命中不到 BaseModal 渲染的节点（data-v 不一致）。所以 modal 全家族统一用
+  普通 <style>（非 scoped），靠 .xxx-modal- 前缀做命名隔离。
+  本文件不放具体样式：cmFadeIn/cmPopIn 共享 keyframes 与 body.xxx-modal-open 锁滚 class
+  都在公共 css/style.css 中。
+-->
+

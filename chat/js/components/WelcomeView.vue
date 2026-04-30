@@ -67,3 +67,108 @@ function onSubmit(payload) {
     </div>
   </section>
 </template>
+
+<style scoped>
+.welcome {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 80px 24px 40px;
+  overflow-y: auto;
+}
+.welcome-inner {
+  width: 100%;
+  max-width: 720px;
+}
+.welcome-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.welcome-logo img {
+  width: 56px;
+  height: 56px;
+}
+.welcome-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 8px;
+  justify-content: center;
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  height: 32px;
+}
+.tab:hover { background: var(--hover); }
+.tab.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+.tab .tab-ic { font-size: 13px; }
+
+/* 提示词列表 */
+.prompts {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px 4px;
+}
+.prompts-title {
+  padding: 4px 14px 6px;
+  font-size: 12.5px;
+  color: var(--text-sub);
+}
+.prompts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.prompts-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prompts-list li:hover { background: var(--hover); }
+.prompts-list li .diamond {
+  color: var(--text-muted);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .welcome { padding: 40px 16px; }
+  .tabs { justify-content: flex-start; }
+}
+</style>
