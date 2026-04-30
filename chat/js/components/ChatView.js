@@ -70,8 +70,6 @@ export default defineComponent({
                 placeholder="输入问题... "
                 send-icon="●"
                 :bottom-fixed="true"
-                perm-label="默认权限"
-                perm-tone="grey"
                 @submit="onSubmit" />
 
       <div class="chat-footer">助手内容可能会出错，请仔细核对回复内容。</div>

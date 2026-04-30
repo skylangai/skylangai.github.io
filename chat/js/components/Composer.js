@@ -10,9 +10,6 @@ import ModelMenu from './ModelMenu.js';
  *   - placeholder: 占位符
  *   - sendIcon:    发送按钮图标（welcome 用 ↑，chat 用 ●）
  *   - bottomFixed: 是否启用 chat 页底部固定样式（多一个 composer-bottom-fixed 类）
- *   - permLabel:   权限胶囊文案（welcome 用「完全访问权限」，chat 用「默认权限」）
- *   - permTone:    权限点颜色 'green' | 'grey'
- *   - showFolder:  chat 页那个 📁 project 胶囊
  *   - autofocus:   挂载后是否自动聚焦
  *
  * 事件：
@@ -29,9 +26,6 @@ export default defineComponent({
     placeholder: { type: String, default: '输入问题... ' },
     sendIcon:    { type: String, default: '↑' },
     bottomFixed: { type: Boolean, default: false },
-    permLabel:   { type: String, default: '完全访问权限' },
-    permTone:    { type: String, default: 'green' },
-    showFolder:  { type: Boolean, default: false },
     autofocus:   { type: Boolean, default: false }
   },
   emits: ['submit'],
@@ -113,19 +107,8 @@ export default defineComponent({
       <div class="composer-bottom">
         <div class="composer-left">
           <UploadButton />
-          <button v-if="showFolder" type="button" class="chip chip-folder">
-            <span class="folder-ic">📁</span> project
-          </button>
         </div>
         <div class="composer-right">
-          <button type="button" class="chip chip-perm">
-            <span class="dot" :class="permTone === 'green' ? 'dot-green' : 'dot-grey'"></span>
-            <span>{{ permLabel }}</span>
-            <svg class="chip-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
-              <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor"
-                    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
           <ModelMenu />
           <button type="button" class="send-btn" title="发送" @click="trySubmit">{{ sendIcon }}</button>
         </div>

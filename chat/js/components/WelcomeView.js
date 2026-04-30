@@ -47,8 +47,6 @@ export default defineComponent({
         <Composer ref="composerRef"
                   placeholder="输入问题... "
                   send-icon="↑"
-                  perm-label="完全访问权限"
-                  perm-tone="green"
                   :autofocus="true"
                   @submit="onSubmit" />
 
