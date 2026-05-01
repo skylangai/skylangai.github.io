@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { useSessions } from '../composables/useSessions.js';
 import { useView } from '../composables/useView.js';
+import { useAuth } from '../composables/useAuth.js';
 import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
 
 /* 左侧边栏：能力组 + 对话历史 + 使用统计入口
@@ -10,11 +11,13 @@ import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
  *   - new-chat:       点 +新消息
  *   - open-skills:    点「技能」
  *   - demo-notice(name): 点「定时任务/应用授权」
+ *   - open-auth:      点左下角「登录」按钮
  */
-const emit = defineEmits(['new-chat', 'open-skills', 'demo-notice']);
+const emit = defineEmits(['new-chat', 'open-skills', 'demo-notice', 'open-auth']);
 
 const { state, sessionList, selectSession } = useSessions();
 const { state: viewState, goStats, goChat } = useView();
+const { isLoggedIn, displayName, initial, logout } = useAuth();
 
 const collapsed = ref(false);
 
@@ -42,6 +45,15 @@ function onDemoNotice(name, e) {
 }
 function onGoStats() {
   goStats();
+}
+
+function onOpenAuth(e) {
+  if (e) e.preventDefault();
+  emit('open-auth');
+}
+function onLogout(e) {
+  if (e) e.preventDefault();
+  logout();
 }
 
 const isStatsActive = computed(() => viewState.current === 'stats');
@@ -106,9 +118,19 @@ const isStatsActive = computed(() => viewState.current === 'stats');
       </div>
     </nav>
 
-    <div class="user">
-      <div class="avatar avatar-user">L</div>
-      <div class="user-name">Lin Yun</div>
+    <div class="user" :class="{ 'is-guest': !isLoggedIn }">
+      <div class="avatar avatar-user" :class="{ 'is-guest': !isLoggedIn }">{{ isLoggedIn ? initial : 'G' }}</div>
+      <div class="user-name" :title="displayName">{{ displayName }}</div>
+      <button v-if="isLoggedIn"
+              type="button"
+              class="auth-action-btn auth-action-btn--ghost"
+              title="退出登录"
+              @click="onLogout">退出</button>
+      <button v-else
+              type="button"
+              class="auth-action-btn auth-action-btn--primary"
+              title="登录"
+              @click="onOpenAuth">登录</button>
     </div>
   </aside>
 </template>
@@ -340,7 +362,53 @@ const isStatsActive = computed(() => viewState.current === 'stats');
   border-top: 1px solid var(--border);
   margin-top: 6px;
 }
-.user-name { flex: 1; font-size: 13.5px; }
+.user-name {
+  flex: 1;
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user.is-guest .user-name { color: var(--text-sub); }
+.avatar.avatar-user.is-guest {
+  background: linear-gradient(135deg, #b0b6c4 0%, #8a90a3 100%);
+}
+
+/* 登录 / 退出按钮：与主题渐变一致，紧凑型 */
+.auth-action-btn {
+  flex-shrink: 0;
+  height: 26px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: filter 0.18s ease, background 0.18s ease,
+              color 0.18s ease, border-color 0.18s ease,
+              box-shadow 0.18s ease, transform 0.1s ease;
+}
+.auth-action-btn:active { transform: translateY(1px); }
+.auth-action-btn--primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #4338ca 0%, #7c3aed 100%);
+  box-shadow: 0 4px 10px rgba(67, 56, 202, 0.28);
+}
+.auth-action-btn--primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 6px 14px rgba(124, 58, 237, 0.36);
+}
+.auth-action-btn--ghost {
+  color: #4338ca;
+  background: #ffffff;
+  border-color: rgba(67, 56, 202, 0.32);
+}
+.auth-action-btn--ghost:hover {
+  background: rgba(67, 56, 202, 0.08);
+  border-color: rgba(67, 56, 202, 0.55);
+  color: #3a30b8;
+}
 
 /* 响应式：窄屏只显示图标 */
 @media (max-width: 720px) {
@@ -349,7 +417,8 @@ const isStatsActive = computed(() => viewState.current === 'stats');
   .nav-item span:not(.ic),
   .nav-sub a span:not(.ic),
   .nav-section-title,
-  .user-name { display: none; }
+  .user-name,
+  .auth-action-btn { display: none; }
   .nav-item, .nav-sub a { justify-content: center; padding: 8px; }
 }
 </style>

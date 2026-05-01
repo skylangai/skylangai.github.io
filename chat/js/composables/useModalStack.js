@@ -28,7 +28,7 @@ function ensureEscBound() {
 function syncBodyClasses() {
   if (typeof document === 'undefined') return;
   // 先清掉所有可能 toggle 的 class，再按当前栈追加
-  const toRemove = ['contact-modal-open', 'skills-modal-open', 'notice-modal-open'];
+  const toRemove = ['contact-modal-open', 'skills-modal-open', 'notice-modal-open', 'auth-modal-open'];
   toRemove.forEach((c) => document.body.classList.remove(c));
   state.stack.forEach((item) => {
     if (item.bodyClass) document.body.classList.add(item.bodyClass);
