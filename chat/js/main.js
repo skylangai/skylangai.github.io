@@ -1,5 +1,8 @@
 import { createApp } from 'vue';
-import AppShell from './components/AppShell.js';
+import AppShell from './components/AppShell.vue';
+
+/* PR1: 暂保持旧 CSS 整体导入；PR2 会按组件搬进各 .vue 的 <style scoped> */
+import '../css/style.css';
 
 const app = createApp(AppShell);
 
