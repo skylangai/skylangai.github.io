@@ -1,8 +1,11 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useView } from '../composables/useView.js';
 import { useSessions } from '../composables/useSessions.js';
 import { useModels } from '../composables/useModels.js';
+import { useAuth } from '../composables/useAuth.js';
+import { useFinance } from '../composables/useFinance.js';
+import { DEBUG } from '../api/config.js';
 import { sendMessage as apiSendMessage, uploadAttachments } from '../api/chat.js';
 import { FIXED_ANSWER } from '../mock/fixedAnswer.js';
 
@@ -16,7 +19,8 @@ import SkillsModal from './SkillsModal.vue';
 import NoticeModal from './NoticeModal.vue';
 import AuthModal from './AuthModal.vue';
 
-/* 模拟 AJAX 在 finalize 之前会顺序展示的工具调用（仅 UI mock） */
+/* 模拟 AJAX 在 finalize 之前会顺序展示的工具调用（仅 UI mock）。
+ * 真后端会通过 SSE 'thinking' 事件实时下发，覆盖这个默认值。 */
 const DEFAULT_TOOLS = [
   { name: 'Read', args: ['…6136-5293-817403/agent-core/skills/alibaba-hot-product-insight/SKILL.md'] },
   { name: 'Cron list', args: [] },
@@ -27,11 +31,16 @@ const DEFAULT_TOOLS = [
   }
 ];
 
-const ANIM_MIN_MS = 1500; // 即使 fake API 即时返回，也至少 loading 这么久，更像真请求
+const ANIM_MIN_MS = 1500; // DEBUG 模式下"假装"loading 至少这么久，避免一闪而过
 
 const { state: viewState, isWelcome, isChat, isStats, goWelcome, goChat } = useView();
 const sess = useSessions();
 const { state: modelState } = useModels();
+const auth = useAuth();
+const fin = useFinance();
+
+/* 启动时调一次 /me 恢复登录态：cookie 在 → 自动恢复；cookie 失效 → 弹出登录可由用户自助 */
+onMounted(() => { auth.bootstrap(); });
 
 /* ============== Modal 开关 ============== */
 const contactOpen = ref(false);
@@ -120,24 +129,82 @@ function handleSend(text, attachments) {
     console.warn('[upload] failed', err);
   });
 
-  /* 7) 触发 AJAX */
+  /* 7) 触发对话请求 */
   const startTs = Date.now();
-  apiSendMessage({
-    sessionId: sessionIdAtSend,
-    message: text,
-    model: modelState.currentModelId,
-    attachments: userAttachmentsMeta
-  }).finally(() => {
-    /* 至少 loading ANIM_MIN_MS，避免一闪而过 */
-    const waited = Date.now() - startTs;
-    const wait = Math.max(0, ANIM_MIN_MS - waited);
-    setTimeout(() => {
-      finalize(sessionIdAtSend, placeholder, startTs);
-    }, wait);
-  });
+
+  if (DEBUG) {
+    /* DEBUG: 老 mock 行为，假装 ANIM_MIN_MS 后用 FIXED_ANSWER 收尾 */
+    apiSendMessage({
+      sessionId: sessionIdAtSend,
+      message: text,
+      model: modelState.currentModelId,
+      attachments: userAttachmentsMeta
+    }).finally(() => {
+      const waited = Date.now() - startTs;
+      const wait = Math.max(0, ANIM_MIN_MS - waited);
+      setTimeout(() => finalizeMock(placeholder, startTs), wait);
+    });
+    return;
+  }
+
+  /* 非 DEBUG：走 SSE，实时按 token 增量拼到 placeholder.content */
+  let toolsLive = [];     // 由真后端 thinking 事件累积，替换 DEFAULT_TOOLS
+  let acc = '';
+  apiSendMessage(
+    {
+      sessionId: sessionIdAtSend,
+      message: text,
+      model: modelState.currentModelId,
+      attachments: userAttachmentsMeta
+    },
+    {
+      onThinking: (d) => {
+        // backend: { type:'tool_call', tool:'READ'|'WRITE'|'BASH', summary }
+        toolsLive.push({
+          name: (d && d.tool) || 'Tool',
+          args: d && d.summary ? [d.summary] : []
+        });
+        placeholder._liveFlags.tools = toolsLive.slice();
+      },
+      onChunk: (d) => {
+        if (!d || typeof d.delta !== 'string') return;
+        acc += d.delta;
+        placeholder.content = acc;
+        // 第一个 chunk 到达就退出 loading，UI 即可"打字"展示
+        if (placeholder._liveFlags.pending) {
+          placeholder._liveFlags.pending = false;
+        }
+      },
+      onDone: (d) => {
+        if (d && typeof d.message === 'string' && !acc) {
+          // 兜底：万一一个 chunk 都没到，用 done.message 一次性填
+          placeholder.content = d.message;
+        }
+        placeholder._liveFlags.pending = false;
+        placeholder._liveFlags.elapsed = Math.max(1, Math.round((Date.now() - startTs) / 1000));
+        // 计费 / 余额增量
+        fin.applyTurnDelta({ usage: d && d.usage, balance: d && d.balance });
+        // 第一轮对话之后，本会话从此被标记为"已加载完整 messages"，
+        // 重新点击侧栏不会再 POST /chat/messages。
+        const cur = sess.state.sessions[sessionIdAtSend];
+        if (cur) cur.loaded = true;
+      },
+      onError: (d) => {
+        const m = (d && d.message) || '请求失败';
+        placeholder.content = '⚠️ ' + m;
+        placeholder._liveFlags.pending = false;
+        placeholder._liveFlags.elapsed = Math.max(1, Math.round((Date.now() - startTs) / 1000));
+        // 余额不足 / 未登录 等错误：考虑弹登录框
+        if (d && d.code === 1030) {
+          openAuth();
+        }
+      }
+    }
+  );
 }
 
-function finalize(sessionId, placeholder, startTs) {
+/* DEBUG 模式收尾：固定回答 */
+function finalizeMock(placeholder, startTs) {
   const elapsedSec = Math.max(1, Math.round((Date.now() - startTs) / 1000));
   placeholder.content = FIXED_ANSWER;
   placeholder._liveFlags.pending = false;

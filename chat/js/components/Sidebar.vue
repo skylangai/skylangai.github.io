@@ -4,6 +4,7 @@ import { useSessions } from '../composables/useSessions.js';
 import { useView } from '../composables/useView.js';
 import { useAuth } from '../composables/useAuth.js';
 import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
+import { loadMessages as apiLoadMessages } from '../api/chat.js';
 
 /* 左侧边栏：能力组 + 对话历史 + 使用统计入口
  *
@@ -15,20 +16,43 @@ import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
  */
 const emit = defineEmits(['new-chat', 'open-skills', 'demo-notice', 'open-auth']);
 
-const { state, sessionList, selectSession } = useSessions();
+const { state, sessionList, selectSession, replaceMessages, markLoaded } = useSessions();
 const { state: viewState, goStats, goChat } = useView();
 const { isLoggedIn, displayName, initial, logout } = useAuth();
 
 const collapsed = ref(false);
+/* 防止用户在请求未回来时连点同一个会话，发出多次 POST /chat/messages */
+const fetchingId = ref('');
 
 function toggleCollapsed() {
   collapsed.value = !collapsed.value;
 }
 
-function pickSession(id) {
+async function pickSession(id) {
   selectSession(id);
   /* 选中会话后必须同时切到对话视图，否则用户停在欢迎/统计页看不到效果 */
   goChat();
+
+  /* 首次点击且后端尚未加载过：拉一次完整 messages；之后命中前端缓存不再发请求 */
+  const sess = state.sessions[id];
+  if (!sess || sess.loaded) return;
+  if (fetchingId.value === id) return;
+  fetchingId.value = id;
+  try {
+    const res = await apiLoadMessages(id);
+    if (res && res.ok && Array.isArray(res.messages)) {
+      replaceMessages(id, res.messages);
+    } else {
+      // 失败也置 loaded：避免每次点都重打；用户可下次新对话产生数据
+      markLoaded(id, true);
+      console.warn('[chat] loadMessages failed:', res);
+    }
+  } catch (e) {
+    markLoaded(id, true);
+    console.warn('[chat] loadMessages error:', e);
+  } finally {
+    fetchingId.value = '';
+  }
 }
 
 function onNewChat(e) {

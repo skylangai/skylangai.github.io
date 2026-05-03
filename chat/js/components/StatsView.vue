@@ -1,24 +1,38 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { USAGE_STATS } from '../mock/usageStats.js';
+import { ref, computed, watch, onMounted } from 'vue';
 import { USAGE_RECORDS, USAGE_PAGE_SIZE } from '../mock/usageRecords.js';
 import { formatNumber, formatMoney } from '../utils/format.js';
+import { DEBUG } from '../api/config.js';
+import { useFinance } from '../composables/useFinance.js';
+import { useAuth } from '../composables/useAuth.js';
+import { useView } from '../composables/useView.js';
 import Pager from './Pager.vue';
 
+/* 上栏 5 张概览卡：实时绑定 useFinance 单例 state。
+ *   - 用户登录 / 注册 / 刷新页面 → useAuth.bootstrap → /me 写入 finance
+ *   - 每次对话 done 事件 → useFinance.applyTurnDelta 增量更新
+ *
+ * 下栏详细使用记录：后端目前未提供"按请求审计"接口（user_finance 只存累计聚合，
+ * 没存单条 history）。
+ *   - DEBUG 模式：仍用本地 mock 演示分页/表格样式
+ *   - 非 DEBUG 模式：显示空态，等后端补 GET /api/finance/records 后再接上 */
+const fin = useFinance();
+const auth = useAuth();
+const { isStats } = useView();
+const { isLoggedIn } = auth;
+
+const records = computed(() => (DEBUG ? USAGE_RECORDS : []));
 const page = ref(1);
-
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(USAGE_RECORDS.length / USAGE_PAGE_SIZE))
+  Math.max(1, Math.ceil(records.value.length / USAGE_PAGE_SIZE))
 );
-
 const pageSlice = computed(() => {
   const p = Math.min(Math.max(1, page.value), totalPages.value);
   const start = (p - 1) * USAGE_PAGE_SIZE;
-  return USAGE_RECORDS.slice(start, start + USAGE_PAGE_SIZE);
+  return records.value.slice(start, start + USAGE_PAGE_SIZE);
 });
-
 const usageMeta = computed(() =>
-  `共 ${USAGE_RECORDS.length} 条 · 第 ${page.value} / ${totalPages.value} 页`
+  `共 ${records.value.length} 条 · 第 ${page.value} / ${totalPages.value} 页`
 );
 
 /* 概览卡的 SVG 图标（作为字符串塞进 v-html，CSS 决定大小颜色） */
@@ -49,48 +63,58 @@ const ICONS = {
 };
 
 const cards = computed(() => {
-  const s = USAGE_STATS;
-  const remaining = Math.max(0, s.quotaTotal - s.quotaUsed);
-  const remainPct = s.quotaTotal > 0 ? (remaining / s.quotaTotal) * 100 : 0;
+  const s = fin.state;          // 直接读 reactive，state 变化时本 computed 自动重算
+  const total     = s.token_total;
+  const used      = s.token_used;
+  const remaining = Math.max(0, s.balance);
+  const remainPct = total > 0 ? (remaining / total) * 100 : 0;
   return [
     {
       tone: 'tone-balance',
-      label: '本月剩余额度',
-      value: '$' + formatMoney(remaining),
-      subText: `${remainPct.toFixed(1)}% / $${formatMoney(s.quotaTotal)}`,
+      label: '剩余额度',
+      value: formatNumber(remaining),
+      subText: total > 0
+        ? `${remainPct.toFixed(1)}% / 总量 ${formatNumber(total)}`
+        : '总量 0',
       progressPct: remainPct,
       icon: ICONS.balance
     },
     {
       tone: 'tone-cost',
-      label: '总费用',
-      value: '$' + formatMoney(s.quotaUsed),
-      subText: '本月累计消费',
+      label: '总消耗',
+      value: formatNumber(used),
+      subText: '累计已用 token',
       icon: ICONS.cost
     },
     {
       tone: 'tone-req',
       label: '总请求数',
-      value: formatNumber(s.requestCount),
+      value: formatNumber(s.request_count),
       subText: '次调用',
       icon: ICONS.req
     },
     {
       tone: 'tone-in',
       label: '输入 Tokens',
-      value: formatNumber(s.inputTokens),
+      value: formatNumber(s.input_tokens),
       subText: 'Prompt 总量',
       icon: ICONS.in
     },
     {
       tone: 'tone-out',
       label: '输出 Tokens',
-      value: formatNumber(s.outputTokens),
+      value: formatNumber(s.output_tokens),
       subText: '回复总量',
       icon: ICONS.out
     }
   ];
 });
+
+/* 进入"使用统计"页时主动拉一次 /me 把 finance 校准到最新。
+ * 多 tab 同时操作 / 长期闲置后切回来都能看到最新数据。 */
+onMounted(() => { if (isStats.value) auth.refresh(); });
+watch(isStats, (v) => { if (v) auth.refresh(); });
+
 </script>
 
 <template>
@@ -101,6 +125,11 @@ const cards = computed(() => {
           <h2 class="stats-title">使用统计</h2>
           <span class="stats-period">本月数据</span>
         </header>
+
+        <!-- 未登录提示：DEBUG 模式下不显示（仍允许展示 mock 数据） -->
+        <div v-if="!DEBUG && !isLoggedIn" class="stats-empty-hint">
+          请先登录后查看你的使用统计。
+        </div>
 
         <!-- 上栏：5 张概览卡 -->
         <div class="stats-cards">
@@ -147,7 +176,12 @@ const cards = computed(() => {
               </thead>
               <tbody>
                 <tr v-if="pageSlice.length === 0">
-                  <td colspan="4" class="usage-empty">暂无使用记录</td>
+                  <td colspan="4" class="usage-empty">
+                    <template v-if="!DEBUG">
+                      详细记录功能开发中（待后端 <code>GET /api/finance/records</code> 接口）
+                    </template>
+                    <template v-else>暂无使用记录</template>
+                  </td>
                 </tr>
                 <tr v-for="r in pageSlice" :key="r.ts">
                   <td class="cell-time">{{ r.time }}</td>
@@ -204,6 +238,15 @@ const cards = computed(() => {
   background: var(--chip-bg);
   padding: 4px 10px;
   border-radius: 999px;
+}
+.stats-empty-hint {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  font-size: 13.5px;
+  color: var(--text-sub);
 }
 
 /* 概览卡片 */

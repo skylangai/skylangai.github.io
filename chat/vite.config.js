@@ -12,7 +12,16 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     port: 5173,
-    open: false
+    open: false,
+    /* 把 /api/** 反向代理到本地 FastAPI 后端，避免开发期 CORS / cookie 问题。
+     * 上线后由 nginx 做同样的事，前端代码无须感知。 */
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: false,
+        ws: false
+      }
+    }
   },
   build: {
     outDir: 'dist',
