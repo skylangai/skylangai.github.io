@@ -164,6 +164,16 @@ function markLoaded(sessionId, loaded = true) {
   if (sess) sess.loaded = !!loaded;
 }
 
+/* 删除单个 session（仅本地状态；后端通过 api/chat.deleteSession 单独调） */
+function removeSession(sessionId) {
+  if (!state.sessions[sessionId]) return;
+  delete state.sessions[sessionId];
+  state.order = state.order.filter((id) => id !== sessionId);
+  if (state.currentSessionId === sessionId) {
+    state.currentSessionId = null;
+  }
+}
+
 /* 完全清空（退出登录时） */
 function clearAll() {
   state.currentSessionId = null;
@@ -186,6 +196,7 @@ export function useSessions() {
     ingestFromServer,
     replaceMessages,
     markLoaded,
+    removeSession,
     clearAll
   };
 }

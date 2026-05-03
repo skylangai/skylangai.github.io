@@ -74,3 +74,22 @@ export async function apiGetJson(path, timeoutMs = REQUEST_TIMEOUT_MS) {
     return { ok: false, code: 9000, message: '网络异常：' + (e && e.message || e) };
   }
 }
+
+/* DELETE 同 POST 共用一份归一化逻辑，主要给删除 / 取消订阅类操作用 */
+export async function apiDeleteJson(path, timeoutMs = REQUEST_TIMEOUT_MS) {
+  try {
+    const r = await fetchWithTimeout(
+      API_BASE + path,
+      { method: 'DELETE', credentials: 'include' },
+      timeoutMs
+    );
+    return await r.json().catch(() => ({
+      ok: false, code: 9001, message: 'HTTP ' + r.status + '（响应非 JSON）'
+    }));
+  } catch (e) {
+    if (e && e.name === 'AbortError') {
+      return { ok: false, code: 9002, message: '请求超时' };
+    }
+    return { ok: false, code: 9000, message: '网络异常：' + (e && e.message || e) };
+  }
+}

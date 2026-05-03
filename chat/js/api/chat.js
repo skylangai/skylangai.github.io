@@ -11,7 +11,9 @@ import {
   DEBUG,
   REQUEST_TIMEOUT_MS,
   fetchWithTimeout,
-  apiPostJson
+  apiPostJson,
+  apiGetJson,
+  apiDeleteJson
 } from './config.js';
 import { streamSSE } from './sse.js';
 
@@ -101,6 +103,44 @@ export function loadMessages(sessionId) {
     });
   }
   return apiPostJson('/chat/messages', { sessionId });
+}
+
+/**
+ * 删除某个 session（连带后端的对话历史 + 详细使用记录）。
+ *
+ * @param {string} sessionId
+ * @returns {Promise<{ok:boolean, code:number, message?:string, sessionId?:string}>}
+ *
+ * DEBUG 模式：直接返回 ok（侧栏自己清本地数据即可，不涉及后端）。
+ */
+export function deleteSession(sessionId) {
+  if (DEBUG) {
+    return Promise.resolve({ ok: true, code: 0, sessionId });
+  }
+  return apiDeleteJson('/chat/sessions/' + encodeURIComponent(sessionId));
+}
+
+/**
+ * 详细使用记录分页拉取。
+ *
+ * @param {object} opts
+ *   - page (1-based)         默认 1
+ *   - pageSize               默认 20，硬上限受后端 100 约束
+ * @returns {Promise<{ok:boolean, code:number, total?:number,
+ *                    offset?:number, limit?:number,
+ *                    records?:Array<{id:number, sessionId:string, messageId:number,
+ *                                    prompt:string, inputTokens:number, outputTokens:number,
+ *                                    totalTokens:number, cost:number, ts:number}>}>}
+ */
+export function loadUsageRecords({ page = 1, pageSize = 20 } = {}) {
+  if (DEBUG) {
+    return Promise.resolve({
+      ok: true, code: 0, total: 0, offset: 0, limit: pageSize, records: []
+    });
+  }
+  const offset = Math.max(0, (page - 1) * pageSize);
+  const limit  = Math.max(1, Math.min(100, pageSize));
+  return apiGetJson(`/finance/records?offset=${offset}&limit=${limit}`);
 }
 
 /**

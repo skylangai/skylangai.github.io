@@ -6,34 +6,116 @@ import { DEBUG } from '../api/config.js';
 import { useFinance } from '../composables/useFinance.js';
 import { useAuth } from '../composables/useAuth.js';
 import { useView } from '../composables/useView.js';
+import { loadUsageRecords as apiLoadUsageRecords } from '../api/chat.js';
 import Pager from './Pager.vue';
 
 /* 上栏 5 张概览卡：实时绑定 useFinance 单例 state。
  *   - 用户登录 / 注册 / 刷新页面 → useAuth.bootstrap → /me 写入 finance
  *   - 每次对话 done 事件 → useFinance.applyTurnDelta 增量更新
  *
- * 下栏详细使用记录：后端目前未提供"按请求审计"接口（user_finance 只存累计聚合，
- * 没存单条 history）。
+ * 下栏详细使用记录：
  *   - DEBUG 模式：仍用本地 mock 演示分页/表格样式
- *   - 非 DEBUG 模式：显示空态，等后端补 GET /api/finance/records 后再接上 */
+ *   - 非 DEBUG 模式：lazy 调 GET /api/finance/records?offset&limit
+ *     + 翻页只拉当前页，不会一次把所有记录搬到内存
+ *     + 切到本视图、登录/退出、对话完成（finance 增量变化）都会重新拉当前页 */
 const fin = useFinance();
 const auth = useAuth();
 const { isStats } = useView();
 const { isLoggedIn } = auth;
 
-const records = computed(() => (DEBUG ? USAGE_RECORDS : []));
 const page = ref(1);
+const pageSize = USAGE_PAGE_SIZE;
+
+/* DEBUG: 用本地 mock 切片；正式: 由远端拉取（remoteRecords + remoteTotal） */
+const remoteRecords = ref([]);
+const remoteTotal = ref(0);
+const loadingRecords = ref(false);
+const recordsError = ref('');
+
+const totalCount = computed(() => (DEBUG ? USAGE_RECORDS.length : remoteTotal.value));
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(records.value.length / USAGE_PAGE_SIZE))
+  Math.max(1, Math.ceil((totalCount.value || 0) / pageSize))
 );
 const pageSlice = computed(() => {
-  const p = Math.min(Math.max(1, page.value), totalPages.value);
-  const start = (p - 1) * USAGE_PAGE_SIZE;
-  return records.value.slice(start, start + USAGE_PAGE_SIZE);
+  if (DEBUG) {
+    const p = Math.min(Math.max(1, page.value), totalPages.value);
+    const start = (p - 1) * pageSize;
+    return USAGE_RECORDS.slice(start, start + pageSize).map((r) => ({
+      ts: r.ts, time: r.time, prompt: r.prompt, tokens: r.tokens, cost: r.cost
+    }));
+  }
+  // 正式：把后端 record 形状映射成表格列需要的结构
+  return remoteRecords.value.map((r) => ({
+    ts: r.ts,
+    time: _fmtTime(r.ts),
+    prompt: r.prompt || '(空)',
+    tokens: r.totalTokens,
+    cost: r.cost
+  }));
 });
 const usageMeta = computed(() =>
-  `共 ${records.value.length} 条 · 第 ${page.value} / ${totalPages.value} 页`
+  `共 ${totalCount.value} 条 · 第 ${page.value} / ${totalPages.value} 页`
 );
+
+function _fmtTime(ms) {
+  if (!ms) return '';
+  const d = new Date(ms);
+  // 与 mock 数据一致：YYYY-MM-DD HH:mm
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
+         `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* 拉取当前页（非 DEBUG）。串行号防止快速翻页时旧请求覆盖新请求。 */
+let _reqSeq = 0;
+async function fetchCurrentPage() {
+  if (DEBUG) return;
+  if (!isLoggedIn.value) {
+    remoteRecords.value = [];
+    remoteTotal.value = 0;
+    return;
+  }
+  const my = ++_reqSeq;
+  loadingRecords.value = true;
+  recordsError.value = '';
+  try {
+    const res = await apiLoadUsageRecords({ page: page.value, pageSize });
+    if (my !== _reqSeq) return;  // 已被新请求覆盖
+    if (res && res.ok) {
+      remoteRecords.value = Array.isArray(res.records) ? res.records : [];
+      remoteTotal.value = Number(res.total || 0);
+      // 如果后端返回的 total 显示当前页越界（被删了一些），自动跳回最后一页
+      const maxPage = Math.max(1, Math.ceil(remoteTotal.value / pageSize));
+      if (page.value > maxPage) {
+        page.value = maxPage;
+        fetchCurrentPage();
+      }
+    } else {
+      recordsError.value = (res && res.message) || '加载失败';
+      remoteRecords.value = [];
+      remoteTotal.value = 0;
+    }
+  } catch (e) {
+    if (my !== _reqSeq) return;
+    recordsError.value = (e && e.message) || String(e);
+  } finally {
+    if (my === _reqSeq) loadingRecords.value = false;
+  }
+}
+
+/* 翻页时拉一次（pager 通过 update:page 改 page.value） */
+watch(page, () => fetchCurrentPage());
+/* 登录态变化时清空并重拉（退出登录 → 空；登录后 → 拉第 1 页） */
+watch(isLoggedIn, (v) => {
+  page.value = 1;
+  remoteRecords.value = [];
+  remoteTotal.value = 0;
+  if (v && isStats.value) fetchCurrentPage();
+});
+/* 用户在本页发起新对话后 finance 会变 → 顺带刷一下记录 */
+watch(() => fin.state.request_count, () => {
+  if (isStats.value && isLoggedIn.value) fetchCurrentPage();
+});
 
 /* 概览卡的 SVG 图标（作为字符串塞进 v-html，CSS 决定大小颜色） */
 const ICONS = {
@@ -83,7 +165,7 @@ const cards = computed(() => {
       tone: 'tone-cost',
       label: '总消耗',
       value: formatNumber(used),
-      subText: '累计已用 token',
+      subText: '累计消耗金额',
       icon: ICONS.cost
     },
     {
@@ -110,10 +192,20 @@ const cards = computed(() => {
   ];
 });
 
-/* 进入"使用统计"页时主动拉一次 /me 把 finance 校准到最新。
+/* 进入"使用统计"页时主动拉一次 /me 把 finance 校准到最新；同时刷新当前页记录。
  * 多 tab 同时操作 / 长期闲置后切回来都能看到最新数据。 */
-onMounted(() => { if (isStats.value) auth.refresh(); });
-watch(isStats, (v) => { if (v) auth.refresh(); });
+onMounted(() => {
+  if (isStats.value) {
+    auth.refresh();
+    fetchCurrentPage();
+  }
+});
+watch(isStats, (v) => {
+  if (v) {
+    auth.refresh();
+    fetchCurrentPage();
+  }
+});
 
 </script>
 
@@ -175,15 +267,21 @@ watch(isStats, (v) => { if (v) auth.refresh(); });
                 </tr>
               </thead>
               <tbody>
-                <tr v-if="pageSlice.length === 0">
+                <tr v-if="!DEBUG && loadingRecords && pageSlice.length === 0">
+                  <td colspan="4" class="usage-empty">加载中…</td>
+                </tr>
+                <tr v-else-if="!DEBUG && recordsError">
+                  <td colspan="4" class="usage-empty" style="color:#ef4444">
+                    加载失败：{{ recordsError }}
+                  </td>
+                </tr>
+                <tr v-else-if="pageSlice.length === 0">
                   <td colspan="4" class="usage-empty">
-                    <template v-if="!DEBUG">
-                      详细记录功能开发中（待后端 <code>GET /api/finance/records</code> 接口）
-                    </template>
+                    <template v-if="!DEBUG && !isLoggedIn">请先登录后查看你的使用记录</template>
                     <template v-else>暂无使用记录</template>
                   </td>
                 </tr>
-                <tr v-for="r in pageSlice" :key="r.ts">
+                <tr v-for="(r, i) in pageSlice" :key="r.ts + '_' + i">
                   <td class="cell-time">{{ r.time }}</td>
                   <td class="cell-prompt" :title="r.prompt">{{ r.prompt }}</td>
                   <td class="cell-tokens">{{ formatNumber(r.tokens) }}</td>
@@ -193,7 +291,7 @@ watch(isStats, (v) => { if (v) auth.refresh(); });
             </table>
           </div>
 
-          <Pager :page="page" :total-pages="totalPages" :page-size="USAGE_PAGE_SIZE"
+          <Pager :page="page" :total-pages="totalPages" :page-size="pageSize"
                  @update:page="page = $event" />
         </section>
       </div>
