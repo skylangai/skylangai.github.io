@@ -2,6 +2,9 @@
 import { computed } from 'vue';
 import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
 import { formatFileSize } from '../utils/format.js';
+import { useAuth } from '../composables/useAuth.js';
+
+const { displayName: authDisplayName, initial: authInitial } = useAuth();
 
 /* 单条消息渲染：根据 msg.role 与 msg._liveFlags 决定形态
  *
@@ -38,9 +41,9 @@ const statusText = computed(() => {
 <template>
   <!-- 用户消息 -->
   <div v-if="isUser" class="msg msg-user">
-    <div class="avatar avatar-user">L</div>
+    <div class="avatar avatar-user">{{ authInitial }}</div>
     <div class="msg-body">
-      <div class="user-name-tag">Lin Yun</div>
+      <div class="user-name-tag">{{ authDisplayName }}</div>
       <div v-if="msg.attachments && msg.attachments.length" class="user-attachments">
         <div v-for="a in msg.attachments" :key="a.name + a.size" class="user-attachment-chip" :title="a.name">
           <span class="att-ic"><i class="fa fa-file-o"></i></span>

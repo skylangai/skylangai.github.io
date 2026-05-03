@@ -14,6 +14,7 @@ import StatsView from './StatsView.vue';
 import ContactModal from './ContactModal.vue';
 import SkillsModal from './SkillsModal.vue';
 import NoticeModal from './NoticeModal.vue';
+import AuthModal from './AuthModal.vue';
 
 /* 模拟 AJAX 在 finalize 之前会顺序展示的工具调用（仅 UI mock） */
 const DEFAULT_TOOLS = [
@@ -36,10 +37,12 @@ const { state: modelState } = useModels();
 const contactOpen = ref(false);
 const skillsOpen  = ref(false);
 const noticeOpen  = ref(false);
+const authOpen    = ref(false);
 const noticeFeature = ref('');
 
 function openContact() { contactOpen.value = true; }
 function openSkills()  { skillsOpen.value = true; }
+function openAuth()    { authOpen.value    = true; }
 function openNotice(feature) {
   noticeFeature.value = feature || '';
   noticeOpen.value = true;
@@ -147,7 +150,8 @@ function finalize(sessionId, placeholder, startTs) {
     <Sidebar
       @new-chat="onNewChat"
       @open-skills="openSkills"
-      @demo-notice="openNotice" />
+      @demo-notice="openNotice"
+      @open-auth="openAuth" />
 
     <main class="main">
       <FloatActions @open-contact="openContact" />
@@ -160,6 +164,7 @@ function finalize(sessionId, placeholder, startTs) {
     <ContactModal v-model:open="contactOpen" />
     <SkillsModal  v-model:open="skillsOpen" @demo-notice="openNotice" />
     <NoticeModal  v-model:open="noticeOpen" :feature="noticeFeature" @contact="onNoticeContact" />
+    <AuthModal    v-model:open="authOpen" />
   </div>
 </template>
 
