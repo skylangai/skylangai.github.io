@@ -6,12 +6,18 @@ import { DEFAULT_SESSION_TITLE, TITLE_MAX_LEN } from '../mock/fixedAnswer.js';
  * sessions: { sessionId -> { id, title, messages: [...],
  *                            updatedAt: number,
  *                            messageCount: number,
- *                            loaded: boolean    ← 是否已从后端拉过完整消息 } }
+ *                            loaded: boolean,    ← 是否已从后端拉过完整消息
+ *                            localOnly: boolean  ← 仅本地存在、还未被服务器确认 } }
  *
  * loaded 字段决定首次点击 session 时是否需要发 POST /chat/messages。
  * - 通过用户当前会话发送过消息 → loaded = true（已经在内存里）
  * - 通过 /me 返回的列表填充 → loaded = false（只有 title，没拉过 messages）
  * - 拉过 /chat/messages 一次 → loaded = true（后续点击直接命中前端缓存）
+ *
+ * localOnly 字段防止"流式中的新会话被 ingestFromServer 误删"：
+ * - createSession 出来时为 true（后端 _persist_turn 还没跑，/me 不会返回它）
+ * - 一旦 SSE done 落库后，下一次 ingestFromServer 会看到服务器有了，自动清掉
+ * - ingestFromServer 在删除阶段会跳过 localOnly 的会话
  */
 const state = reactive({
   sessions: {},
@@ -43,7 +49,11 @@ function deriveTitle(text, attachments) {
     : source;
 }
 
-/* 创建新会话槽位（用户首次发消息时调用） */
+/* 创建新会话槽位（用户首次发消息时调用）
+ * - unshift 到 order 顶部：新会话出现在侧栏最上方，符合"最新在最上"的直觉
+ * - 标 localOnly：在 SSE done 把它持久化到后端之前，任何 ingestFromServer
+ *   都不能把它当成"服务器没有的孤儿"删掉
+ */
 function createSession() {
   const id = makeSessionId();
   state.sessions[id] = {
@@ -52,9 +62,10 @@ function createSession() {
     messages: [],
     updatedAt: Date.now(),
     messageCount: 0,
-    loaded: true            // 本地新建：消息全在内存，无需再拉
+    loaded: true,
+    localOnly: true
   };
-  state.order.push(id);
+  state.order.unshift(id);
   state.currentSessionId = id;
   return state.sessions[id];
 }
@@ -96,12 +107,13 @@ function setTitle(sessionId, title) {
 function ingestFromServer(remoteSessions) {
   const list = Array.isArray(remoteSessions) ? remoteSessions : [];
 
-  // 1) 删掉服务器已经没有的会话（保留当前选中以避免界面闪掉，但若被选中也跟着切走）
+  // 1) 删掉服务器已经没有的会话；但 localOnly 的会话（流式还没落库）跳过，
+  //    否则会出现"用户发完一条消息切到使用统计 → 新会话被 ingest 误删"的现象
   const remoteIds = new Set(list.map((s) => s.sessionId));
   for (const id of Object.keys(state.sessions)) {
-    if (!remoteIds.has(id)) {
-      delete state.sessions[id];
-    }
+    if (remoteIds.has(id)) continue;
+    if (state.sessions[id] && state.sessions[id].localOnly) continue;
+    delete state.sessions[id];
   }
 
   // 2) 写入 / 更新
@@ -112,6 +124,8 @@ function ingestFromServer(remoteSessions) {
       existing.title = s.title || existing.title || DEFAULT_SESSION_TITLE;
       existing.updatedAt = s.updatedAt || existing.updatedAt || 0;
       existing.messageCount = s.messageCount ?? existing.messageCount ?? 0;
+      // 服务器现在已经知道这条 session 了，清掉 localOnly 标记
+      if (existing.localOnly) existing.localOnly = false;
       // 不重置 loaded / messages：用户可能已经看过这个会话
     } else {
       state.sessions[id] = {
@@ -120,16 +134,19 @@ function ingestFromServer(remoteSessions) {
         messages: [],
         updatedAt: s.updatedAt || 0,
         messageCount: s.messageCount || 0,
-        loaded: false
+        loaded: false,
+        localOnly: false
       };
     }
   }
 
-  // 3) order：按 updatedAt 倒序
-  state.order = Object.values(state.sessions)
-    .slice()
-    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
-    .map((s) => s.id);
+  // 3) order：localOnly（流式中的新会话）固定排最上面，其余按 updatedAt 倒序
+  const all = Object.values(state.sessions).slice();
+  const pending = all.filter((s) => s.localOnly)
+                     .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  const persisted = all.filter((s) => !s.localOnly)
+                       .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  state.order = [...pending, ...persisted].map((s) => s.id);
 
   // 4) 当前选中如果消失了就清空
   if (state.currentSessionId && !state.sessions[state.currentSessionId]) {
@@ -164,6 +181,17 @@ function markLoaded(sessionId, loaded = true) {
   if (sess) sess.loaded = !!loaded;
 }
 
+/* SSE done 之后调用：告诉前端这条 session 已经在后端落库了，
+ * 摘掉 localOnly 标记，下一次 ingestFromServer 排序时它就跟其它会话一样按
+ * updatedAt 排，不会被永远钉在最顶部。 */
+function markPersisted(sessionId) {
+  const sess = state.sessions[sessionId];
+  if (sess) {
+    sess.localOnly = false;
+    sess.updatedAt = Date.now();
+  }
+}
+
 /* 删除单个 session（仅本地状态；后端通过 api/chat.deleteSession 单独调） */
 function removeSession(sessionId) {
   if (!state.sessions[sessionId]) return;
@@ -196,6 +224,7 @@ export function useSessions() {
     ingestFromServer,
     replaceMessages,
     markLoaded,
+    markPersisted,
     removeSession,
     clearAll
   };

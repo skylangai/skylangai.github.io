@@ -19,9 +19,10 @@ import SkillsModal from './SkillsModal.vue';
 import NoticeModal from './NoticeModal.vue';
 import AuthModal from './AuthModal.vue';
 
-/* 模拟 AJAX 在 finalize 之前会顺序展示的工具调用（仅 UI mock）。
- * 真后端会通过 SSE 'thinking' 事件实时下发，覆盖这个默认值。 */
-const DEFAULT_TOOLS = [
+/* DEBUG 模式下"假装"thinking 阶段会展示的工具调用占位（仅 UI mock）。
+ * 非 DEBUG 模式下默认空：真实 thinking/工具事件由后端 SSE thinking 事件实时下发，
+ * 没有就保持空，避免误导用户以为模型真做了某些操作。 */
+const MOCK_DEFAULT_TOOLS = [
   { name: 'Read', args: ['…6136-5293-817403/agent-core/skills/alibaba-hot-product-insight/SKILL.md'] },
   { name: 'Cron list', args: [] },
   { name: 'Bash', args: [
@@ -30,6 +31,7 @@ const DEFAULT_TOOLS = [
     ]
   }
 ];
+const DEFAULT_TOOLS = DEBUG ? MOCK_DEFAULT_TOOLS : [];
 
 const ANIM_MIN_MS = 1500; // DEBUG 模式下"假装"loading 至少这么久，避免一闪而过
 
@@ -116,7 +118,9 @@ function handleSend(text, attachments) {
     role: 'assistant',
     content: '',
     _liveFlags: {
-      tools: DEFAULT_TOOLS,
+      // 取独立副本：避免多条 placeholder 共享同一个数组引用，
+      // 后续 onThinking push 才不会串扰到其它消息。
+      tools: DEFAULT_TOOLS.slice(),
       elapsed: 0,
       pending: true
     }
@@ -188,6 +192,9 @@ function handleSend(text, attachments) {
         // 重新点击侧栏不会再 POST /chat/messages。
         const cur = sess.state.sessions[sessionIdAtSend];
         if (cur) cur.loaded = true;
+        // SSE 完成 = 后端已经 _persist_turn 落库；摘掉 localOnly，
+        // 让下次 ingestFromServer 排序按 updatedAt 来，不要永远钉在最顶部。
+        sess.markPersisted(sessionIdAtSend);
       },
       onError: (d) => {
         const m = (d && d.message) || '请求失败';

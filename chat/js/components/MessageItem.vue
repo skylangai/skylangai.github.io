@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
 import { formatFileSize } from '../utils/format.js';
+import { renderMarkdown } from '../utils/markdown.js';
 import { useAuth } from '../composables/useAuth.js';
 
 const { displayName: authDisplayName, initial: authInitial } = useAuth();
@@ -36,6 +37,11 @@ const statusText = computed(() => {
   if (!live.value) return '';
   return live.value.pending ? '处理中...' : `已处理 ${live.value.elapsed}秒`;
 });
+
+/* assistant 消息正文走 Markdown（流式时 props.msg.content 每个 chunk 都会变，
+ * computed 自动重新跑 marked + DOMPurify，做到边流边渲染）。
+ * 用户消息不渲染 Markdown，bubble 仍走纯文本。 */
+const assistantHtml = computed(() => renderMarkdown(props.msg.content || ''));
 </script>
 
 <template>
@@ -77,14 +83,16 @@ const statusText = computed(() => {
             <span class="tool-caret">›</span>
           </div>
         </div>
-        <div v-if="live.pending" class="loading-dots">
+        <!-- live 形态：pending 时若一个 chunk 都没到就显示三个点；
+             chunk 一到就开始边流边渲染 Markdown -->
+        <div v-if="live.pending && !msg.content" class="loading-dots">
           <span></span><span></span><span></span>
         </div>
-        <div v-else class="msg-text">{{ msg.content }}</div>
+        <div v-else class="msg-text markdown-body" v-html="assistantHtml"></div>
       </template>
 
-      <!-- 历史回放：仅文本 -->
-      <div v-else class="msg-text">{{ msg.content }}</div>
+      <!-- 历史回放：同样按 Markdown 渲染 -->
+      <div v-else class="msg-text markdown-body" v-html="assistantHtml"></div>
     </div>
   </div>
 </template>
@@ -216,8 +224,10 @@ const statusText = computed(() => {
   font-size: 14px;
   line-height: 1.65;
   margin-bottom: 10px;
-  white-space: pre-wrap;
 }
+/* 注：markdown-body 的内部元素样式写在文件末尾的非 scoped 块里，
+ * 因为 v-html 注入的 DOM 节点不带 scoped 的 [data-v-xxx] 属性，
+ * scoped 选择器穿透不进去。 */
 
 /* 工具调用列表 */
 .tool-list {
@@ -274,3 +284,139 @@ const statusText = computed(() => {
   40% { opacity: 1; transform: scale(1); }
 }
 </style>
+
+<!-- 全局（非 scoped）：markdown 渲染出来的节点没有 [data-v-xxx]，必须在这里加。
+     只针对 .msg-assistant .markdown-body 子树生效，不会污染其它地方。 -->
+<style>
+.msg-assistant .markdown-body { word-break: break-word; }
+
+.msg-assistant .markdown-body > *:first-child { margin-top: 0; }
+.msg-assistant .markdown-body > *:last-child  { margin-bottom: 0; }
+
+.msg-assistant .markdown-body p {
+  margin: 0 0 8px;
+  line-height: 1.65;
+}
+
+/* 标题：和正文同色但加重 + 适当字号；放在聊天气泡内不需要太大 */
+.msg-assistant .markdown-body h1,
+.msg-assistant .markdown-body h2,
+.msg-assistant .markdown-body h3,
+.msg-assistant .markdown-body h4,
+.msg-assistant .markdown-body h5,
+.msg-assistant .markdown-body h6 {
+  margin: 14px 0 8px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text);
+}
+.msg-assistant .markdown-body h1 { font-size: 20px; }
+.msg-assistant .markdown-body h2 { font-size: 18px; }
+.msg-assistant .markdown-body h3 { font-size: 16px; }
+.msg-assistant .markdown-body h4 { font-size: 15px; }
+.msg-assistant .markdown-body h5,
+.msg-assistant .markdown-body h6 { font-size: 14px; }
+
+/* 强调 */
+.msg-assistant .markdown-body strong { font-weight: 700; }
+.msg-assistant .markdown-body em     { font-style: italic; }
+.msg-assistant .markdown-body del    { color: var(--text-muted); }
+
+/* 列表 */
+.msg-assistant .markdown-body ul,
+.msg-assistant .markdown-body ol {
+  margin: 4px 0 8px;
+  padding-left: 22px;
+}
+.msg-assistant .markdown-body li { margin: 2px 0; }
+.msg-assistant .markdown-body li > p { margin: 0 0 4px; }
+.msg-assistant .markdown-body input[type="checkbox"] {
+  margin: 0 6px 0 -18px;
+  vertical-align: middle;
+}
+
+/* 引用 */
+.msg-assistant .markdown-body blockquote {
+  margin: 8px 0;
+  padding: 4px 12px;
+  border-left: 3px solid var(--border);
+  color: var(--text-sub);
+  background: #fafbfc;
+  border-radius: 4px;
+}
+
+/* 行内代码 */
+.msg-assistant .markdown-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  background: #f3f4f6;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: #b9402b;
+}
+/* 围栏代码块：pre 包 code 时不要双重底色 */
+.msg-assistant .markdown-body pre {
+  margin: 8px 0;
+  padding: 12px 14px;
+  background: #0f172a;
+  color: #e5e7eb;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.msg-assistant .markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  border-radius: 0;
+}
+
+/* 表格：给个干净的边框，长内容横向滚动靠 pre/wrapping，不强制 overflow */
+.msg-assistant .markdown-body table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 13px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+.msg-assistant .markdown-body th,
+.msg-assistant .markdown-body td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.msg-assistant .markdown-body th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+.msg-assistant .markdown-body tr:nth-child(2n) td { background: #fafbfc; }
+
+/* 链接 */
+.msg-assistant .markdown-body a {
+  color: var(--primary, #2563eb);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+.msg-assistant .markdown-body a:hover { opacity: 0.85; }
+
+/* 分割线 */
+.msg-assistant .markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+
+/* 图片：避免 LLM 给的图把布局撑爆 */
+.msg-assistant .markdown-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 6px 0;
+}
+</style>
+
