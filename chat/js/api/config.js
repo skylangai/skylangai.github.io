@@ -21,6 +21,19 @@ export const REQUEST_TIMEOUT_MS = 15000;
 
 /* 中国大陆手机号：1 开头 + 第二位 3-9 + 9 位数字。auth 端点 + UI 共用 */
 export const CN_PHONE_RE = /^1[3-9]\d{9}$/;
+/* 邮箱：温和版本，覆盖常见情况；与后端 schemas.EMAIL_RE 等价 */
+export const EMAIL_RE = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+
+/* 把"用户在登录框里随便输的一串字符"分类成 phone / email / unknown，
+ * 让上层在 mock 分支 + UI 校验里只写一处分支逻辑。
+ * 返回：{ kind: 'phone' | 'email' | 'unknown', value: string } */
+export function classifyIdentifier(raw) {
+  const v = (raw || '').trim();
+  if (!v) return { kind: 'unknown', value: '' };
+  if (EMAIL_RE.test(v)) return { kind: 'email', value: v.toLowerCase() };
+  if (CN_PHONE_RE.test(v)) return { kind: 'phone', value: v };
+  return { kind: 'unknown', value: v };
+}
 
 /* fetch + AbortController 实现超时（替代 $.ajax 的 timeout） */
 export function fetchWithTimeout(url, options, timeoutMs = REQUEST_TIMEOUT_MS) {

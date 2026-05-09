@@ -7,18 +7,22 @@
  * 真后端响应统一形如：
  *   { ok, code, message?, token?, user?, finance?, sessions? }
  * 其中 finance / sessions 仅在登录态相关接口（register / login / me）里附带。
+ *
+ * 双渠道：所有"身份"字段都是 phone OR email 二选一；
+ * 调用方传入哪个就发哪个，约定后端二选一恰有其一。
  */
 import {
   DEBUG,
   CN_PHONE_RE,
+  EMAIL_RE,
   REQUEST_TIMEOUT_MS,
-  API_BASE,
   fetchWithTimeout,
   apiPostJson,
-  apiGetJson
+  apiGetJson,
+  classifyIdentifier
 } from './config.js';
 
-export { CN_PHONE_RE };
+export { CN_PHONE_RE, EMAIL_RE, classifyIdentifier };
 
 /* ============== mock 工具 ============== */
 function fakeOk(payload)   { return Promise.resolve({ ok: true,  code: 0, ...payload }); }
@@ -40,19 +44,41 @@ function fireAndForget(path, body) {
   } catch (e) { /* ignore */ }
 }
 
+/* 从 payload 里提取 phone / email：
+ *   - 都没传 / 都传了 → null
+ *   - 只传 phone 或只传 email → { kind, value }
+ * mock 分支用它做格式校验 + 拼 user 对象 */
+function extractIdentity(payload) {
+  const hasPhone = !!(payload && payload.phone);
+  const hasEmail = !!(payload && payload.email);
+  if (hasPhone === hasEmail) return null; // 0 个或 2 个都返回 null
+  return hasEmail
+    ? { kind: 'email', value: String(payload.email).trim().toLowerCase() }
+    : { kind: 'phone', value: String(payload.phone).trim() };
+}
+
+function mockUserFromIdentity(id, username) {
+  return {
+    id: 1,
+    phone: id.kind === 'phone' ? id.value : null,
+    email: id.kind === 'email' ? id.value : null,
+    username
+  };
+}
+
 /* ============== 登录 ============== */
 export function login(payload) {
   if (DEBUG) {
     fireAndForget('/auth/login', payload);
-    if (!CN_PHONE_RE.test(payload.phone || '')) return fakeFail('手机号格式不正确');
-    if (!payload.password)                       return fakeFail('请输入密码');
+    const id = extractIdentity(payload);
+    if (!id)                        return fakeFail('请输入手机号或邮箱中的一个');
+    if (id.kind === 'phone' && !CN_PHONE_RE.test(id.value)) return fakeFail('手机号格式不正确');
+    if (id.kind === 'email' && !EMAIL_RE.test(id.value))    return fakeFail('邮箱格式不正确');
+    if (!payload.password)          return fakeFail('请输入密码');
+    const username = '用户' + id.value.slice(-4);
     return fakeOk({
       token: 'demo-token-' + Date.now(),
-      user: {
-        id: 1,
-        phone: payload.phone,
-        username: '用户' + payload.phone.slice(-4)
-      },
+      user: mockUserFromIdentity(id, username),
       finance: _fakeFinance(),
       sessions: []
     });
@@ -64,15 +90,18 @@ export function login(payload) {
 export function register(payload) {
   if (DEBUG) {
     fireAndForget('/auth/register', payload);
-    if (!CN_PHONE_RE.test(payload.phone || ''))   return fakeFail('手机号格式不正确');
-    if (!payload.code || payload.code.length < 4) return fakeFail('请输入验证码');
-    if (!payload.username)                         return fakeFail('请输入用户名');
+    const id = extractIdentity(payload);
+    if (!id)                                       return fakeFail('请输入手机号或邮箱中的一个');
+    if (id.kind === 'phone' && !CN_PHONE_RE.test(id.value)) return fakeFail('手机号格式不正确');
+    if (id.kind === 'email' && !EMAIL_RE.test(id.value))    return fakeFail('邮箱格式不正确');
+    if (!payload.code || payload.code.length < 4)  return fakeFail('请输入验证码');
+    if (!payload.username)                          return fakeFail('请输入用户名');
     if (!payload.password || payload.password.length < 6) {
       return fakeFail('密码至少 6 位');
     }
     return fakeOk({
       token: 'demo-token-' + Date.now(),
-      user: { id: 1, phone: payload.phone, username: payload.username },
+      user: mockUserFromIdentity(id, payload.username),
       finance: _fakeFinance(),
       sessions: []
     });
@@ -84,8 +113,12 @@ export function register(payload) {
 export function sendCode(payload) {
   if (DEBUG) {
     fireAndForget('/auth/send-code', payload);
-    if (!CN_PHONE_RE.test(payload.phone || '')) return fakeFail('手机号格式不正确');
-    return fakeOk({ message: '验证码已发送（演示：任意 4 位数字均可通过）' });
+    const id = extractIdentity(payload);
+    if (!id) return fakeFail('请输入手机号或邮箱中的一个');
+    if (id.kind === 'phone' && !CN_PHONE_RE.test(id.value)) return fakeFail('手机号格式不正确');
+    if (id.kind === 'email' && !EMAIL_RE.test(id.value))    return fakeFail('邮箱格式不正确');
+    const channel = id.kind === 'email' ? '邮箱' : '手机';
+    return fakeOk({ message: `验证码已发送至${channel}（演示：任意 4 位数字均可通过）` });
   }
   return apiPostJson('/auth/send-code', payload);
 }

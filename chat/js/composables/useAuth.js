@@ -76,7 +76,11 @@ const initial = computed(() => {
 
 const displayName = computed(() => {
   if (!state.user) return '游客';
-  return state.user.username || ('用户' + (state.user.phone || '').slice(-4));
+  if (state.user.username) return state.user.username;
+  // 没昵称就回退到 phone 末 4 位 / email 的 @ 前部分
+  if (state.user.phone) return '用户' + state.user.phone.slice(-4);
+  if (state.user.email) return state.user.email.split('@')[0] || '用户';
+  return '用户';
 });
 
 /* 把后端响应里的 user / finance / sessions 全部应用到内存 + localStorage */
