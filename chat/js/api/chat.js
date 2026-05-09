@@ -16,6 +16,8 @@ import {
   apiDeleteJson
 } from './config.js';
 import { streamSSE } from './sse.js';
+import { buildClientContext } from '../utils/clientContext.js';
+import { partitionAttachments, readFileAsBase64 } from '../utils/fileSupport.js';
 
 /* DEBUG 兜底配置 */
 const FAKE_API_URL = 'https://jsonplaceholder.typicode.com/posts';
@@ -40,17 +42,67 @@ const UPLOAD_TIMEOUT_MS = 60000;
  *   - fire-and-forget 一个 jsonplaceholder POST，仅为 Network 面板可见
  *   - 不做流式，由调用方拿 onDone 触发 finalize（content 用 mock/fixedAnswer）
  */
-export function sendMessage(payload, callbacks = {}) {
+/* 把 attachments 里的 File 对象读成 base64，并按白名单过滤。
+ * 返回一个新的 attachments 数组，元素形态：{name, size, type, content_base64}。
+ * 没附件 / 没 .file 时直接返回空数组（不发起任何 IO）。
+ *
+ * 任何单个文件读失败都会在该附件 .reason 上标出来；调用方通常忽略 reason，
+ * 让后端 base64 解码 / 抽取再兜一次（双保险）。 */
+async function buildAttachmentsPayload(rawList) {
+  const list = Array.isArray(rawList) ? rawList : [];
+  if (list.length === 0) return [];
+
+  /* 二次过滤：UploadButton 已在选件时拦过一遍；万一调用方绕过来，这里再兜底 */
+  const { accepted, rejected } = partitionAttachments(list);
+  if (rejected.length > 0 && typeof console !== 'undefined') {
+    console.warn('[chat] dropping unsupported attachments:',
+      rejected.map((r) => `${r.name}(${r.reason})`));
+  }
+
+  const out = [];
+  for (const a of accepted) {
+    const meta = { name: a.name, size: a.size, type: a.type || '' };
+    if (!a.file) {
+      /* 没有 .file 通常是"历史消息回放"等纯元数据场景；不读取，不发 base64 */
+      out.push(meta);
+      continue;
+    }
+    try {
+      meta.content_base64 = await readFileAsBase64(a.file);
+    } catch (e) {
+      meta.reason = '读取本地文件失败：' + (e && e.message || e);
+    }
+    out.push(meta);
+  }
+  return out;
+}
+
+export async function sendMessage(payload, callbacks = {}) {
   const { onThinking, onChunk, onDone, onError } = callbacks;
 
+  /* 在 API 层透明地给请求挂上"客户端环境"信息（时间/时区/locale/国家码）。
+   * 这样所有调用方（AppShell / 测试 / 未来其它入口）都不用各自构造，
+   * 后端拿到后再决定如何拼到 LLM system prompt。 */
+  const enrichedAttachments = await buildAttachmentsPayload(payload.attachments);
+  const enriched = {
+    ...payload,
+    attachments: enrichedAttachments,
+    client_context: buildClientContext()
+  };
+
   if (DEBUG) {
-    // 兼容老用法：保留对 jsonplaceholder 的 fire-and-forget，便于 Network 观察
+    /* DEBUG 模式发的"假请求"里去掉 base64，免得 Network 面板巨大无用 */
+    const debugBody = {
+      ...enriched,
+      attachments: enrichedAttachments.map(({ content_base64, ...rest }) => rest),
+      timestamp: Date.now()
+    };
     fetchWithTimeout(
       FAKE_API_URL,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...payload, timestamp: Date.now() })
+        body: JSON.stringify(debugBody)
       },
       REQUEST_TIMEOUT_MS
     ).catch(() => { /* demo 忽略 */ });
@@ -63,7 +115,7 @@ export function sendMessage(payload, callbacks = {}) {
   // 真后端 SSE
   return streamSSE(
     '/chat/send',
-    { body: JSON.stringify(payload) },
+    { body: JSON.stringify(enriched) },
     {
       onEvent: (event, data) => {
         if (event === 'thinking') onThinking && onThinking(data);

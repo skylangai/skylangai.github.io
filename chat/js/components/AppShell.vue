@@ -136,13 +136,15 @@ function handleSend(text, attachments) {
   /* 7) 触发对话请求 */
   const startTs = Date.now();
 
+  /* 给 apiSendMessage 的是带 .file 的"原始 attachments"，
+   * api/chat.js 里会读成 base64 再发；UI / DB 里仍只看 userAttachmentsMeta。 */
   if (DEBUG) {
     /* DEBUG: 老 mock 行为，假装 ANIM_MIN_MS 后用 FIXED_ANSWER 收尾 */
     apiSendMessage({
       sessionId: sessionIdAtSend,
       message: text,
       model: modelState.currentModelId,
-      attachments: userAttachmentsMeta
+      attachments: attachments
     }).finally(() => {
       const waited = Date.now() - startTs;
       const wait = Math.max(0, ANIM_MIN_MS - waited);
@@ -159,7 +161,7 @@ function handleSend(text, attachments) {
       sessionId: sessionIdAtSend,
       message: text,
       model: modelState.currentModelId,
-      attachments: userAttachmentsMeta
+      attachments: attachments
     },
     {
       onThinking: (d) => {
