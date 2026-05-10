@@ -2,6 +2,9 @@
 import { ref, computed } from 'vue';
 import { PROMPTS } from '../mock/prompts.js';
 import Composer from './Composer.vue';
+import { useAuth } from '../composables/useAuth.js';
+
+const { isLoggedIn } = useAuth();
 
 const TABS = [
   { id: 'market',  label: '市场洞察', ic: '📊' },
@@ -47,7 +50,7 @@ function onSubmit(payload) {
                 :autofocus="true"
                 @submit="onSubmit" />
 
-      <div class="tabs">
+      <div v-if="!isLoggedIn" class="tabs">
         <button v-for="t in TABS" :key="t.id"
                 type="button"
                 class="tab"
@@ -57,7 +60,7 @@ function onSubmit(payload) {
         </button>
       </div>
 
-      <div class="prompts">
+      <div v-if="!isLoggedIn" class="prompts">
         <div class="prompts-title">尝试以下提示词</div>
         <ul class="prompts-list">
           <li v-for="(p, i) in prompts" :key="i" class="prompt-item"

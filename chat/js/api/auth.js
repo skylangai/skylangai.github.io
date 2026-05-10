@@ -144,8 +144,8 @@ export function logoutApi() {
 /* ============== mock 兜底：finance 默认值 ============== */
 function _fakeFinance() {
   return {
-    token_total: 50,
-    token_used: 0,
+    money_total: 50,
+    money_used: 0,
     balance: 50,
     request_count: 0,
     input_tokens: 0,

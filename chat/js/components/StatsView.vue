@@ -146,8 +146,8 @@ const ICONS = {
 
 const cards = computed(() => {
   const s = fin.state;          // 直接读 reactive，state 变化时本 computed 自动重算
-  const total     = s.token_total;
-  const used      = s.token_used;
+  const total     = s.money_total;
+  const used      = s.money_used;
   const remaining = Math.max(0, s.balance);
   const remainPct = total > 0 ? (remaining / total) * 100 : 0;
   return [

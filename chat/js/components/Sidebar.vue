@@ -187,7 +187,13 @@ const isStatsActive = computed(() => viewState.current === 'stats');
         <div class="nav-section-body" v-show="!collapsed">
           <!-- 父级（电商智能生意助手）：仅显示标题，去掉未读小红标 -->
           <div v-if="sessionList.length > 0" class="session-parent">
-            <span class="session-icon">A</span>
+            <span class="session-icon" aria-hidden="true">
+              <!-- 4-pointed sparkle：AI 助手的常见视觉符号（Gemini / Claude 同款思路）-->
+              <svg viewBox="0 0 24 24" fill="currentColor"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2.4c.3 0 .55.2.62.49l1.05 4.2a4 4 0 0 0 2.92 2.92l4.2 1.05a.64.64 0 0 1 0 1.24l-4.2 1.05a4 4 0 0 0-2.92 2.92l-1.05 4.2a.64.64 0 0 1-1.24 0l-1.05-4.2a4 4 0 0 0-2.92-2.92l-4.2-1.05a.64.64 0 0 1 0-1.24l4.2-1.05a4 4 0 0 0 2.92-2.92l1.05-4.2A.64.64 0 0 1 12 2.4Z"/>
+              </svg>
+            </span>
             <span class="session-title">{{ ASSISTANT_NAME }}</span>
           </div>
           <div v-for="s in sessionList" :key="s.id"
@@ -391,17 +397,28 @@ const isStatsActive = computed(() => viewState.current === 'stats');
 .session-item.active { background: var(--active); }
 .session-item.is-deleting { opacity: 0.45; pointer-events: none; }
 
+/* 通用：无论挂在 .session-parent 还是未来出现在 .session-item 上都生效。
+ * 之所以列两条而不是只写 .session-icon，是为了让 scoped 选择器更明确，
+ * 避免被全站其他 .session-icon（若有）误命中。 */
+.session-parent .session-icon,
 .session-item .session-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--primary);
+  /* 比纯色更有质感的渐变，沿用主色调 */
+  background: linear-gradient(135deg, var(--primary), #7c3aed);
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 9px;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(67, 56, 202, 0.25);
+}
+.session-parent .session-icon svg,
+.session-item .session-icon svg {
+  width: 11px;
+  height: 11px;
+  display: block;
 }
 .session-item .session-title {
   flex: 1;
