@@ -1,6 +1,8 @@
 <script setup>
 import { ref, reactive, computed, watch, onBeforeUnmount } from 'vue';
 import BaseModal from './BaseModal.vue';
+import Vcode from 'vue3-puzzle-vcode';
+import 'vue3-puzzle-vcode/css';
 import { useAuth } from '../composables/useAuth.js';
 import { classifyIdentifier, sendCode as apiSendCode } from '../api/auth.js';
 
@@ -10,7 +12,8 @@ import { classifyIdentifier, sendCode as apiSendCode } from '../api/auth.js';
  *   · 数字串符合 1[3-9]\d{9}     → SMS 渠道
  *   · 含 @ 且通过 EMAIL_RE       → 邮箱渠道
  *   · 都不匹配                    → 校验失败提示
- * - 注册页验证码按钮：身份合法时可点；点一次后进入 20s 倒计时灰态
+ * - 注册页"获取验证码"会先弹出滑块拼图（vue3-puzzle-vcode）做人机验证，
+ *   通过后才真正打到后端 send-code，避免被脚本刷验证码 / 撞频控
  * - 登录 / 注册成功后关闭 modal
  */
 
@@ -86,7 +89,12 @@ const codeBtnLabel = computed(() =>
   cooldown.value > 0 ? `${cooldown.value}s 后重发` : '发送验证码'
 );
 
-async function onSendCode() {
+/* 拼图验证状态：点击"获取验证码"先开拼图，验证通过再 _sendCodeNow */
+const puzzleOpen = ref(false);
+/* 暂存校验通过的 phone/email 载荷，避免拼图过程中用户改输入框导致请求漂移 */
+let _pendingCodePayload = null;
+
+function onSendCode() {
   if (!canSendCode.value || submitting.value) return;
   errorMsg.value = '';
   okMsg.value = '';
@@ -95,6 +103,18 @@ async function onSendCode() {
     errorMsg.value = '请输入正确的手机号或邮箱';
     return;
   }
+  // 先做人机验证，通过后再发；倒计时也等到验证通过再启动
+  _pendingCodePayload = body;
+  puzzleOpen.value = true;
+}
+
+/* 拼图通过 → 真正打 send-code */
+async function onPuzzleSuccess() {
+  puzzleOpen.value = false;
+  const body = _pendingCodePayload;
+  _pendingCodePayload = null;
+  if (!body) return; // 防御性：不会发生
+
   startCooldown();
   try {
     const res = await apiSendCode(body);
@@ -110,6 +130,12 @@ async function onSendCode() {
     cooldown.value = 0;
     if (cooldownTimer) { clearInterval(cooldownTimer); cooldownTimer = null; }
   }
+}
+
+/* 用户关闭拼图（点遮罩 / 失败放弃）→ 不发码、不进入冷却，丢弃暂存 */
+function onPuzzleClose() {
+  puzzleOpen.value = false;
+  _pendingCodePayload = null;
 }
 
 function close() {
@@ -200,6 +226,18 @@ async function onRegister() {
 </script>
 
 <template>
+  <!-- 滑块拼图验证；放在 BaseModal 外，z-index 默认 999 已盖过登录弹窗 (9999 是登录弹窗外层；
+       但 vue3-puzzle-vcode 的内部蒙层是 fixed + 自带 z-index，实际渲染时仍位于其它内容之上)。
+       为确保拼图永远在登录窗之上，下面显式把 zIndex 推到 10000。 -->
+  <Vcode :show="puzzleOpen"
+         :zIndex="10000"
+         sliderText="拖动滑块完成拼图后再获取验证码"
+         successText="验证通过，正在发送验证码…"
+         failText="拼图未对齐，请重新尝试"
+         @success="onPuzzleSuccess"
+         @close="onPuzzleClose"
+         @fail="() => { /* 失败时让用户看到失败文案，由组件内部 1s 后自动重置；不用我们做啥 */ }" />
+
   <BaseModal name="auth" :open="open"
              @update:open="$emit('update:open', $event)"
              labelledby="authModalTitle">

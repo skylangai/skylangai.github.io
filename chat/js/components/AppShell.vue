@@ -34,6 +34,17 @@ const MOCK_DEFAULT_TOOLS = [
 const DEFAULT_TOOLS = DEBUG ? MOCK_DEFAULT_TOOLS : [];
 
 const ANIM_MIN_MS = 1500; // DEBUG 模式下"假装"loading 至少这么久，避免一闪而过
+const GUEST_ANIM_MIN_MS = 800; // 游客 mock 比 DEBUG 短一点，少耗用户耐心
+
+/* 未登录访客发送时给的本地 mock 答复——纯前端，不打后端、不计费、不入库。
+ * 用 Markdown，让 MessageItem.vue 自然渲染列表 / 加粗 / 链接。 */
+const GUEST_MOCK_ANSWER =
+  '👋 您当前是 **游客模式**，可以体验对话框；要解锁完整能力请先登录或注册：\n\n' +
+  '- 真实大模型回答（含联网检索）\n' +
+  '- 多轮上下文记忆 / 历史会话保存\n' +
+  '- 文件附件（PDF / Word / Markdown / TXT）解析\n' +
+  '- 用量与额度统计\n\n' +
+  '点击侧栏底部的「**登录 / 注册**」即可继续。';
 
 const { state: viewState, isWelcome, isChat, isStats, goWelcome, goChat } = useView();
 const sess = useSessions();
@@ -136,6 +147,15 @@ function handleSend(text, attachments) {
   /* 7) 触发对话请求 */
   const startTs = Date.now();
 
+  /* 7a) 未登录：完全不打后端，本地给一段 mock 答复引导用户登录。
+   * - 不调 apiSendMessage（也就不会出现 "未登录" 红色错误气泡）
+   * - 不计费、不入库；session 仍然是 localOnly，刷新就消失
+   * - 让 finalize 加点延迟，让用户能看到 typing 动画 */
+  if (!auth.isLoggedIn.value) {
+    setTimeout(() => finalizeGuestMock(placeholder, startTs), GUEST_ANIM_MIN_MS);
+    return;
+  }
+
   /* 给 apiSendMessage 的是带 .file 的"原始 attachments"，
    * api/chat.js 里会读成 base64 再发；UI / DB 里仍只看 userAttachmentsMeta。 */
   if (DEBUG) {
@@ -218,6 +238,16 @@ function finalizeMock(placeholder, startTs) {
   placeholder.content = FIXED_ANSWER;
   placeholder._liveFlags.pending = false;
   placeholder._liveFlags.elapsed = elapsedSec;
+}
+
+/* 游客 mock 收尾：本地引导文案，不与 DEBUG mock 共用避免文案串台 */
+function finalizeGuestMock(placeholder, startTs) {
+  const elapsedSec = Math.max(1, Math.round((Date.now() - startTs) / 1000));
+  placeholder.content = GUEST_MOCK_ANSWER;
+  placeholder._liveFlags.pending = false;
+  placeholder._liveFlags.elapsed = elapsedSec;
+  // 工具栏清空——游客没有真正的 thinking / tool_call 阶段
+  placeholder._liveFlags.tools = [];
 }
 </script>
 
