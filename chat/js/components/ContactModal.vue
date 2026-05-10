@@ -64,10 +64,10 @@ function copy(text) {
         <span class="cm-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span>
         <div class="cm-meta">
           <span class="cm-label">邮箱</span>
-          <a class="cm-value" href="mailto:liujc19@tsinghua.org.cn">liujc19@tsinghua.org.cn</a>
+          <a class="cm-value" href="mailto:contact@mails.skylangai.cn">contact@mails.skylangai.cn</a>
         </div>
         <button type="button" class="cm-copy" aria-label="复制邮箱"
-                @click.stop.prevent="copy('liujc19@tsinghua.org.cn')">
+                @click.stop.prevent="copy('contact@mails.skylangai.cn')">
           <i class="fa fa-clone" aria-hidden="true"></i>
         </button>
       </li>

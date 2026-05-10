@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useUploads } from '../composables/useUploads.js';
+import { FILE_INPUT_ACCEPT, partitionAttachments } from '../utils/fileSupport.js';
 
-/* 文件上传按钮：触发隐藏 file input；选完入队 */
+/* 文件上传按钮：触发隐藏 file input；选完后做一次本地白名单校验再入队 */
 const { state: uploads, addFiles } = useUploads();
 const inputRef = ref(null);
 
@@ -15,7 +16,21 @@ function trigger() {
 }
 
 function onChange(e) {
-  addFiles(e.target.files);
+  const files = Array.from(e.target.files || []);
+  if (files.length === 0) return;
+  /* 不直接交给 useUploads，先按"扩展名 + 体积"过一遍，
+   * 不支持的当场弹一行原生 alert（demo 阶段够用，后期再换 toast）。
+   * 这里用扁平的 {file, name, size, type} 形态，与 useUploads.addFiles 内部一致。 */
+  const wrapped = files.map((f) => ({ file: f, name: f.name, size: f.size, type: f.type || '' }));
+  const { accepted, rejected } = partitionAttachments(wrapped);
+  if (rejected.length > 0) {
+    const lines = rejected.map((r) => `• ${r.name}：${r.reason}`).join('\n');
+    alert('以下文件未被添加：\n' + lines);
+  }
+  if (accepted.length > 0) {
+    /* useUploads.addFiles 期望传一个 FileList-like，构造一个数组就够（length + index） */
+    addFiles(accepted.map((a) => a.file));
+  }
 }
 </script>
 
@@ -23,9 +38,12 @@ function onChange(e) {
   <button type="button"
           class="chip chip-icon chip-upload"
           :class="{ 'has-attachments': hasAttachments }"
-          title="上传文件" aria-label="上传文件"
+          title="上传文件（支持 PDF / Word(.docx) / Markdown / TXT）"
+          aria-label="上传文件"
           @click="trigger">＋
-    <input ref="inputRef" type="file" multiple hidden @change="onChange" />
+    <input ref="inputRef" type="file" multiple hidden
+           :accept="FILE_INPUT_ACCEPT"
+           @change="onChange" />
   </button>
 </template>
 

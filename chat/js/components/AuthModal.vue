@@ -1,12 +1,19 @@
 <script setup>
 import { ref, reactive, computed, watch, onBeforeUnmount } from 'vue';
 import BaseModal from './BaseModal.vue';
+import Vcode from 'vue3-puzzle-vcode';
+import 'vue3-puzzle-vcode/css';
 import { useAuth } from '../composables/useAuth.js';
-import { CN_PHONE_RE, sendCode as apiSendCode } from '../api/auth.js';
+import { classifyIdentifier, sendCode as apiSendCode } from '../api/auth.js';
 
 /* 登录 / 注册 弹窗
  * - 两个 tab：登录页 / 注册页，默认登录页
- * - 注册页验证码按钮：手机号合法时可点；点一次后进入 20s 倒计时灰态
+ * - "手机号 / 邮箱"用同一个输入框，根据输入内容自动判定走哪条渠道
+ *   · 数字串符合 1[3-9]\d{9}     → SMS 渠道
+ *   · 含 @ 且通过 EMAIL_RE       → 邮箱渠道
+ *   · 都不匹配                    → 校验失败提示
+ * - 注册页"获取验证码"会先弹出滑块拼图（vue3-puzzle-vcode）做人机验证，
+ *   通过后才真正打到后端 send-code，避免被脚本刷验证码 / 撞频控
  * - 登录 / 注册成功后关闭 modal
  */
 
@@ -19,12 +26,13 @@ const { loginAction, registerAction } = useAuth();
 
 const tab = ref('login');
 
+/* 表单：identity 字段是"手机号 OR 邮箱"二合一文本框 */
 const loginForm = reactive({
-  phone: '',
+  identity: '',
   password: ''
 });
 const registerForm = reactive({
-  phone: '',
+  identity: '',
   code: '',
   username: '',
   password: ''
@@ -33,6 +41,25 @@ const registerForm = reactive({
 const submitting = ref(false);
 const errorMsg   = ref('');
 const okMsg      = ref('');
+
+/* 把 identity 文本翻译成后端字段：phone 或 email 二选一 */
+function payloadFromIdentity(identity) {
+  const parsed = classifyIdentifier(identity);
+  if (parsed.kind === 'phone') return { phone: parsed.value };
+  if (parsed.kind === 'email') return { email: parsed.value };
+  return null;
+}
+
+/* 输入框右侧 / 下方提示当前会走哪个渠道，方便用户预期 */
+const loginIdentityKind = computed(() => classifyIdentifier(loginForm.identity).kind);
+const registerIdentityKind = computed(() => classifyIdentifier(registerForm.identity).kind);
+
+function channelHint(kind) {
+  if (kind === 'phone') return '将发送短信验证码';
+  if (kind === 'email') return '将发送邮件验证码';
+  return '';
+}
+const registerChannelHint = computed(() => channelHint(registerIdentityKind.value));
 
 /* 验证码发送倒计时 */
 const COOLDOWN_SEC = 20;
@@ -56,19 +83,41 @@ onBeforeUnmount(() => {
 });
 
 const canSendCode = computed(() =>
-  cooldown.value === 0 && CN_PHONE_RE.test(registerForm.phone)
+  cooldown.value === 0 && registerIdentityKind.value !== 'unknown'
 );
 const codeBtnLabel = computed(() =>
   cooldown.value > 0 ? `${cooldown.value}s 后重发` : '发送验证码'
 );
 
-async function onSendCode() {
+/* 拼图验证状态：点击"获取验证码"先开拼图，验证通过再 _sendCodeNow */
+const puzzleOpen = ref(false);
+/* 暂存校验通过的 phone/email 载荷，避免拼图过程中用户改输入框导致请求漂移 */
+let _pendingCodePayload = null;
+
+function onSendCode() {
   if (!canSendCode.value || submitting.value) return;
   errorMsg.value = '';
   okMsg.value = '';
+  const body = payloadFromIdentity(registerForm.identity);
+  if (!body) {
+    errorMsg.value = '请输入正确的手机号或邮箱';
+    return;
+  }
+  // 先做人机验证，通过后再发；倒计时也等到验证通过再启动
+  _pendingCodePayload = body;
+  puzzleOpen.value = true;
+}
+
+/* 拼图通过 → 真正打 send-code */
+async function onPuzzleSuccess() {
+  puzzleOpen.value = false;
+  const body = _pendingCodePayload;
+  _pendingCodePayload = null;
+  if (!body) return; // 防御性：不会发生
+
   startCooldown();
   try {
-    const res = await apiSendCode({ phone: registerForm.phone });
+    const res = await apiSendCode(body);
     if (res && res.ok) {
       okMsg.value = res.message || '验证码已发送';
     } else {
@@ -81,6 +130,12 @@ async function onSendCode() {
     cooldown.value = 0;
     if (cooldownTimer) { clearInterval(cooldownTimer); cooldownTimer = null; }
   }
+}
+
+/* 用户关闭拼图（点遮罩 / 失败放弃）→ 不发码、不进入冷却，丢弃暂存 */
+function onPuzzleClose() {
+  puzzleOpen.value = false;
+  _pendingCodePayload = null;
 }
 
 function close() {
@@ -104,8 +159,9 @@ function switchTab(name) {
 async function onLogin() {
   if (submitting.value) return;
   errorMsg.value = '';
-  if (!CN_PHONE_RE.test(loginForm.phone)) {
-    errorMsg.value = '请输入正确的手机号';
+  const body = payloadFromIdentity(loginForm.identity);
+  if (!body) {
+    errorMsg.value = '请输入正确的手机号或邮箱';
     return;
   }
   if (!loginForm.password) {
@@ -115,7 +171,7 @@ async function onLogin() {
   submitting.value = true;
   try {
     const res = await loginAction({
-      phone: loginForm.phone,
+      ...body,
       password: loginForm.password
     });
     if (res.ok) {
@@ -132,8 +188,9 @@ async function onLogin() {
 async function onRegister() {
   if (submitting.value) return;
   errorMsg.value = '';
-  if (!CN_PHONE_RE.test(registerForm.phone)) {
-    errorMsg.value = '请输入正确的手机号';
+  const body = payloadFromIdentity(registerForm.identity);
+  if (!body) {
+    errorMsg.value = '请输入正确的手机号或邮箱';
     return;
   }
   if (!registerForm.code || registerForm.code.length < 4) {
@@ -151,7 +208,7 @@ async function onRegister() {
   submitting.value = true;
   try {
     const res = await registerAction({
-      phone: registerForm.phone,
+      ...body,
       code:  registerForm.code,
       username: registerForm.username,
       password: registerForm.password
@@ -169,6 +226,18 @@ async function onRegister() {
 </script>
 
 <template>
+  <!-- 滑块拼图验证；放在 BaseModal 外，z-index 默认 999 已盖过登录弹窗 (9999 是登录弹窗外层；
+       但 vue3-puzzle-vcode 的内部蒙层是 fixed + 自带 z-index，实际渲染时仍位于其它内容之上)。
+       为确保拼图永远在登录窗之上，下面显式把 zIndex 推到 10000。 -->
+  <Vcode :show="puzzleOpen"
+         :zIndex="10000"
+         sliderText="拖动滑块完成拼图后再获取验证码"
+         successText="验证通过，正在发送验证码…"
+         failText="拼图未对齐，请重新尝试"
+         @success="onPuzzleSuccess"
+         @close="onPuzzleClose"
+         @fail="() => { /* 失败时让用户看到失败文案，由组件内部 1s 后自动重置；不用我们做啥 */ }" />
+
   <BaseModal name="auth" :open="open"
              @update:open="$emit('update:open', $event)"
              labelledby="authModalTitle">
@@ -207,13 +276,17 @@ async function onRegister() {
     <!-- 登录表单 -->
     <form v-if="tab === 'login'" class="auth-form" @submit.prevent="onLogin">
       <label class="auth-field">
-        <span class="auth-field-label">手机号</span>
-        <input v-model="loginForm.phone"
+        <span class="auth-field-label">
+          手机号 / 邮箱
+          <span v-if="loginIdentityKind !== 'unknown'" class="auth-field-hint">
+            （识别为{{ loginIdentityKind === 'email' ? '邮箱' : '手机号' }}）
+          </span>
+        </span>
+        <input v-model="loginForm.identity"
                class="auth-input"
-               type="tel"
-               inputmode="numeric"
-               maxlength="11"
-               placeholder="请输入手机号"
+               type="text"
+               maxlength="64"
+               placeholder="请输入手机号或邮箱"
                autocomplete="username" />
       </label>
 
@@ -242,13 +315,17 @@ async function onRegister() {
     <!-- 注册表单 -->
     <form v-else class="auth-form" @submit.prevent="onRegister">
       <label class="auth-field">
-        <span class="auth-field-label">手机号</span>
-        <input v-model="registerForm.phone"
+        <span class="auth-field-label">
+          手机号 / 邮箱
+          <span v-if="registerChannelHint" class="auth-field-hint">
+            （{{ registerChannelHint }}）
+          </span>
+        </span>
+        <input v-model="registerForm.identity"
                class="auth-input"
-               type="tel"
-               inputmode="numeric"
-               maxlength="11"
-               placeholder="请输入手机号"
+               type="text"
+               maxlength="64"
+               placeholder="请输入手机号或邮箱"
                autocomplete="username" />
       </label>
 
@@ -446,6 +523,13 @@ async function onRegister() {
   color: #6b7090;
   letter-spacing: 0.3px;
   font-weight: 500;
+}
+.auth-field-hint {
+  margin-left: 4px;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #4338ca;
+  letter-spacing: 0;
 }
 .auth-input {
   width: 100%;

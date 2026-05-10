@@ -1,9 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useSessions } from '../composables/useSessions.js';
 import { useView } from '../composables/useView.js';
 import { useAuth } from '../composables/useAuth.js';
 import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
+import {
+  loadMessages as apiLoadMessages,
+  deleteSession as apiDeleteSession
+} from '../api/chat.js';
 
 /* 左侧边栏：能力组 + 对话历史 + 使用统计入口
  *
@@ -15,21 +19,115 @@ import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
  */
 const emit = defineEmits(['new-chat', 'open-skills', 'demo-notice', 'open-auth']);
 
-const { state, sessionList, selectSession } = useSessions();
+const {
+  state, sessionList, selectSession,
+  replaceMessages, markLoaded, removeSession
+} = useSessions();
 const { state: viewState, goStats, goChat } = useView();
 const { isLoggedIn, displayName, initial, logout } = useAuth();
 
 const collapsed = ref(false);
+/* 防止用户在请求未回来时连点同一个会话，发出多次 POST /chat/messages */
+const fetchingId = ref('');
+
+/* 右键菜单状态：x/y 是 fixed 坐标；sessionId 选中要操作的会话；显式控制开关 */
+const ctxMenu = ref({ open: false, x: 0, y: 0, sessionId: '' });
+/* 删除中的 sessionId（防重复点击 + 视觉禁用） */
+const deletingId = ref('');
 
 function toggleCollapsed() {
   collapsed.value = !collapsed.value;
 }
 
-function pickSession(id) {
+async function pickSession(id) {
   selectSession(id);
   /* 选中会话后必须同时切到对话视图，否则用户停在欢迎/统计页看不到效果 */
   goChat();
+
+  /* 首次点击且后端尚未加载过：拉一次完整 messages；之后命中前端缓存不再发请求 */
+  const sess = state.sessions[id];
+  if (!sess || sess.loaded) return;
+  if (fetchingId.value === id) return;
+  fetchingId.value = id;
+  try {
+    const res = await apiLoadMessages(id);
+    if (res && res.ok && Array.isArray(res.messages)) {
+      replaceMessages(id, res.messages);
+    } else {
+      // 失败也置 loaded：避免每次点都重打；用户可下次新对话产生数据
+      markLoaded(id, true);
+      console.warn('[chat] loadMessages failed:', res);
+    }
+  } catch (e) {
+    markLoaded(id, true);
+    console.warn('[chat] loadMessages error:', e);
+  } finally {
+    fetchingId.value = '';
+  }
 }
+
+/* 右键弹出菜单 */
+function openCtxMenu(e, id) {
+  e.preventDefault();
+  e.stopPropagation();
+  // 边界保护：菜单尺寸 ~ 140 x 44，避免戳出视窗
+  const W = 144, H = 48;
+  const x = Math.min(e.clientX, window.innerWidth  - W - 8);
+  const y = Math.min(e.clientY, window.innerHeight - H - 8);
+  ctxMenu.value = { open: true, x, y, sessionId: id };
+}
+function closeCtxMenu() {
+  ctxMenu.value.open = false;
+  ctxMenu.value.sessionId = '';
+}
+
+/* 删除：先 confirm，避免误删历史 */
+async function confirmDelete() {
+  const id = ctxMenu.value.sessionId;
+  closeCtxMenu();
+  if (!id || deletingId.value) return;
+  const sess = state.sessions[id];
+  const title = (sess && sess.title) ? sess.title : id;
+  const ok = window.confirm(`确认删除会话「${title}」？\n该会话的所有消息都会被永久删除。`);
+  if (!ok) return;
+
+  deletingId.value = id;
+  try {
+    const res = await apiDeleteSession(id);
+    if (res && (res.ok || res.code === 1050)) {
+      // ok: 后端确实删了；1050: 后端已经没这条 session（可能在别端删过），本地一并清掉
+      removeSession(id);
+    } else {
+      window.alert('删除失败：' + (res && res.message ? res.message : '未知错误'));
+    }
+  } catch (e) {
+    window.alert('删除失败：' + (e && e.message || e));
+  } finally {
+    deletingId.value = '';
+  }
+}
+
+/* 全局点击 / Esc / 滚动 一律收起菜单 */
+function onGlobalClick(e) {
+  if (!ctxMenu.value.open) return;
+  // 菜单自身的点击不冒泡到这里（template 上 stop），所以一律关
+  closeCtxMenu();
+}
+function onGlobalKey(e) {
+  if (e.key === 'Escape') closeCtxMenu();
+}
+onMounted(() => {
+  window.addEventListener('click', onGlobalClick);
+  window.addEventListener('keydown', onGlobalKey);
+  window.addEventListener('scroll', closeCtxMenu, true);
+  window.addEventListener('resize', closeCtxMenu);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('click', onGlobalClick);
+  window.removeEventListener('keydown', onGlobalKey);
+  window.removeEventListener('scroll', closeCtxMenu, true);
+  window.removeEventListener('resize', closeCtxMenu);
+});
 
 function onNewChat(e) {
   e.preventDefault();
@@ -87,16 +185,22 @@ const isStatsActive = computed(() => viewState.current === 'stats');
           </span> 对话历史
         </div>
         <div class="nav-section-body" v-show="!collapsed">
-          <!-- 父级（电商智能生意助手） + 未读 -->
+          <!-- 父级（电商智能生意助手）：仅显示标题，去掉未读小红标 -->
           <div v-if="sessionList.length > 0" class="session-parent">
-            <span class="session-icon">A</span>
+            <span class="session-icon" aria-hidden="true">
+              <!-- 4-pointed sparkle：AI 助手的常见视觉符号（Gemini / Claude 同款思路）-->
+              <svg viewBox="0 0 24 24" fill="currentColor"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2.4c.3 0 .55.2.62.49l1.05 4.2a4 4 0 0 0 2.92 2.92l4.2 1.05a.64.64 0 0 1 0 1.24l-4.2 1.05a4 4 0 0 0-2.92 2.92l-1.05 4.2a.64.64 0 0 1-1.24 0l-1.05-4.2a4 4 0 0 0-2.92-2.92l-4.2-1.05a.64.64 0 0 1 0-1.24l4.2-1.05a4 4 0 0 0 2.92-2.92l1.05-4.2A.64.64 0 0 1 12 2.4Z"/>
+              </svg>
+            </span>
             <span class="session-title">{{ ASSISTANT_NAME }}</span>
-            <span class="unread">{{ sessionList.length }}</span>
           </div>
           <div v-for="s in sessionList" :key="s.id"
                class="session-item"
-               :class="{ active: s.id === state.currentSessionId }"
-               @click="pickSession(s.id)">
+               :class="{ active: s.id === state.currentSessionId, 'is-deleting': s.id === deletingId }"
+               @click="pickSession(s.id)"
+               @contextmenu="openCtxMenu($event, s.id)">
             <span class="session-title">{{ s.title }}</span>
             <span class="caret-sm" style="color:#9aa0a6">○</span>
           </div>
@@ -132,6 +236,20 @@ const isStatsActive = computed(() => viewState.current === 'stats');
               title="登录"
               @click="onOpenAuth">登录</button>
     </div>
+
+    <!-- 右键浮动菜单（fixed 定位，跳出 sidebar 滚动容器） -->
+    <Teleport to="body">
+      <div v-if="ctxMenu.open"
+           class="session-ctx-menu"
+           role="menu"
+           :style="{ top: ctxMenu.y + 'px', left: ctxMenu.x + 'px' }"
+           @click.stop>
+        <button type="button" class="session-ctx-item is-danger" @click="confirmDelete">
+          <span class="ic">🗑</span>
+          <span>删除会话</span>
+        </button>
+      </div>
+    </Teleport>
   </aside>
 </template>
 
@@ -277,18 +395,30 @@ const isStatsActive = computed(() => viewState.current === 'stats');
 }
 .session-item:hover { background: var(--hover); }
 .session-item.active { background: var(--active); }
+.session-item.is-deleting { opacity: 0.45; pointer-events: none; }
 
+/* 通用：无论挂在 .session-parent 还是未来出现在 .session-item 上都生效。
+ * 之所以列两条而不是只写 .session-icon，是为了让 scoped 选择器更明确，
+ * 避免被全站其他 .session-icon（若有）误命中。 */
+.session-parent .session-icon,
 .session-item .session-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--primary);
+  /* 比纯色更有质感的渐变，沿用主色调 */
+  background: linear-gradient(135deg, var(--primary), #7c3aed);
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 9px;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(67, 56, 202, 0.25);
+}
+.session-parent .session-icon svg,
+.session-item .session-icon svg {
+  width: 11px;
+  height: 11px;
+  display: block;
 }
 .session-item .session-title {
   flex: 1;
@@ -421,4 +551,43 @@ const isStatsActive = computed(() => viewState.current === 'stats');
   .auth-action-btn { display: none; }
   .nav-item, .nav-sub a { justify-content: center; padding: 8px; }
 }
+</style>
+
+<!-- 非 scoped：Teleport 到 body 的右键菜单使用 -->
+<style>
+.session-ctx-menu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 144px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(15, 22, 50, 0.18),
+              0 4px 12px rgba(15, 22, 50, 0.10);
+  animation: session-ctx-pop 120ms cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+@keyframes session-ctx-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.session-ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms ease, color 120ms ease;
+}
+.session-ctx-item:hover { background: var(--hover); }
+.session-ctx-item.is-danger { color: #ef4444; }
+.session-ctx-item.is-danger:hover { background: rgba(239, 68, 68, 0.10); }
+.session-ctx-item .ic { width: 16px; text-align: center; font-size: 13px; }
 </style>

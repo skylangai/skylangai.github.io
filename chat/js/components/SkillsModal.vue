@@ -1,17 +1,33 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import BaseModal from './BaseModal.vue';
 import { INITIAL_SKILLS } from '../mock/skills.js';
+import { useAuth } from '../composables/useAuth.js';
 
-/* 技能管理弹窗 */
+/* 技能管理弹窗
+ *
+ * 列表的初始来源跟登录态绑定：
+ *   - 已登录用户：初始空列表（每个用户的技能后续走"上传技能"自行添加；
+ *     mock 数据只是给"演客状态"用的占位，不应当污染真实账号）。
+ *   - 未登录（游客 / DEBUG 模式下）：复制一份 INITIAL_SKILLS 用作演示。
+ *
+ * 登录态从无到有 / 从有到无切换时也对应清理重置一次。 */
 defineProps({
   open: { type: Boolean, default: false }
 });
 const emit = defineEmits(['update:open', 'demo-notice']);
 
-/* 这里复制一份初始数据，避免组件间共享导致跨实例污染 */
-const skills = ref(INITIAL_SKILLS.map((s) => ({ ...s })));
+const { isLoggedIn } = useAuth();
+
+function _initialSkills() {
+  return isLoggedIn.value ? [] : INITIAL_SKILLS.map((s) => ({ ...s }));
+}
+
+const skills = ref(_initialSkills());
 const spinning = ref(false);
+
+/* 跟随登录态切换：登录后清空，登出后回到 mock 演示态。 */
+watch(isLoggedIn, () => { skills.value = _initialSkills(); });
 
 function close() { emit('update:open', false); }
 
