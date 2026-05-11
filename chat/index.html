@@ -2,7 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- viewport-fit=cover：让页面延伸到 iPhone 刘海/底部安全区，配合 env(safe-area-inset-*)
+       interactive-widget=resizes-content：键盘弹出时调整 layout viewport，避免输入框被遮 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <title> 凌云智能 - 生意助手 </title>
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   <link rel="stylesheet" href="css/font-awesome.min.css" />

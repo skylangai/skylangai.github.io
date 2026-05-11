@@ -23,7 +23,7 @@ const {
   state, sessionList, selectSession,
   replaceMessages, markLoaded, removeSession
 } = useSessions();
-const { state: viewState, goStats, goChat } = useView();
+const { state: viewState, goStats, goChat, closeDrawer } = useView();
 const { isLoggedIn, displayName, initial, logout } = useAuth();
 
 const collapsed = ref(false);
@@ -129,28 +129,36 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', closeCtxMenu);
 });
 
+/* 抽屉模式下，任何"目的性的导航/动作"完成后都顺手收起抽屉，避免它继续遮挡主区。
+ * 桌面端 closeDrawer 是 no-op（drawerOpen 一直为 false 也不影响布局）。 */
 function onNewChat(e) {
   e.preventDefault();
+  closeDrawer();
   emit('new-chat');
 }
 function onOpenSkills(e) {
   e.preventDefault();
+  closeDrawer();
   emit('open-skills');
 }
 function onDemoNotice(name, e) {
   e.preventDefault();
+  closeDrawer();
   emit('demo-notice', name);
 }
 function onGoStats() {
+  closeDrawer();
   goStats();
 }
 
 function onOpenAuth(e) {
   if (e) e.preventDefault();
+  closeDrawer();
   emit('open-auth');
 }
 function onLogout(e) {
   if (e) e.preventDefault();
+  closeDrawer();
   logout();
 }
 
@@ -540,16 +548,30 @@ const isStatsActive = computed(() => viewState.current === 'stats');
   color: #3a30b8;
 }
 
-/* 响应式：窄屏只显示图标 */
+/* 响应式：
+ * - 历史方案是把 sidebar 强行缩成 64px 图标条，导致登录按钮、历史会话标题全部不可读。
+ * - 现在改为"抽屉模式"：sidebar 由 AppShell 的 .sidebar-wrapper 包裹后绝对定位、
+ *   滑入滑出。这里的 sidebar 自身只需保证两点：
+ *     1) 在抽屉宽度（min(85vw,320px)）下能撑满；
+ *     2) 文字 / 登录按钮 / 章节标题等保持完整可见，不再隐藏；
+ *     3) 触摸目标加大到至少 ~40px 高度，更适合手指点击。
+ */
 @media (max-width: 720px) {
-  .sidebar { width: 64px; padding: 8px 4px; }
-  .brand,
-  .nav-item span:not(.ic),
-  .nav-sub a span:not(.ic),
-  .nav-section-title,
-  .user-name,
-  .auth-action-btn { display: none; }
-  .nav-item, .nav-sub a { justify-content: center; padding: 8px; }
+  .sidebar {
+    width: 100%;
+    padding: 14px 10px 10px;
+  }
+  .brand { font-size: 18px; padding: 8px 12px 16px; }
+
+  /* 触摸友好：行高与左右内边距略放大 */
+  .nav-item       { padding: 10px 12px; font-size: 14px; }
+  .nav-sub a      { padding: 9px 12px;  font-size: 13.5px; }
+  .session-item,
+  .session-parent { padding: 10px 10px 10px 22px; font-size: 14px; }
+
+  /* 用户区（底部登录/退出）也加大触摸目标 */
+  .user { padding: 12px 10px; }
+  .auth-action-btn { height: 30px; font-size: 13px; }
 }
 </style>
 

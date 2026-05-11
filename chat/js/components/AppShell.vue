@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useView } from '../composables/useView.js';
 import { useSessions } from '../composables/useSessions.js';
 import { useModels } from '../composables/useModels.js';
@@ -7,7 +7,7 @@ import { useAuth } from '../composables/useAuth.js';
 import { useFinance } from '../composables/useFinance.js';
 import { DEBUG } from '../api/config.js';
 import { sendMessage as apiSendMessage, uploadAttachments } from '../api/chat.js';
-import { FIXED_ANSWER } from '../mock/fixedAnswer.js';
+import { FIXED_ANSWER, ASSISTANT_NAME } from '../mock/fixedAnswer.js';
 
 import Sidebar from './Sidebar.vue';
 import FloatActions from './FloatActions.vue';
@@ -46,14 +46,66 @@ const GUEST_MOCK_ANSWER =
   '- 用量与额度统计\n\n' +
   '点击侧栏底部的「**登录 / 注册**」即可继续。';
 
-const { state: viewState, isWelcome, isChat, isStats, goWelcome, goChat } = useView();
+const view = useView();
+const { state: viewState, isWelcome, isChat, isStats, goWelcome, goChat } = view;
 const sess = useSessions();
 const { state: modelState } = useModels();
 const auth = useAuth();
 const fin = useFinance();
 
+/* 顶部 mobile bar 的标题：随当前视图 / 当前会话变化 */
+const mobileTitle = computed(() => {
+  if (isStats.value) return '使用统计';
+  if (isChat.value) {
+    const cur = sess.currentSession.value;
+    if (cur && cur.title) return cur.title;
+  }
+  return ASSISTANT_NAME || '凌云 AI';
+});
+
+/* drawer 打开时锁住 <html> 滚动，避免抽屉里滑动手势穿透到主区。
+ * 切回 false 或组件销毁都要恢复，否则页面变成"死页"。 */
+watch(() => view.state.drawerOpen, (open) => {
+  const html = document.documentElement;
+  if (!html) return;
+  if (open) {
+    html.dataset.prevOverflow = html.style.overflow || '';
+    html.style.overflow = 'hidden';
+  } else {
+    html.style.overflow = html.dataset.prevOverflow || '';
+    delete html.dataset.prevOverflow;
+  }
+});
+
+/* Esc 关掉抽屉（移动端有外接键盘 / iPad 场景） */
+function onKeydown(e) {
+  if (e.key === 'Escape' && view.state.drawerOpen) view.closeDrawer();
+}
+
 /* 启动时调一次 /me 恢复登录态：cookie 在 → 自动恢复；cookie 失效 → 弹出登录可由用户自助 */
-onMounted(() => { auth.bootstrap(); });
+onMounted(() => {
+  auth.bootstrap();
+  window.addEventListener('keydown', onKeydown);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown);
+  // 兜底恢复 overflow，避免组件被销毁时抽屉还开着
+  const html = document.documentElement;
+  if (html) html.style.overflow = html.dataset.prevOverflow || '';
+});
+
+/* 顶部"用户/登录"按钮：登录后点头像 → 弹登录改成（暂时不做 user sheet）打开登录模态；
+ * 未登录 → 直接打开登录。两种情况都顺手关掉抽屉，让模态在干净背景上展示。 */
+function onMobileAvatarClick() {
+  view.closeDrawer();
+  if (auth.isLoggedIn.value) {
+    // 登录态下点头像，给"退出"快速入口；目前简化为直接弹登录模态
+    // （登录模态在已登录态下会显示"已登录"提示，体验也合理）
+    openAuth();
+  } else {
+    openAuth();
+  }
+}
 
 /* ============== Modal 开关 ============== */
 const contactOpen = ref(false);
@@ -252,12 +304,51 @@ function finalizeGuestMock(placeholder, startTs) {
 </script>
 
 <template>
-  <div class="app">
-    <Sidebar
-      @new-chat="onNewChat"
-      @open-skills="openSkills"
-      @demo-notice="openNotice"
-      @open-auth="openAuth" />
+  <div class="app" :class="{ 'drawer-open': view.state.drawerOpen }">
+    <!-- ===== 仅窄屏可见的顶部条：汉堡 + 标题 + 头像/登录 =====
+         desktop 上 display:none，不影响原布局 -->
+    <header class="mobile-bar" role="banner">
+      <button type="button"
+              class="mobile-bar-btn"
+              :aria-label="view.state.drawerOpen ? '关闭菜单' : '打开菜单'"
+              @click="view.toggleDrawer">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="mobile-bar-title" :title="mobileTitle">{{ mobileTitle }}</div>
+
+      <button v-if="auth.isLoggedIn.value"
+              type="button"
+              class="mobile-bar-avatar"
+              :aria-label="'当前账号 ' + auth.displayName.value"
+              @click="onMobileAvatarClick">
+        <span class="mobile-bar-avatar-letter">{{ auth.initial.value }}</span>
+      </button>
+      <button v-else
+              type="button"
+              class="mobile-bar-login"
+              aria-label="登录或注册"
+              @click="onMobileAvatarClick">登录</button>
+    </header>
+
+    <!-- ===== 侧栏包裹：desktop 平铺，mobile 抽屉 ===== -->
+    <div class="sidebar-wrapper" :class="{ 'is-open': view.state.drawerOpen }">
+      <Sidebar
+        @new-chat="onNewChat"
+        @open-skills="openSkills"
+        @demo-notice="openNotice"
+        @open-auth="openAuth" />
+    </div>
+
+    <!-- mobile 抽屉打开时的半透明遮罩；点击即关 -->
+    <div v-if="view.state.drawerOpen"
+         class="drawer-backdrop"
+         aria-hidden="true"
+         @click="view.closeDrawer"></div>
 
     <main class="main">
       <FloatActions @open-contact="openContact" />
@@ -277,17 +368,158 @@ function finalizeGuestMock(placeholder, startTs) {
 <style scoped>
 .app {
   display: flex;
+  /* 100vh 在 iOS Safari 会算上工具栏导致内容被裁；100dvh 是动态视口高度，新版浏览器主流支持。
+     双兜底：旧浏览器走 100vh，新浏览器自动用 100dvh。 */
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
 }
 
+/* 默认（>720px）：sidebar-wrapper 就是普通 flex item，跟 main 并排，不浮起来 */
+.sidebar-wrapper {
+  flex-shrink: 0;
+  display: flex;          /* 让里面的 .sidebar 能撑满高度 */
+  min-height: 0;
+}
+
 .main {
   flex: 1;
+  min-width: 0;           /* 关键：防止子元素（如长 prompt）撑爆 flex 容器 */
   display: flex;
   flex-direction: column;
   background: var(--bg-main);
   position: relative;
   overflow: hidden;
+}
+
+/* 顶部 mobile bar：默认隐藏，仅 ≤720px 显示 */
+.mobile-bar { display: none; }
+
+/* drawer backdrop：默认隐藏，仅在 mobile 抽屉打开时启用 */
+.drawer-backdrop { display: none; }
+
+@media (max-width: 720px) {
+  /* 改为列布局：mobile-bar 顶在最上 → main 占剩余高度 → 抽屉绝对定位浮在最上层 */
+  .app {
+    flex-direction: column;
+  }
+
+  .mobile-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 12px;
+    /* iPhone 横屏时左右安全区也避开（刘海会侵入） */
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    background: var(--bg-side);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 50;
+  }
+
+  .mobile-bar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 140ms ease;
+  }
+  .mobile-bar-btn:hover,
+  .mobile-bar-btn:active { background: var(--hover); }
+
+  .mobile-bar-title {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    /* 标题过长省略号；中间居中显示 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-bar-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    box-shadow: 0 1px 3px rgba(67, 56, 202, 0.25);
+  }
+  .mobile-bar-avatar-letter {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .mobile-bar-login {
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #4338ca 0%, #7c3aed 100%);
+    box-shadow: 0 4px 10px rgba(67, 56, 202, 0.28);
+  }
+  .mobile-bar-login:active { transform: translateY(1px); }
+
+  /* sidebar 抽屉化：fixed 浮在最上层，translateX(-100%) 默认收起 */
+  .sidebar-wrapper {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(85vw, 320px);
+    z-index: 1100;
+    background: var(--bg-side);
+    box-shadow: 4px 0 24px rgba(15, 22, 50, 0.18);
+    transform: translateX(-100%);
+    transition: transform 220ms cubic-bezier(0.2, 0.8, 0.25, 1);
+    /* 抽屉自身能滚（如历史会话很多） */
+    overflow-y: auto;
+    /* iOS 顶部安全区：让侧栏顶部留出刘海空间 */
+    padding-top: env(safe-area-inset-top);
+  }
+  .sidebar-wrapper.is-open { transform: translateX(0); }
+
+  .drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 22, 50, 0.45);
+    z-index: 1090;
+    animation: drawer-backdrop-fadein 180ms ease-out;
+  }
+
+  /* 让 main 占满剩余高度（mobile bar 之下） */
+  .main {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+@keyframes drawer-backdrop-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 </style>

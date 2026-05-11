@@ -180,9 +180,15 @@ defineExpose({ setText, focus, clear });
   width: 100%;
   max-width: 760px;
   padding: 12px 14px 8px;
+  /* iPhone X+ 的 home indicator 区域避开；非 iOS 浏览器 env() 计算结果为 0，自动忽略 */
+  margin-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
 @media (max-width: 720px) {
-  .composer-bottom-fixed { padding: 0 12px; }
+  .composer-bottom-fixed {
+    /* 窄屏左右贴近边缘；底部仍保留安全区，避免被 home indicator 遮一半 */
+    padding: 0 12px;
+    margin-bottom: max(8px, env(safe-area-inset-bottom));
+  }
 }
 </style>
