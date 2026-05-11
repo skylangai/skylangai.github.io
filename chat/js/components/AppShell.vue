@@ -94,15 +94,16 @@ onBeforeUnmount(() => {
   if (html) html.style.overflow = html.dataset.prevOverflow || '';
 });
 
-/* 顶部"用户/登录"按钮：登录后点头像 → 弹登录改成（暂时不做 user sheet）打开登录模态；
- * 未登录 → 直接打开登录。两种情况都顺手关掉抽屉，让模态在干净背景上展示。 */
+/* 顶部"用户/登录"按钮：
+ *   未登录 → 关掉抽屉、弹登录模态（在干净背景上展示）。
+ *   已登录 → 打开侧栏抽屉，露出底部"退出登录"按钮；
+ *            没必要再弹一次登录模态（AuthModal 没有已登录态分支，会让用户迷惑）。
+ *            如果抽屉已经开着，则当成"我点错了"切换关闭。 */
 function onMobileAvatarClick() {
-  view.closeDrawer();
   if (auth.isLoggedIn.value) {
-    // 登录态下点头像，给"退出"快速入口；目前简化为直接弹登录模态
-    // （登录模态在已登录态下会显示"已登录"提示，体验也合理）
-    openAuth();
+    view.toggleDrawer();
   } else {
+    view.closeDrawer();
     openAuth();
   }
 }
