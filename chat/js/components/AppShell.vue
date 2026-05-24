@@ -14,6 +14,7 @@ import FloatActions from './FloatActions.vue';
 import WelcomeView from './WelcomeView.vue';
 import ChatView from './ChatView.vue';
 import StatsView from './StatsView.vue';
+import RechargeView from './RechargeView.vue';
 import ContactModal from './ContactModal.vue';
 import SkillsModal from './SkillsModal.vue';
 import NoticeModal from './NoticeModal.vue';
@@ -47,7 +48,8 @@ const GUEST_MOCK_ANSWER =
   '点击侧栏底部的「**登录 / 注册**」即可继续。';
 
 const view = useView();
-const { state: viewState, isWelcome, isChat, isStats, goWelcome, goChat } = view;
+const { state: viewState, isWelcome, isChat, isStats, isRecharge,
+        goWelcome, goChat } = view;
 const sess = useSessions();
 const { state: modelState } = useModels();
 const auth = useAuth();
@@ -56,6 +58,7 @@ const fin = useFinance();
 /* 顶部 mobile bar 的标题：随当前视图 / 当前会话变化 */
 const mobileTitle = computed(() => {
   if (isStats.value) return '使用统计';
+  if (isRecharge.value) return '账户充值';
   if (isChat.value) {
     const cur = sess.currentSession.value;
     if (cur && cur.title) return cur.title;
@@ -354,9 +357,10 @@ function finalizeGuestMock(placeholder, startTs) {
     <main class="main">
       <FloatActions @open-contact="openContact" />
 
-      <WelcomeView v-show="isWelcome" @submit="onSubmit" />
-      <ChatView    v-show="isChat"    @submit="onSubmit" />
-      <StatsView   v-show="isStats" />
+      <WelcomeView  v-show="isWelcome"  @submit="onSubmit" />
+      <ChatView     v-show="isChat"     @submit="onSubmit" />
+      <StatsView    v-show="isStats" />
+      <RechargeView v-show="isRecharge" />
     </main>
 
     <ContactModal v-model:open="contactOpen" />

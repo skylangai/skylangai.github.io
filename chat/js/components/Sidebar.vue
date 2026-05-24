@@ -23,7 +23,7 @@ const {
   state, sessionList, selectSession,
   replaceMessages, markLoaded, removeSession
 } = useSessions();
-const { state: viewState, goStats, goChat, closeDrawer } = useView();
+const { state: viewState, goStats, goChat, goRecharge, closeDrawer } = useView();
 const { isLoggedIn, displayName, initial, logout } = useAuth();
 
 const collapsed = ref(false);
@@ -150,6 +150,10 @@ function onGoStats() {
   closeDrawer();
   goStats();
 }
+function onGoRecharge() {
+  closeDrawer();
+  goRecharge();
+}
 
 function onOpenAuth(e) {
   if (e) e.preventDefault();
@@ -163,6 +167,7 @@ function onLogout(e) {
 }
 
 const isStatsActive = computed(() => viewState.current === 'stats');
+const isRechargeActive = computed(() => viewState.current === 'recharge');
 </script>
 
 <template>
@@ -212,6 +217,23 @@ const isStatsActive = computed(() => viewState.current === 'stats');
             <span class="session-title">{{ s.title }}</span>
             <span class="caret-sm" style="color:#9aa0a6">○</span>
           </div>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title is-clickable"
+             :class="{ 'is-active': isRechargeActive }"
+             @click="onGoRecharge">
+          <span class="section-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <!-- 钱包 / 卡片 + 加号：与 "充值" 语义贴合，且不撞 "使用统计" 的柱状图 -->
+              <rect x="3.5" y="6"  width="17" height="12" rx="2"
+                    fill="none" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M3.5 10h17" stroke="currentColor" stroke-width="1.7" fill="none"/>
+              <path d="M16.2 14.2v3M14.7 15.7h3" stroke="currentColor"
+                    stroke-width="1.7" fill="none" stroke-linecap="round"/>
+            </svg>
+          </span> 充值
         </div>
       </div>
 
