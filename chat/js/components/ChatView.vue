@@ -1,12 +1,14 @@
 <script setup>
 import { ref, watch, nextTick, onMounted } from 'vue';
 import { useSessions } from '../composables/useSessions.js';
+import { useI18n } from '../composables/useI18n.js';
 import Composer from './Composer.vue';
 import MessageItem from './MessageItem.vue';
 
 const emit = defineEmits(['submit']);
 
 const { state, currentSession, currentMessages } = useSessions();
+const { t } = useI18n();
 
 const scrollRef = ref(null);
 const composerRef = ref(null);
@@ -51,19 +53,19 @@ function onSubmit(payload) {
 <template>
   <section class="chat">
     <div class="chat-scroll" ref="scrollRef">
-      <div class="chat-day">今天</div>
+      <div class="chat-day">{{ t('chat.today') }}</div>
       <div class="chat-list">
         <MessageItem v-for="m in currentMessages" :key="m.id" :msg="m" />
       </div>
     </div>
 
     <Composer ref="composerRef"
-              placeholder="输入问题... "
+              :placeholder="t('welcome.placeholder')"
               send-icon="●"
               :bottom-fixed="true"
               @submit="onSubmit" />
 
-    <div class="chat-footer">助手内容可能会出错，请仔细核对回复内容。</div>
+    <div class="chat-footer">{{ t('chat.footer') }}</div>
   </section>
 </template>
 

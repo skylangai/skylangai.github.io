@@ -2,9 +2,11 @@
 import { ref, computed } from 'vue';
 import { useUploads } from '../composables/useUploads.js';
 import { FILE_INPUT_ACCEPT, partitionAttachments } from '../utils/fileSupport.js';
+import { useI18n } from '../composables/useI18n.js';
 
 /* 文件上传按钮：触发隐藏 file input；选完后做一次本地白名单校验再入队 */
 const { state: uploads, addFiles } = useUploads();
+const { t } = useI18n();
 const inputRef = ref(null);
 
 const hasAttachments = computed(() => uploads.list.length > 0);
@@ -25,7 +27,7 @@ function onChange(e) {
   const { accepted, rejected } = partitionAttachments(wrapped);
   if (rejected.length > 0) {
     const lines = rejected.map((r) => `• ${r.name}：${r.reason}`).join('\n');
-    alert('以下文件未被添加：\n' + lines);
+    alert(t('upload.rejected', { lines }));
   }
   if (accepted.length > 0) {
     /* useUploads.addFiles 期望传一个 FileList-like，构造一个数组就够（length + index） */
@@ -38,8 +40,8 @@ function onChange(e) {
   <button type="button"
           class="chip chip-icon chip-upload"
           :class="{ 'has-attachments': hasAttachments }"
-          title="上传文件（支持 PDF / Word(.docx) / Markdown / TXT）"
-          aria-label="上传文件"
+          :title="t('upload.title')"
+          :aria-label="t('upload.aria')"
           @click="trigger">＋
     <input ref="inputRef" type="file" multiple hidden
            :accept="FILE_INPUT_ACCEPT"

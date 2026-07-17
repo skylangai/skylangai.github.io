@@ -247,8 +247,128 @@ section {
     filter: drop-shadow(0 4px 10px rgba(124, 58, 237, 0.45));
     transform: translateY(-1px);
 }
+html[data-lang="en"] .brand-wordmark {
+    font-size: 17px;
+    letter-spacing: 0.4px;
+    font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+/* Language switch: 中文 / EN
+   Desktop → far right of header bar
+   Mobile  → left of hamburger toggle */
+.navbar .container.mob-logo {
+    position: relative;
+}
+.lang-switch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+    z-index: 10;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.lang-switch:focus-visible {
+    outline: 2px solid rgba(199, 210, 254, 0.85);
+    outline-offset: 3px;
+    border-radius: 999px;
+}
+.lang-track {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    min-width: 86px;
+    height: 30px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+.lang-switch:hover .lang-track {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.42);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 0 0 1px rgba(167, 139, 250, 0.18);
+}
+.lang-glider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    height: calc(100% - 6px);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #818cf8 0%, #a78bfa 55%, #c084fc 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 0;
+}
+html[data-lang="en"] .lang-glider {
+    transform: translateX(100%);
+}
+.lang-opt {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: rgba(255, 255, 255, 0.55);
+    transition: color 0.25s ease;
+    user-select: none;
+    line-height: 1;
+}
+html[data-lang="zh"] .lang-opt.lang-zh,
+html:not([data-lang]) .lang-opt.lang-zh {
+    color: #fff;
+}
+html[data-lang="en"] .lang-opt.lang-en {
+    color: #fff;
+}
+.nav-background .lang-track,
+.nav-mob .lang-track {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Desktop: far right of the header, after nav links */
+@media screen and (min-width: 768px) {
+    .navbar-header.tablet-logo {
+        width: auto;
+        min-width: 16.66666667%;
+    }
+    .lang-switch {
+        right: 15px;
+    }
+    .navbar-nav.pull-right {
+        margin-right: 102px !important;
+    }
+}
+
+/* Mobile: immediately left of the hamburger */
 @media (max-width: 767px) {
     .brand-logo-svg { height: 32px; }
+    .lang-track {
+        min-width: 76px;
+        height: 28px;
+    }
+    .lang-opt { font-size: 10px; }
+    .lang-switch {
+        right: 58px;
+    }
 }
 
 nav {
@@ -759,6 +879,28 @@ nav.top-nav-collapse {
 }
 @media (max-width: 479px) {
     #slides .slide .slide-caption .container h1 { font-size: 1.2em; }
+}
+
+/* English hero titles are longer — use a smaller scale so they still fit. */
+html[data-lang="en"] #slides .slide .slide-caption .container h1.hero-title {
+    font-size: 3.15em;
+    letter-spacing: -0.01em;
+}
+@media (max-width: 1199px) {
+    html[data-lang="en"] #slides .slide .slide-caption .container h1.hero-title { font-size: 2.55em; }
+}
+@media (max-width: 991px) {
+    html[data-lang="en"] #slides .slide .slide-caption .container h1.hero-title { font-size: 1.85em; }
+}
+@media (max-width: 767px) {
+    html[data-lang="en"] #slides .slide .slide-caption .container h1.hero-title { font-size: 1.2em; }
+}
+@media (max-width: 479px) {
+    html[data-lang="en"] #slides .slide .slide-caption .container h1.hero-title {
+        font-size: 0.92em;
+        white-space: normal;
+        line-height: 1.25;
+    }
 }
 
 

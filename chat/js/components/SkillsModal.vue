@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import BaseModal from './BaseModal.vue';
 import { INITIAL_SKILLS } from '../mock/skills.js';
 import { useAuth } from '../composables/useAuth.js';
+import { useI18n } from '../composables/useI18n.js';
 
 /* 技能管理弹窗
  *
@@ -18,6 +19,7 @@ defineProps({
 const emit = defineEmits(['update:open', 'demo-notice']);
 
 const { isLoggedIn } = useAuth();
+const { t } = useI18n();
 
 function _initialSkills() {
   return isLoggedIn.value ? [] : INITIAL_SKILLS.map((s) => ({ ...s }));
@@ -47,7 +49,7 @@ function refresh() {
 }
 
 function uploadSkill() {
-  emit('demo-notice', '上传技能');
+  emit('demo-notice', 'uploadSkill');
 }
 </script>
 
@@ -60,21 +62,21 @@ function uploadSkill() {
       <div class="skills-modal-tools">
         <button type="button" class="skills-icon-btn"
                 :class="{ 'is-spinning': spinning }"
-                title="刷新" aria-label="刷新" @click="refresh">
+                :title="t('skills.refresh')" :aria-label="t('skills.refresh')" @click="refresh">
           <i class="fa fa-refresh" aria-hidden="true"></i>
         </button>
         <button type="button" class="skills-add-btn" @click="uploadSkill">
           <i class="fa fa-arrow-up" aria-hidden="true"></i>
-          <span>上传技能</span>
+          <span>{{ t('skills.upload') }}</span>
         </button>
       </div>
-      <button type="button" class="skills-modal-close" aria-label="关闭" @click="close">
+      <button type="button" class="skills-modal-close" :aria-label="t('contact.close')" @click="close">
         <i class="fa fa-times" aria-hidden="true"></i>
       </button>
     </header>
 
     <div class="skills-modal-body">
-      <div v-if="skills.length === 0" class="skills-empty">暂无已安装的技能</div>
+      <div v-if="skills.length === 0" class="skills-empty">{{ t('skills.empty') }}</div>
       <div v-for="s in skills" :key="s.id"
            class="skill-row" :class="{ 'is-disabled': !s.enabled }">
         <span class="skill-icon" aria-hidden="true">
@@ -87,12 +89,12 @@ function uploadSkill() {
           </div>
           <div class="skill-desc" :title="s.desc">{{ s.desc }}</div>
         </div>
-        <label class="skill-toggle" :aria-label="'启用/停用 ' + s.title">
+        <label class="skill-toggle" :aria-label="t('skills.toggle', { title: s.title })">
           <input type="checkbox" :checked="s.enabled"
                  @change="toggleSkill(s.id, $event.target.checked)" />
           <span class="slider"></span>
         </label>
-        <button type="button" class="skill-remove" aria-label="移除该技能" title="移除"
+        <button type="button" class="skill-remove" :aria-label="t('skills.remove')" :title="t('attach.remove')"
                 @click="removeSkill(s.id)">
           <i class="fa fa-times"></i>
         </button>

@@ -1,17 +1,23 @@
 <script setup>
 import { computed } from 'vue';
 import BaseModal from './BaseModal.vue';
+import { useI18n } from '../composables/useI18n.js';
 
-/* Demo 受限提示弹窗 */
+/* Demo 受限提示弹窗；feature 可为 i18n key 后缀（cron/oauth/uploadSkill）或原文 */
 const props = defineProps({
   open: { type: Boolean, default: false },
   feature: { type: String, default: '' }
 });
 const emit = defineEmits(['update:open', 'contact']);
+const { t } = useI18n();
 
-const featureLabel = computed(() =>
-  props.feature ? `「${props.feature}」` : '该功能'
-);
+const featureLabel = computed(() => {
+  if (!props.feature) return t('notice.thisFeature');
+  const key = 'notice.feature.' + props.feature;
+  const translated = t(key);
+  const label = translated === key ? props.feature : translated;
+  return `「${label}」`;
+});
 function close() { emit('update:open', false); }
 function toContact() {
   emit('update:open', false);
@@ -21,21 +27,20 @@ function toContact() {
 
 <template>
   <BaseModal name="notice" :open="open" @update:open="$emit('update:open', $event)" labelledby="demoNoticeTitle">
-    <button type="button" class="notice-modal-close" aria-label="关闭" @click="close">
+    <button type="button" class="notice-modal-close" :aria-label="t('contact.close')" @click="close">
       <i class="fa fa-times" aria-hidden="true"></i>
     </button>
     <div class="notice-modal-icon" aria-hidden="true">
       <i class="fa fa-info"></i>
     </div>
-    <h3 id="demoNoticeTitle" class="notice-modal-title">功能暂未开放</h3>
+    <h3 id="demoNoticeTitle" class="notice-modal-title">{{ t('notice.title') }}</h3>
     <p class="notice-modal-sub">
-      <span>{{ featureLabel }}</span>
-      在 Demo 状态下暂不支持，欢迎联系我们了解完整版能力。
+      <span>{{ featureLabel }}</span>{{ t('notice.body') }}
     </p>
     <div class="notice-modal-actions">
       <button type="button" class="notice-btn notice-btn-ghost" data-modal-autofocus
-              @click="close">我知道了</button>
-      <button type="button" class="notice-btn notice-btn-primary" @click="toContact">联系我们</button>
+              @click="close">{{ t('notice.ok') }}</button>
+      <button type="button" class="notice-btn notice-btn-primary" @click="toContact">{{ t('notice.contact') }}</button>
     </div>
   </BaseModal>
 </template>

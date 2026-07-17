@@ -262,6 +262,21 @@
 	    if ($initActive.length) {
 	        streamPane($initActive.data('tab'));
 	    }
+
+	    // Re-stream active case when language changes (i18n updates bubble HTML)
+	    $(document).on('skylang:langchange', function () {
+	        $('.chat-bubble').each(function () {
+	            $(this).removeData('originalHtml');
+	        });
+	        clearStreamTimers();
+	        clearChainTimer();
+	        streamingActive = false;
+	        var $active = $('.case-tab-btn.active').first();
+	        if ($active.length) {
+	            streamPane($active.data('tab'));
+	        }
+	        setTimeout(measureAndLockTabHeight, 80);
+	    });
 	    /* End of Application case tabs */
 
 

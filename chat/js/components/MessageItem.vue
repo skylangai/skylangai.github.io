@@ -4,8 +4,10 @@ import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
 import { formatFileSize } from '../utils/format.js';
 import { renderMarkdown } from '../utils/markdown.js';
 import { useAuth } from '../composables/useAuth.js';
+import { useI18n } from '../composables/useI18n.js';
 
 const { displayName: authDisplayName, initial: authInitial } = useAuth();
+const { t } = useI18n();
 
 /* 单条消息渲染：根据 msg.role 与 msg._liveFlags 决定形态
  *
@@ -28,14 +30,20 @@ const { displayName: authDisplayName, initial: authInitial } = useAuth();
  */
 const props = defineProps({
   msg: { type: Object, required: true },
-  assistantName: { type: String, default: ASSISTANT_NAME }
+  assistantName: { type: String, default: '' }
 });
+
+const resolvedAssistantName = computed(() =>
+  props.assistantName || t('brand.assistant') || ASSISTANT_NAME
+);
 
 const isUser = computed(() => props.msg.role === 'user');
 const live = computed(() => props.msg._liveFlags || null);
 const statusText = computed(() => {
   if (!live.value) return '';
-  return live.value.pending ? '处理中...' : `已处理 ${live.value.elapsed}秒`;
+  return live.value.pending
+    ? t('chat.processing')
+    : t('chat.processed', { sec: live.value.elapsed });
 });
 
 /* assistant 消息正文走 Markdown（流式时 props.msg.content 每个 chunk 都会变，
@@ -67,7 +75,7 @@ const assistantHtml = computed(() => renderMarkdown(props.msg.content || ''));
   <div v-else class="msg msg-assistant">
     <div class="avatar"><img src="/assets/logo.svg" alt="bot" /></div>
     <div class="msg-body">
-      <div class="msg-header"><span class="name">{{ assistantName }}</span></div>
+      <div class="msg-header"><span class="name">{{ resolvedAssistantName }}</span></div>
 
       <!-- 仅 live 形态显示状态 + 工具列表（历史回放不显示） -->
       <template v-if="live">

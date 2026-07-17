@@ -43,6 +43,26 @@ export function fetchWithTimeout(url, options, timeoutMs = REQUEST_TIMEOUT_MS) {
     .finally(() => clearTimeout(timer));
 }
 
+/* 与 useI18n / 官网共用 localStorage key；给后端带上语言偏好。
+ * 后端优先读 X-Lang，其次 Accept-Language；缺省按中文。 */
+const LANG_STORAGE_KEY = 'skylang-lang';
+
+export function currentUiLang() {
+  try {
+    const saved = localStorage.getItem(LANG_STORAGE_KEY);
+    if (saved === 'en' || saved === 'zh') return saved;
+  } catch (e) { /* private mode */ }
+  return 'zh';
+}
+
+function langHeaders() {
+  const lang = currentUiLang();
+  return {
+    'X-Lang': lang,
+    'Accept-Language': lang === 'en' ? 'en' : 'zh-CN'
+  };
+}
+
 /* 真后端 JSON POST 的统一封装：自动带 cookie、自动 JSON 头、自动解析为 JSON。
  *
  * 出错时返回 { ok:false, code:9000, message } 形式，调用方就只需关心业务字段。
@@ -54,7 +74,10 @@ export async function apiPostJson(path, body, timeoutMs = REQUEST_TIMEOUT_MS) {
       {
         method: 'POST',
         credentials: 'include',  // 必带 cookie，否则后端拿不到 session_token
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...langHeaders()
+        },
         body: JSON.stringify(body || {})
       },
       timeoutMs
@@ -74,7 +97,11 @@ export async function apiGetJson(path, timeoutMs = REQUEST_TIMEOUT_MS) {
   try {
     const r = await fetchWithTimeout(
       API_BASE + path,
-      { method: 'GET', credentials: 'include' },
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: { ...langHeaders() }
+      },
       timeoutMs
     );
     return await r.json().catch(() => ({
@@ -93,7 +120,11 @@ export async function apiDeleteJson(path, timeoutMs = REQUEST_TIMEOUT_MS) {
   try {
     const r = await fetchWithTimeout(
       API_BASE + path,
-      { method: 'DELETE', credentials: 'include' },
+      {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { ...langHeaders() }
+      },
       timeoutMs
     );
     return await r.json().catch(() => ({

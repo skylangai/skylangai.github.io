@@ -8,6 +8,7 @@ import { useFinance } from '../composables/useFinance.js';
 import { DEBUG } from '../api/config.js';
 import { sendMessage as apiSendMessage, uploadAttachments } from '../api/chat.js';
 import { FIXED_ANSWER, ASSISTANT_NAME } from '../mock/fixedAnswer.js';
+import { useI18n } from '../composables/useI18n.js';
 
 import Sidebar from './Sidebar.vue';
 import FloatActions from './FloatActions.vue';
@@ -39,13 +40,7 @@ const GUEST_ANIM_MIN_MS = 800; // 游客 mock 比 DEBUG 短一点，少耗用户
 
 /* 未登录访客发送时给的本地 mock 答复——纯前端，不打后端、不计费、不入库。
  * 用 Markdown，让 MessageItem.vue 自然渲染列表 / 加粗 / 链接。 */
-const GUEST_MOCK_ANSWER =
-  '👋 您当前是 **游客模式**，可以体验对话框；要解锁完整能力请先登录或注册：\n\n' +
-  '- 真实大模型回答（含联网检索）\n' +
-  '- 多轮上下文记忆 / 历史会话保存\n' +
-  '- 文件附件（PDF / Word / Markdown / TXT）解析\n' +
-  '- 用量与额度统计\n\n' +
-  '点击侧栏底部的「**登录 / 注册**」即可继续。';
+const { t } = useI18n();
 
 const view = useView();
 const { state: viewState, isWelcome, isChat, isStats, isRecharge,
@@ -57,13 +52,13 @@ const fin = useFinance();
 
 /* 顶部 mobile bar 的标题：随当前视图 / 当前会话变化 */
 const mobileTitle = computed(() => {
-  if (isStats.value) return '使用统计';
-  if (isRecharge.value) return '账户充值';
+  if (isStats.value) return t('stats.title');
+  if (isRecharge.value) return t('rch.title');
   if (isChat.value) {
     const cur = sess.currentSession.value;
     if (cur && cur.title) return cur.title;
   }
-  return ASSISTANT_NAME || '凌云 AI';
+  return t('brand.assistant') || ASSISTANT_NAME || t('brand.assistantShort');
 });
 
 /* drawer 打开时锁住 <html> 滚动，避免抽屉里滑动手势穿透到主区。
@@ -275,7 +270,7 @@ function handleSend(text, attachments) {
         sess.markPersisted(sessionIdAtSend);
       },
       onError: (d) => {
-        const m = (d && d.message) || '请求失败';
+        const m = (d && d.message) || t('chat.requestFailed');
         placeholder.content = '⚠️ ' + m;
         placeholder._liveFlags.pending = false;
         placeholder._liveFlags.elapsed = Math.max(1, Math.round((Date.now() - startTs) / 1000));
@@ -299,7 +294,7 @@ function finalizeMock(placeholder, startTs) {
 /* 游客 mock 收尾：本地引导文案，不与 DEBUG mock 共用避免文案串台 */
 function finalizeGuestMock(placeholder, startTs) {
   const elapsedSec = Math.max(1, Math.round((Date.now() - startTs) / 1000));
-  placeholder.content = GUEST_MOCK_ANSWER;
+  placeholder.content = t('guest.answer');
   placeholder._liveFlags.pending = false;
   placeholder._liveFlags.elapsed = elapsedSec;
   // 工具栏清空——游客没有真正的 thinking / tool_call 阶段
@@ -314,7 +309,7 @@ function finalizeGuestMock(placeholder, startTs) {
     <header class="mobile-bar" role="banner">
       <button type="button"
               class="mobile-bar-btn"
-              :aria-label="view.state.drawerOpen ? '关闭菜单' : '打开菜单'"
+              :aria-label="view.state.drawerOpen ? t('mobile.closeMenu') : t('mobile.openMenu')"
               @click="view.toggleDrawer">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d="M4 7h16M4 12h16M4 17h16"
@@ -328,15 +323,15 @@ function finalizeGuestMock(placeholder, startTs) {
       <button v-if="auth.isLoggedIn.value"
               type="button"
               class="mobile-bar-avatar"
-              :aria-label="'当前账号 ' + auth.displayName.value"
+              :aria-label="t('mobile.currentAccount', { name: auth.displayName.value })"
               @click="onMobileAvatarClick">
         <span class="mobile-bar-avatar-letter">{{ auth.initial.value }}</span>
       </button>
       <button v-else
               type="button"
               class="mobile-bar-login"
-              aria-label="登录或注册"
-              @click="onMobileAvatarClick">登录</button>
+              :aria-label="t('mobile.loginOrRegister')"
+              @click="onMobileAvatarClick">{{ t('mobile.login') }}</button>
     </header>
 
     <!-- ===== 侧栏包裹：desktop 平铺，mobile 抽屉 ===== -->

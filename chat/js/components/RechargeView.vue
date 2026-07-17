@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { usePay } from '../composables/usePay.js';
 import { useAuth } from '../composables/useAuth.js';
 import { useView } from '../composables/useView.js';
+import { useI18n } from '../composables/useI18n.js';
 import Pager from './Pager.vue';
 
 /* 充值视图。
@@ -21,6 +22,7 @@ import Pager from './Pager.vue';
 const pay = usePay();
 const auth = useAuth();
 const { isRecharge } = useView();
+const { t } = useI18n();
 
 const amount = ref('10.00');
 const amountError = ref('');
@@ -33,11 +35,11 @@ function _validateAmount() {
   amountError.value = '';
   const n = Number(amount.value);
   if (!isFinite(n) || n <= 0) {
-    amountError.value = '请输入大于 0 的金额';
+    amountError.value = t('rch.errAmount');
     return null;
   }
   if (n > 10000) {
-    amountError.value = '单笔最大充值金额 10000 元';
+    amountError.value = t('rch.errMax');
     return null;
   }
   // 圆角到 2 位小数（与后端落库精度对齐）
@@ -46,7 +48,7 @@ function _validateAmount() {
 
 async function onPay() {
   if (!auth.isLoggedIn.value) {
-    amountError.value = '请先登录后再充值';
+    amountError.value = t('rch.errLogin');
     return;
   }
   const n = _validateAmount();
@@ -71,9 +73,9 @@ function qrSrc(order) {
 }
 
 function statusLabel(s) {
-  if (s === 'paid')    return '已确认';
-  if (s === 'pending') return '待确认';
-  if (s === 'failed')  return '未成功支付';
+  if (s === 'paid')    return t('rch.statusPaid');
+  if (s === 'pending') return t('rch.statusPending');
+  if (s === 'failed')  return t('rch.statusFailed');
   return s || '-';
 }
 function statusClass(s) {
@@ -107,7 +109,11 @@ const totalPages = pay.totalPages;
 const recordsMeta = computed(() => {
   const total = pay.state.recordsTotal || 0;
   if (total === 0) return '';
-  return `共 ${total} 条 · 第 ${recordsPage.value} / ${totalPages.value} 页`;
+  return t('rch.pageInfo', {
+    total,
+    page: recordsPage.value,
+    pages: totalPages.value
+  });
 });
 </script>
 
@@ -116,18 +122,18 @@ const recordsMeta = computed(() => {
     <div class="rch-scroll">
       <div class="rch-inner">
         <header class="rch-header">
-          <h2 class="rch-title">账户充值</h2>
-          <span class="rch-period">仅支持支付宝</span>
+          <h2 class="rch-title">{{ t('rch.title') }}</h2>
+          <span class="rch-period">{{ t('rch.alipayOnly') }}</span>
         </header>
 
         <!-- 未登录提示 -->
         <div v-if="!auth.isLoggedIn.value" class="rch-empty-hint">
-          请先登录后再使用充值功能。
+          {{ t('rch.loginHint') }}
         </div>
 
         <!-- 表单：金额 + 充值按钮 -->
         <div class="rch-form">
-          <label class="rch-label" for="rch-amount">充值金额（元）</label>
+          <label class="rch-label" for="rch-amount">{{ t('rch.amount') }}</label>
           <div class="rch-amount-row">
             <span class="rch-amount-prefix">¥</span>
             <input id="rch-amount" v-model="amount" type="number" min="0.01"
@@ -151,14 +157,14 @@ const recordsMeta = computed(() => {
                       font-weight="700" fill="#1677ff" text-anchor="middle">支</text>
               </svg>
             </span>
-            <span>{{ pay.state.creating ? '正在下单…' : '使用支付宝充值' }}</span>
+            <span>{{ pay.state.creating ? t('rch.creating') : t('rch.payBtn') }}</span>
           </button>
         </div>
 
         <!-- 当前订单 / 二维码区 -->
         <section v-if="activeOrder" class="rch-active">
           <div class="rch-active-head">
-            <span class="rch-active-title">当前订单</span>
+            <span class="rch-active-title">{{ t('rch.activeOrder') }}</span>
             <span class="rch-active-otn" :title="activeOrder.outTradeNo">
               {{ activeOrder.outTradeNo }}
             </span>
@@ -168,15 +174,15 @@ const recordsMeta = computed(() => {
             <!-- PC：二维码 -->
             <template v-if="showQr">
               <div class="rch-qr-wrap">
-                <img v-if="qrSrc(activeOrder)" class="rch-qr" :src="qrSrc(activeOrder)" alt="支付二维码" />
-                <div v-else class="rch-qr-placeholder">二维码加载中…</div>
+                <img v-if="qrSrc(activeOrder)" class="rch-qr" :src="qrSrc(activeOrder)" :alt="t('rch.qrAlt')" />
+                <div v-else class="rch-qr-placeholder">{{ t('rch.qrLoading') }}</div>
               </div>
               <div class="rch-qr-tips">
                 <div class="rch-qr-money">¥ {{ Number(activeOrder.money).toFixed(2) }}</div>
                 <div class="rch-qr-status" :class="statusClass(activeOrder.status)">
-                  <template v-if="activeOrder.status === 'paid'">✅ 已支付，余额已入账</template>
-                  <template v-else-if="activeOrder.status === 'failed'">❌ 支付失败：{{ activeOrder.error }}</template>
-                  <template v-else>⏳ 等待支付宝扫码支付…（每 2 秒自动刷新）</template>
+                  <template v-if="activeOrder.status === 'paid'">{{ t('rch.paid') }}</template>
+                  <template v-else-if="activeOrder.status === 'failed'">❌ {{ activeOrder.error }}</template>
+                  <template v-else>{{ t('rch.waiting') }}</template>
                 </div>
               </div>
             </template>
@@ -184,9 +190,9 @@ const recordsMeta = computed(() => {
             <!-- mobile：跳转链接（前端已 try 跳转过；这里再显式给个手动按钮兜底） -->
             <template v-else-if="showMobileTip">
               <div class="rch-mobile-tip">
-                <p>已为你打开支付宝支付页。如未自动跳转，请点下方按钮手动跳转。</p>
+                <p>{{ t('rch.mobileHint') }}</p>
                 <a :href="activeOrder.payurl" class="alipay-btn alipay-btn--mobile" target="_self">
-                  打开支付宝完成支付
+                  {{ t('rch.openAlipay') }}
                 </a>
               </div>
             </template>
@@ -194,7 +200,7 @@ const recordsMeta = computed(() => {
             <!-- failed -->
             <template v-else-if="activeOrder.status === 'failed'">
               <div class="rch-fail-tip">
-                ❌ 支付失败：{{ activeOrder.error || '未知原因' }}
+                ❌ {{ activeOrder.error || t('rch.failUnknown') }}
               </div>
             </template>
           </div>
@@ -208,21 +214,21 @@ const recordsMeta = computed(() => {
                 <path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor"
                       stroke-width="1.8" stroke-linecap="round"/>
               </svg>
-              充值记录
+              {{ t('rch.records') }}
               <span class="rch-records-meta" v-if="recordsMeta">
                 · {{ recordsMeta }}
               </span>
             </span>
             <button type="button" class="rch-refresh-btn"
                     :disabled="pay.state.loadingRecords"
-                    title="刷新充值记录（重拉当前页）"
+                    :title="t('rch.refreshTitle')"
                     @click="pay.loadRecords({ page: recordsPage })">
               <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
                 <path d="M21 12a9 9 0 1 1-3.5-7.1M21 4v5h-5"
                       fill="none" stroke="currentColor" stroke-width="1.8"
                       stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              {{ pay.state.loadingRecords ? '刷新中…' : '刷新' }}
+              {{ pay.state.loadingRecords ? t('rch.refreshing') : t('rch.refresh') }}
             </button>
           </div>
 
@@ -230,27 +236,27 @@ const recordsMeta = computed(() => {
             <table class="rch-table">
               <thead>
                 <tr>
-                  <th class="col-time">时间</th>
-                  <th class="col-money">金额</th>
-                  <th class="col-status">订单状态</th>
-                  <th class="col-otn">商户订单号</th>
+                  <th class="col-time">{{ t('rch.colTime') }}</th>
+                  <th class="col-money">{{ t('rch.colMoney') }}</th>
+                  <th class="col-status">{{ t('rch.colStatus') }}</th>
+                  <th class="col-otn">{{ t('rch.colOtn') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <!-- 未登录优先级最高：不展示"加载失败"，引导用户先登录 -->
                 <tr v-if="!auth.isLoggedIn.value">
-                  <td colspan="4" class="rch-empty">请先登录后查看充值记录</td>
+                  <td colspan="4" class="rch-empty">{{ t('rch.loginRecords') }}</td>
                 </tr>
                 <tr v-else-if="pay.state.loadingRecords && records.length === 0">
-                  <td colspan="4" class="rch-empty">加载中…</td>
+                  <td colspan="4" class="rch-empty">{{ t('rch.loading') }}</td>
                 </tr>
                 <tr v-else-if="pay.state.recordsError">
                   <td colspan="4" class="rch-empty" style="color:#ef4444">
-                    加载失败：{{ pay.state.recordsError }}
+                    {{ t('stats.loadFail') }}：{{ pay.state.recordsError }}
                   </td>
                 </tr>
                 <tr v-else-if="records.length === 0">
-                  <td colspan="4" class="rch-empty">暂无充值记录</td>
+                  <td colspan="4" class="rch-empty">{{ t('rch.empty') }}</td>
                 </tr>
                 <tr v-for="r in (auth.isLoggedIn.value ? records : [])" :key="r.outTradeNo">
                   <td class="cell-time">{{ fmtTime(r.createdAt) }}</td>

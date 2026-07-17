@@ -8,6 +8,7 @@ import {
 import { DEBUG } from '../api/config.js';
 import { useFinance } from './useFinance.js';
 import { useSessions } from './useSessions.js';
+import { t } from './useI18n.js';
 
 /* 登录态管理（单例 reactive，整个子应用共享）
  *
@@ -75,12 +76,12 @@ const initial = computed(() => {
 });
 
 const displayName = computed(() => {
-  if (!state.user) return '游客';
+  if (!state.user) return t('guest');
   if (state.user.username) return state.user.username;
   // 没昵称就回退到 phone 末 4 位 / email 的 @ 前部分
-  if (state.user.phone) return '用户' + state.user.phone.slice(-4);
-  if (state.user.email) return state.user.email.split('@')[0] || '用户';
-  return '用户';
+  if (state.user.phone) return t('user') + state.user.phone.slice(-4);
+  if (state.user.email) return state.user.email.split('@')[0] || t('user');
+  return t('user');
 });
 
 /* 把后端响应里的 user / finance / sessions 全部应用到内存 + localStorage */

@@ -1,10 +1,10 @@
 ﻿<!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-lang="zh">
 
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>凌云智能</title>
+<title data-i18n-title="page.title">凌云智能</title>
 <meta name="Robots" content="all">
 <meta name="description" content="凌云智能是面向万千企业的大模型应用资深开发团队，支持对主流大模型的定制化应用开发和私有化部署，包括DeepSeek，OpenAI，Llama，通义千问等。">
 <meta name="Keywords" content="DeepSeek本地部署与开发，大模型训练，智能客服，智能体开发，大模型知识库">
@@ -33,8 +33,8 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a href="#slides" class="brand-logo" aria-label="凌云智能 - 返回首页">
-					<svg class="brand-logo-svg" viewBox="0 0 220 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+				<a href="#slides" class="brand-logo" data-i18n-aria="brand.home" aria-label="凌云智能 - 返回首页">
+					<svg class="brand-logo-svg" viewBox="0 0 260 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
 						<defs>
 							<linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
 								<stop offset="0%"  stop-color="#c7d2fe"/>
@@ -54,25 +54,32 @@
 							<circle cx="30" cy="12" r="2.2" fill="#ffffff"/>
 							<circle cx="14" cy="10" r="1.2" fill="#ffffff" opacity="0.85"/>
 						</g>
-						<!-- Brand wordmark: 凌云智能 -->
-						<text x="50" y="32" font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif"
-							  font-size="22" font-weight="700" letter-spacing="2" fill="url(#brandGrad)">凌云智能</text>
+						<!-- Brand wordmark -->
+						<text class="brand-wordmark" x="50" y="32" font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif"
+							  font-size="22" font-weight="700" letter-spacing="2" fill="url(#brandGrad)" data-i18n="brand.name">凌云智能</text>
 					</svg>
 				</a>
 			</div>
+			<button type="button" class="lang-switch" id="langSwitch" data-i18n-aria="lang.switch" aria-label="切换语言">
+				<span class="lang-track" aria-hidden="true">
+					<span class="lang-glider"></span>
+					<span class="lang-opt lang-zh">中文</span>
+					<span class="lang-opt lang-en">EN</span>
+				</span>
+			</button>
 			<div class="collapse navbar-collapse" id="myNavbar">
 				<ul class="nav navbar-nav pull-right">
 					<li>
-						<a href="#service">产品服务</a>
+						<a href="#service" data-i18n="nav.services">产品服务</a>
 					</li>
 					<li>
-						<a href="/chat/dist/">体验中心</a>
+						<a href="/chat/dist/" data-i18n="nav.demo">体验中心</a>
 					</li>
 					<li>
-						<a href="#testimonial-and-client">关于我们</a>
+						<a href="#testimonial-and-client" data-i18n="nav.about">关于我们</a>
 					</li>
 					<li>
-						<a href="#contact-us">合作咨询</a>
+						<a href="#contact-us" data-i18n="nav.contact">合作咨询</a>
 					</li>
 				</ul>
 			</div>
@@ -94,20 +101,20 @@
 			<div class="slide-caption">
 				<div class="container">
 					<div class="box">
-						<h1 class="hero-title hero-anim-1">懂业务的 AI 助理</h1>
-						<h1 class="hero-title hero-anim-2">助力AI到企业的最后一公里</h1>
+						<h1 class="hero-title hero-anim-1" data-i18n="hero.title1">懂业务的 AI 助理</h1>
+						<h1 class="hero-title hero-anim-2" data-i18n="hero.title2">助力AI到企业的最后一公里</h1>
 						<div class="hero-cta-group hero-anim-3">
 							<a href="#service" class="hero-btn hero-btn-primary">
 								<i class="fa fa-compass" aria-hidden="true"></i>
-								<span>了解服务</span>
+								<span data-i18n="hero.cta1">了解服务</span>
 							</a>
 							<a href="/chat/dist/" class="hero-btn hero-btn-ghost">
 								<i class="fa fa-rocket" aria-hidden="true"></i>
-								<span>即刻体验 Demo</span>
+								<span data-i18n="hero.cta2">即刻体验 Demo</span>
 							</a>
 							<button type="button" class="hero-btn hero-btn-ghost" data-open-contact-modal>
 								<i class="fa fa-phone" aria-hidden="true"></i>
-								<span>联系我们</span>
+								<span data-i18n="hero.cta3">联系我们</span>
 							</button>
 						</div>
 					</div>
@@ -143,7 +150,7 @@
 			<div class="col-xs-12 section-title-padding">
 				<div class="sec-title-container text-center reveal">
 					<div class="title-line"></div>
-					<h2 class="uppercase font-weight-7 less-mar-1"> 应用案例 </h2>
+					<h2 class="uppercase font-weight-7 less-mar-1" data-i18n="case.title"> 应用案例 </h2>
 					<div class="clearfix"></div>
 					<!-- <p class="by-sub-title">lorem ipsum dolor sit amet</p> -->
 				</div>
@@ -154,16 +161,16 @@
 			<!-- Tab navigation -->
 			<div class="case-tabs-nav reveal reveal-delay-1">
 				<button class="case-tab-btn active" type="button" data-tab="case-1">
-					<i class="fa fa-comments" aria-hidden="true"></i> 智能客服
+					<i class="fa fa-comments" aria-hidden="true"></i> <span data-i18n="case.tab1">智能客服</span>
 				</button>
 				<button class="case-tab-btn" type="button" data-tab="case-2">
-					<i class="fa fa-bar-chart" aria-hidden="true"></i> 数据分析
+					<i class="fa fa-bar-chart" aria-hidden="true"></i> <span data-i18n="case.tab2">数据分析</span>
 				</button>
 				<button class="case-tab-btn" type="button" data-tab="case-3">
-					<i class="fa fa-file-text-o" aria-hidden="true"></i> 长文摘要
+					<i class="fa fa-file-text-o" aria-hidden="true"></i> <span data-i18n="case.tab3">长文摘要</span>
 				</button>
 				<button class="case-tab-btn" type="button" data-tab="case-4">
-					<i class="fa fa-graduation-cap" aria-hidden="true"></i> 行业专家
+					<i class="fa fa-graduation-cap" aria-hidden="true"></i> <span data-i18n="case.tab4">行业专家</span>
 				</button>
 			</div>
 
@@ -175,23 +182,23 @@
 					<div class="col-md-12 service-item-block">
 						<div class="service-left-side active">
 							<div class="text-box">
-								<h4 class="title">融合企业业务，精准智能客服问答</h4>
+								<h4 class="title" data-i18n="case1.title">融合企业业务，精准智能客服问答</h4>
 								<div class="case-chat-card">
 									<div class="case-chat-head">
 										<span class="dot"></span>
-										<span class="title">在线客服 · 智能助手</span>
+										<span class="title" data-i18n="case1.head">在线客服 · 智能助手</span>
 									</div>
 									<div class="case-chat-body">
 										<div class="chat-msg user">
 											<div class="chat-avatar user"><i class="fa fa-user"></i></div>
 											<div class="chat-stack">
-												<div class="chat-bubble">我的行程取消了，请问该如何退订机票？</div>
+												<div class="chat-bubble" data-i18n-html="case1.user">我的行程取消了，请问该如何退订机票？</div>
 											</div>
 										</div>
 										<div class="chat-msg ai">
 											<div class="chat-avatar ai"><i class="fa fa-comments"></i></div>
 											<div class="chat-stack">
-												<div class="chat-bubble">
+												<div class="chat-bubble" data-i18n-html="case1.ai">
 													<p><span class="hl">退订机票</span>，可参考以下步骤：</p>
 													<ol>
 														<li><span class="hl">进入订单页面</span>：在 App 中点击右下角"我的"，选择"全部订单"；或者在官网点击"我的"进入个人中心，选择"订单管理"。</li>
@@ -215,11 +222,11 @@
 					<div class="col-md-12 service-item-block">
 						<div class="service-left-side active">
 							<div class="text-box">
-								<h4 class="title">出色数理能力，掌握商务报表分析</h4>
+								<h4 class="title" data-i18n="case2.title">出色数理能力，掌握商务报表分析</h4>
 								<div class="case-chat-card">
 									<div class="case-chat-head">
 										<span class="dot"></span>
-										<span class="title">数据分析 · 智能助手</span>
+										<span class="title" data-i18n="case2.head">数据分析 · 智能助手</span>
 									</div>
 									<div class="case-chat-body">
 										<div class="chat-msg user">
@@ -228,9 +235,9 @@
 												<div class="chat-chart-card">
 													<div class="chart-top">
 														<span class="high">↑ 3494.87</span>
-														<span>K 线 · 日</span>
+														<span data-i18n="case2.chart.kline">K 线 · 日</span>
 													</div>
-													<svg viewBox="0 0 320 130" width="100%" height="130" xmlns="http://www.w3.org/2000/svg" aria-label="股票指数走势">
+													<svg viewBox="0 0 320 130" width="100%" height="130" xmlns="http://www.w3.org/2000/svg" data-i18n-aria="case2.chart.aria" aria-label="股票指数走势">
 														<defs>
 															<linearGradient id="maAreaGrad" x1="0" y1="0" x2="0" y2="1">
 																<stop offset="0%"  stop-color="#7c3aed" stop-opacity="0.25"/>
@@ -284,13 +291,13 @@
 														<span>2025-03</span>
 													</div>
 												</div>
-												<div class="chat-bubble">描述一下这支股票指数最近 3 个月的变化趋势。</div>
+												<div class="chat-bubble" data-i18n-html="case2.user">描述一下这支股票指数最近 3 个月的变化趋势。</div>
 											</div>
 										</div>
 										<div class="chat-msg ai">
 											<div class="chat-avatar ai"><i class="fa fa-bar-chart"></i></div>
 											<div class="chat-stack">
-												<div class="chat-bubble">
+												<div class="chat-bubble" data-i18n-html="case2.ai">
 													<p>从 <span class="hl">2025-01</span> 之前开始，股票指数呈现出先上升的趋势，达到 <span class="hl">3494.87</span> 的高点后开始下降，在下降过程中，中间有一些小的波动回升，但整体下降趋势明显，一直到 <span class="hl">2025-01 末</span>达到相对较低点 <span class="hl">3140.98</span>。</p>
 													<p><span class="hl">2025-02</span> 初开始，指数又有一定的回升波动，随后在 2025-02 期间整体处于波动状态，有涨有跌。</p>
 													<p><span class="hl">2025-03</span> 期间，指数依旧保持着较为频繁的涨跌波动。</p>
@@ -309,11 +316,11 @@
 					<div class="col-md-12 service-item-block">
 						<div class="service-left-side active">
 							<div class="text-box">
-								<h4 class="title">擅长在海量长文捕获重点，提升效率</h4>
+								<h4 class="title" data-i18n="case3.title">擅长在海量长文捕获重点，提升效率</h4>
 								<div class="case-chat-card">
 									<div class="case-chat-head">
 										<span class="dot"></span>
-										<span class="title">合同分析 · 智能助手</span>
+										<span class="title" data-i18n="case3.head">合同分析 · 智能助手</span>
 									</div>
 									<div class="case-chat-body">
 										<div class="chat-msg user">
@@ -322,17 +329,17 @@
 												<div class="chat-file">
 													<div class="file-icon"><i class="fa fa-file-text-o"></i></div>
 													<div class="file-meta">
-														<span class="file-name">标准房屋租赁合同.txt</span>
+														<span class="file-name" data-i18n="case3.file">标准房屋租赁合同.txt</span>
 														<span class="file-size">txt · 6KB</span>
 													</div>
 												</div>
-												<div class="chat-bubble">这份合同的内容对乙方有什么潜在风险？</div>
+												<div class="chat-bubble" data-i18n-html="case3.user">这份合同的内容对乙方有什么潜在风险？</div>
 											</div>
 										</div>
 										<div class="chat-msg ai">
 											<div class="chat-avatar ai"><i class="fa fa-file-text-o"></i></div>
 											<div class="chat-stack">
-												<div class="chat-bubble">
+												<div class="chat-bubble" data-i18n-html="case3.ai">
 													<p>这份合同对乙方存在多方面潜在风险，涵盖<span class="hl">违约、房屋使用、费用承担、安全责任、合同解除</span>等，乙方在签署合同前应仔细考量，必要时与甲方协商修改。</p>
 													<ol>
 														<li><span class="hl">违约风险</span>：乙方在租金支付、房屋使用、续租等方面需严格遵守合同约定，否则将承担严重后果。若迟交租金，超过五天甲方有权收回房屋、没收押金并要求乙方立即搬离。</li>
@@ -355,17 +362,17 @@
 					<div class="col-md-12 service-item-block">
 						<div class="service-left-side active">
 							<div class="text-box">
-								<h4 class="title">学习行业知识库，成为专家式助手</h4>
+								<h4 class="title" data-i18n="case4.title">学习行业知识库，成为专家式助手</h4>
 								<div class="case-chat-card">
 									<div class="case-chat-head">
 										<span class="dot"></span>
-										<span class="title">中医辨证 · 智能助手</span>
+										<span class="title" data-i18n="case4.head">中医辨证 · 智能助手</span>
 									</div>
 									<div class="case-chat-body">
 										<div class="chat-msg user">
 											<div class="chat-avatar user"><i class="fa fa-user-md"></i></div>
 											<div class="chat-stack">
-												<div class="chat-bubble">我最近湿气严重，开具一下凉茶配方。</div>
+												<div class="chat-bubble" data-i18n-html="case4.user">我最近湿气严重，开具一下凉茶配方。</div>
 											</div>
 										</div>
 										<div class="chat-msg ai">
@@ -373,10 +380,10 @@
 											<div class="chat-stack">
 												<div class="chat-bubble">
 													<div class="rx-block">
-														<div class="rx-row"><span class="rx-label">处方</span></div>
-														<div class="rx-row"><span class="rx-label">药材</span><span class="rx-value">茯苓 15g、薏苡仁 30g、苍术 10g、白术 15g、泽泻 10g、藿香 10g（后下）、佩兰 10g（后下）、陈皮 10g、厚朴 10g、炙甘草 6g。</span></div>
-														<div class="rx-row"><span class="rx-label">用法</span><span class="rx-value">上述药材以水 1000-1200ml 浸泡 30 分钟，然后大火煮开后转小火煎 30-40 分钟，取汁 300-400ml，分两次温服，早晚各一次。藿香和佩兰后下，即在其他药物煎好前 5-10 分钟加入，以免有效成分挥发过多。</span></div>
-														<div class="rx-row"><span class="rx-label">方解</span><span class="rx-value">方中<span class="hl">茯苓</span>利水渗湿、健脾宁心；<span class="hl">薏苡仁</span>利水渗湿、健脾止泻、除痹、排脓，二者共为君药，增强利水渗湿之力。<span class="hl">苍术、白术</span>燥湿健脾，助君药以祛湿健脾；<span class="hl">泽泻</span>利水渗湿，可使湿从小便而去，三者为臣药。<span class="hl">藿香、佩兰</span>芳香化湿，辟秽和中；<span class="hl">陈皮</span>理气健脾、燥湿化痰；<span class="hl">厚朴</span>燥湿消痰、下气除满，共助君臣药化湿行气，为佐药。<span class="hl">炙甘草</span>调和诸药，为使药。全方共奏<span class="hl">健脾祛湿、芳香化浊</span>之效。</span></div>
+														<div class="rx-row"><span class="rx-label" data-i18n="case4.rx">处方</span></div>
+														<div class="rx-row"><span class="rx-label" data-i18n="case4.herbs">药材</span><span class="rx-value" data-i18n="case4.herbs.val">茯苓 15g、薏苡仁 30g、苍术 10g、白术 15g、泽泻 10g、藿香 10g（后下）、佩兰 10g（后下）、陈皮 10g、厚朴 10g、炙甘草 6g。</span></div>
+														<div class="rx-row"><span class="rx-label" data-i18n="case4.usage">用法</span><span class="rx-value" data-i18n="case4.usage.val">上述药材以水 1000-1200ml 浸泡 30 分钟，然后大火煮开后转小火煎 30-40 分钟，取汁 300-400ml，分两次温服，早晚各一次。藿香和佩兰后下，即在其他药物煎好前 5-10 分钟加入，以免有效成分挥发过多。</span></div>
+														<div class="rx-row"><span class="rx-label" data-i18n="case4.explain">方解</span><span class="rx-value" data-i18n-html="case4.explain.val">方中<span class="hl">茯苓</span>利水渗湿、健脾宁心；<span class="hl">薏苡仁</span>利水渗湿、健脾止泻、除痹、排脓，二者共为君药，增强利水渗湿之力。<span class="hl">苍术、白术</span>燥湿健脾，助君药以祛湿健脾；<span class="hl">泽泻</span>利水渗湿，可使湿从小便而去，三者为臣药。<span class="hl">藿香、佩兰</span>芳香化湿，辟秽和中；<span class="hl">陈皮</span>理气健脾、燥湿化痰；<span class="hl">厚朴</span>燥湿消痰、下气除满，共助君臣药化湿行气，为佐药。<span class="hl">炙甘草</span>调和诸药，为使药。全方共奏<span class="hl">健脾祛湿、芳香化浊</span>之效。</span></div>
 													</div>
 												</div>
 											</div>
@@ -405,9 +412,9 @@
 			<div class="col-xs-12 section-title-padding">
 				<div class="sec-title-container text-center reveal">
 					<div class="title-line"></div>
-					<h2 class="font-weight-7 less-mar-1"> 定制你的专属智能 - Claw 龙虾  </h2>
+					<h2 class="font-weight-7 less-mar-1" data-i18n="claw.title"> 定制你的专属智能 - Claw 龙虾  </h2>
 					<div class="clearfix"></div>
-					<p class="by-sub-title"> 结合企业业务场景，定制 Agent应用 </p>
+					<p class="by-sub-title" data-i18n="claw.sub"> 结合企业业务场景，定制 Agent应用 </p>
 				</div>
 			</div>
 			<div class="clearfix"></div>
@@ -419,22 +426,22 @@
 							<li>
 								<span class="claw-icon"><i class="fa fa-magic" aria-hidden="true"></i></span>
 								<div class="claw-text">
-									<h4>定制企业 AI 助理</h4>
-									<p>结合企业内部知识库与业务流程，打造专属对话助手，开箱即用。</p>
+									<h4 data-i18n="claw.f1.title">定制企业 AI 助理</h4>
+									<p data-i18n="claw.f1.desc">结合企业内部知识库与业务流程，打造专属对话助手，开箱即用。</p>
 								</div>
 							</li>
 							<li>
 								<span class="claw-icon"><i class="fa fa-cubes" aria-hidden="true"></i></span>
 								<div class="claw-text">
-									<h4>Open Claw 部署</h4>
-									<p>开源 Agent 框架，一键私有化部署，灵活对接各类大模型与业务系统。</p>
+									<h4 data-i18n="claw.f2.title">Open Claw 部署</h4>
+									<p data-i18n="claw.f2.desc">开源 Agent 框架，一键私有化部署，灵活对接各类大模型与业务系统。</p>
 								</div>
 							</li>
 							<li>
 								<span class="claw-icon"><i class="fa fa-server" aria-hidden="true"></i></span>
 								<div class="claw-text">
-									<h4>大模型本地化部署</h4>
-									<p>支持主流开源大模型本地推理，数据不出域，安全合规、自主可控。</p>
+									<h4 data-i18n="claw.f3.title">大模型本地化部署</h4>
+									<p data-i18n="claw.f3.desc">支持主流开源大模型本地推理，数据不出域，安全合规、自主可控。</p>
 								</div>
 							</li>
 						</ul>
@@ -443,6 +450,7 @@
 					<div class="col-md-6 col-sm-6 claw-illustration-col reveal reveal-delay-2">
 						<div class="claw-illustration">
 							<img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f99e/512.gif"
+							     data-i18n-alt="claw.alt"
 							     alt="Claw 龙虾吉祥物"
 							     loading="lazy"
 							     onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f99e.svg';">
@@ -450,7 +458,7 @@
 						<div class="claw-cta-wrap">
 							<a href="/chat/dist/" class="claw-cta-btn">
 								<i class="fa fa-rocket" aria-hidden="true"></i>
-								<span>即刻体验 Demo</span>
+								<span data-i18n="claw.cta">即刻体验 Demo</span>
 							</a>
 						</div>
 					</div>
@@ -473,7 +481,7 @@
 			<div class="col-xs-12 section-title-padding">
 				<div class="sec-title-container text-center reveal">
 					<div class="title-line"></div>
-					<h2 class="uppercase font-weight-7 less-mar-1"> 关于我们 </h2>
+					<h2 class="uppercase font-weight-7 less-mar-1" data-i18n="about.title"> 关于我们 </h2>
 					<div class="clearfix"></div>
 				</div>
 			</div>
@@ -485,22 +493,22 @@
 					<li>
 						<span class="ah-icon"><i class="fa fa-graduation-cap" aria-hidden="true"></i></span>
 						<div class="ah-text">
-							<strong>顶尖高校团队</strong>
-							<em>清华 · CMU 核心成员</em>
+							<strong data-i18n="about.h1">顶尖高校团队</strong>
+							<em data-i18n="about.h1.sub">清华 · CMU 核心成员</em>
 						</div>
 					</li>
 					<li>
 						<span class="ah-icon"><i class="fa fa-server" aria-hidden="true"></i></span>
 						<div class="ah-text">
-							<strong>万卡集群训练</strong>
-							<em>H100 / A100 实战经验</em>
+							<strong data-i18n="about.h2">万卡集群训练</strong>
+							<em data-i18n="about.h2.sub">H100 / A100 实战经验</em>
 						</div>
 					</li>
 					<li>
 						<span class="ah-icon"><i class="fa fa-rocket" aria-hidden="true"></i></span>
 						<div class="ah-text">
-							<strong>多领域落地成果</strong>
-							<em>问答搜索 · 智能创作</em>
+							<strong data-i18n="about.h3">多领域落地成果</strong>
+							<em data-i18n="about.h3.sub">问答搜索 · 智能创作</em>
 						</div>
 					</li>
 				</ul>
@@ -508,11 +516,11 @@
 			<div class="col-md-12 col-sm-12 col-xs-12 reveal reveal-delay-2">
 				<div class="testimonial-single margin-bottom">
 					<div class="inner-box">
-						<div class="about-avatar"><img src="images/tsinghua.jpg" alt="清华大学校徽" class="img-responsive"></div>
+						<div class="about-avatar"><img src="images/tsinghua.jpg" data-i18n-alt="about.avatar" alt="清华大学校徽" class="img-responsive"></div>
 						<div class="about-text">
-							<p>我们的团队汇聚了一批行业内资深的软件开发者与算法研发专家，
+							<p data-i18n="about.p1">我们的团队汇聚了一批行业内资深的软件开发者与算法研发专家，
 								成员均毕业于清华大学、卡内基梅隆大学（CMU）等国内外顶尖学府，学术底蕴深厚。</p>
-							<p>在人工智能与大模型领域，团队成员凭借卓越的专业素养和不懈的实践探索，积累了极为丰富的实战经验。
+							<p data-i18n="about.p2">在人工智能与大模型领域，团队成员凭借卓越的专业素养和不懈的实践探索，积累了极为丰富的实战经验。
 								不仅熟练掌握万卡集群（H100、A100）训练基座模型的核心技术，在模型后训练环节，如精细微调、强化学习等应用模型开发方面也成绩斐然。
 								此外，团队在问答搜索、智能创作等前沿领域实现了多项技术成果的落地转化，以创新驱动行业发展，持续为客户创造价值。</p>
 						</div>
@@ -535,7 +543,7 @@
 			<div class="col-xs-12 section-title-padding">
 				<div class="sec-title-container text-center reveal">
 					<div class="title-line white"></div>
-					<h2 class="uppercase font-weight-7 less-mar-1 text-white"> 联系我们 </h2>
+					<h2 class="uppercase font-weight-7 less-mar-1 text-white" data-i18n="contact.title"> 联系我们 </h2>
 					<div class="clearfix"></div>
 				</div>
 			</div>
@@ -543,7 +551,7 @@
 			<div class="contact-info reveal reveal-delay-1">
 				<ul class="clearfix">
 					<li><i class="fa fa-phone" aria-hidden="true"></i>
-						<p>刘生：13609756994</p>
+						<p data-i18n="contact.person">刘生：13609756994</p>
 					</li>
 					<li><i class="fa fa-envelope" aria-hidden="true"></i>
 						<p> contact@mails.skylangai.cn</p>
@@ -556,7 +564,7 @@
 		<div class="row">
 			<div class="col-sm-12">
 				<div class="copyright">
-					<p class="copyright">Copyright &copy; 2025 凌云智能 | 京ICP备2025115658号 </p>
+					<p class="copyright" data-i18n="copyright">Copyright &copy; 2025 凌云智能 | 京ICP备2025115658号 </p>
 				</div>
 			</div>
 		</div>
@@ -568,53 +576,53 @@
 <div class="contact-modal" id="contactModal" aria-hidden="true" role="dialog" aria-labelledby="contactModalTitle" aria-modal="true">
 	<div class="contact-modal-backdrop" data-close-contact-modal></div>
 	<div class="contact-modal-dialog" role="document">
-		<button type="button" class="contact-modal-close" aria-label="关闭" data-close-contact-modal>
+		<button type="button" class="contact-modal-close" data-i18n-aria="modal.close" aria-label="关闭" data-close-contact-modal>
 			<i class="fa fa-times" aria-hidden="true"></i>
 		</button>
 		<div class="contact-modal-head">
 			<div class="contact-modal-icon">
 				<i class="fa fa-rocket" aria-hidden="true"></i>
 			</div>
-			<h3 id="contactModalTitle" class="contact-modal-title">联系我们</h3>
-			<p class="contact-modal-sub">欢迎随时联系，我们将为您安排 Demo 体验与方案咨询</p>
+			<h3 id="contactModalTitle" class="contact-modal-title" data-i18n="modal.title">联系我们</h3>
+			<p class="contact-modal-sub" data-i18n="modal.sub">欢迎随时联系，我们将为您安排 Demo 体验与方案咨询</p>
 		</div>
 		<ul class="contact-modal-list">
 			<li>
 				<span class="cm-icon"><i class="fa fa-phone" aria-hidden="true"></i></span>
 				<div class="cm-meta">
-					<span class="cm-label">联系电话</span>
-					<a class="cm-value" href="tel:13609756994">刘生 · 13609756994</a>
+					<span class="cm-label" data-i18n="modal.phone">联系电话</span>
+					<a class="cm-value" href="tel:13609756994" data-i18n="modal.phone.val">刘生 · 13609756994</a>
 				</div>
-				<button type="button" class="cm-copy" data-copy="13609756994" aria-label="复制电话">
+				<button type="button" class="cm-copy" data-copy="13609756994" data-i18n-aria="modal.copyPhone" aria-label="复制电话">
 					<i class="fa fa-clone" aria-hidden="true"></i>
 				</button>
 			</li>
 			<li>
 				<span class="cm-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span>
 				<div class="cm-meta">
-					<span class="cm-label">邮箱</span>
+					<span class="cm-label" data-i18n="modal.email">邮箱</span>
 					<a class="cm-value" href="mailto:contact@mails.skylangai.cn">contact@mails.skylangai.cn</a>
 				</div>
-				<button type="button" class="cm-copy" data-copy="contact@mails.skylangai.cn" aria-label="复制邮箱">
+				<button type="button" class="cm-copy" data-copy="contact@mails.skylangai.cn" data-i18n-aria="modal.copyEmail" aria-label="复制邮箱">
 					<i class="fa fa-clone" aria-hidden="true"></i>
 				</button>
 			</li>
 		</ul>
 		<div class="contact-modal-foot">
-			<span class="cm-toast" id="cmToast">已复制到剪贴板</span>
+			<span class="cm-toast" id="cmToast" data-i18n="modal.copied">已复制到剪贴板</span>
 		</div>
 	</div>
 </div>
 
 <!-- Back to top button -->
-<button type="button" id="backToTop" class="back-to-top" aria-label="回到顶部">
+<button type="button" id="backToTop" class="back-to-top" data-i18n-aria="backToTop" aria-label="回到顶部">
 	<i class="fa fa-chevron-up" aria-hidden="true"></i>
 </button>
 
 <script src="js/jquery-3.7.1.min.js"></script>
 <script src="js/plugins.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/main.js"></script>
 
 </body>
 </html>
-
