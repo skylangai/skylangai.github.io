@@ -1,5 +1,6 @@
 import { reactive, computed } from 'vue';
-import { DEFAULT_SESSION_TITLE, TITLE_MAX_LEN } from '../mock/fixedAnswer.js';
+import { TITLE_MAX_LEN } from '../mock/fixedAnswer.js';
+import { t } from './useI18n.js';
 
 /* 会话管理
  *
@@ -39,11 +40,15 @@ function makeSessionId() {
   return 's_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 }
 
+function defaultTitle() {
+  return t('chat.newSession');
+}
+
 function deriveTitle(text, attachments) {
   const source =
     (text && text.trim()) ||
     (attachments && attachments[0] && attachments[0].name) ||
-    DEFAULT_SESSION_TITLE;
+    defaultTitle();
   return source.length > TITLE_MAX_LEN
     ? source.slice(0, TITLE_MAX_LEN) + '…'
     : source;
@@ -58,7 +63,7 @@ function createSession() {
   const id = makeSessionId();
   state.sessions[id] = {
     id,
-    title: DEFAULT_SESSION_TITLE,
+    title: defaultTitle(),
     messages: [],
     updatedAt: Date.now(),
     messageCount: 0,
@@ -121,7 +126,7 @@ function ingestFromServer(remoteSessions) {
     const id = s.sessionId;
     const existing = state.sessions[id];
     if (existing) {
-      existing.title = s.title || existing.title || DEFAULT_SESSION_TITLE;
+      existing.title = s.title || existing.title || defaultTitle();
       existing.updatedAt = s.updatedAt || existing.updatedAt || 0;
       existing.messageCount = s.messageCount ?? existing.messageCount ?? 0;
       // 服务器现在已经知道这条 session 了，清掉 localOnly 标记
@@ -130,7 +135,7 @@ function ingestFromServer(remoteSessions) {
     } else {
       state.sessions[id] = {
         id,
-        title: s.title || DEFAULT_SESSION_TITLE,
+        title: s.title || defaultTitle(),
         messages: [],
         updatedAt: s.updatedAt || 0,
         messageCount: s.messageCount || 0,

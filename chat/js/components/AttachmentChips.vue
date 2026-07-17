@@ -2,9 +2,11 @@
 import { computed } from 'vue';
 import { useUploads } from '../composables/useUploads.js';
 import { formatFileSize } from '../utils/format.js';
+import { useI18n } from '../composables/useI18n.js';
 
 /* 待发送附件预览区（输入框下方） */
 const { state: uploads, removeAttachment } = useUploads();
+const { t } = useI18n();
 const list = computed(() => uploads.list);
 </script>
 
@@ -14,7 +16,7 @@ const list = computed(() => uploads.list);
       <span class="ac-ic"><i class="fa fa-paperclip"></i></span>
       <span class="ac-name">{{ a.name }}</span>
       <span class="ac-size">{{ formatFileSize(a.size) }}</span>
-      <button type="button" class="attachment-chip-remove" aria-label="移除"
+      <button type="button" class="attachment-chip-remove" :aria-label="t('attach.remove')"
               @click.prevent="removeAttachment(a.id)">
         <i class="fa fa-times"></i>
       </button>

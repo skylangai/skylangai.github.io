@@ -1,26 +1,28 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { PROMPTS } from '../mock/prompts.js';
 import Composer from './Composer.vue';
 import { useAuth } from '../composables/useAuth.js';
+import { useI18n } from '../composables/useI18n.js';
 
 const { isLoggedIn } = useAuth();
+const { t } = useI18n();
 
-const TABS = [
-  { id: 'market',  label: '市场洞察', ic: '📊' },
-  { id: 'shop',    label: '店铺分析', ic: '🏬' },
-  { id: 'publish', label: '智能发品', ic: '📦' },
-  { id: 'image',   label: '创意图片', ic: '🖼' },
-  { id: 'video',   label: '创意视频', ic: '🎬' },
-  { id: 'decor',   label: '店铺装修', ic: '🎨' }
-];
+const TABS = computed(() => [
+  { id: 'market',  label: t('welcome.tab.market'),  ic: '📊' },
+  { id: 'shop',    label: t('welcome.tab.shop'),    ic: '🏬' },
+  { id: 'publish', label: t('welcome.tab.publish'), ic: '📦' },
+  { id: 'image',   label: t('welcome.tab.image'),   ic: '🖼' },
+  { id: 'video',   label: t('welcome.tab.video'),   ic: '🎬' },
+  { id: 'decor',   label: t('welcome.tab.decor'),   ic: '🎨' }
+]);
 
 const emit = defineEmits(['submit', 'pick-prompt']);
 
 const activeTab = ref('market');
-/* 不同 Tab 切换会导致提示词重新动效，简单做法：始终复用同一份 mock，
-   未来可以按 tab.id 拉取不同 prompts。 */
-const prompts = computed(() => PROMPTS);
+const prompts = computed(() => [
+  t('prompt.1'), t('prompt.2'), t('prompt.3'), t('prompt.4'),
+  t('prompt.5'), t('prompt.6'), t('prompt.7')
+]);
 
 const composerRef = ref(null);
 
@@ -42,26 +44,26 @@ function onSubmit(payload) {
       <div class="welcome-logo">
         <img src="/assets/logo.svg" alt="logo" />
       </div>
-      <h1 class="welcome-title">电商智能生意助手</h1>
+      <h1 class="welcome-title">{{ t('welcome.title') }}</h1>
 
       <Composer ref="composerRef"
-                placeholder="输入问题... "
+                :placeholder="t('welcome.placeholder')"
                 send-icon="↑"
                 :autofocus="true"
                 @submit="onSubmit" />
 
       <div v-if="!isLoggedIn" class="tabs">
-        <button v-for="t in TABS" :key="t.id"
+        <button v-for="tab in TABS" :key="tab.id"
                 type="button"
                 class="tab"
-                :class="{ active: activeTab === t.id }"
-                @click="activeTab = t.id">
-          <span class="tab-ic">{{ t.ic }}</span> {{ t.label }}
+                :class="{ active: activeTab === tab.id }"
+                @click="activeTab = tab.id">
+          <span class="tab-ic">{{ tab.ic }}</span> {{ tab.label }}
         </button>
       </div>
 
       <div v-if="!isLoggedIn" class="prompts">
-        <div class="prompts-title">尝试以下提示词</div>
+        <div class="prompts-title">{{ t('welcome.tryPrompts') }}</div>
         <ul class="prompts-list">
           <li v-for="(p, i) in prompts" :key="i" class="prompt-item"
               @click="pickPrompt(p)">{{ p }}</li>

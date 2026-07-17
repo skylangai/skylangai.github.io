@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useModels } from '../composables/useModels.js';
+import { useI18n } from '../composables/useI18n.js';
 
 /* 模型选择下拉：chip 触发器 + 向上展开的菜单
  * 内部自管 open 状态；点空白/Esc 关闭 */
 const { models, currentModel, selectModel } = useModels();
+const { t } = useI18n();
 const open = ref(false);
 const rootRef = ref(null);
 
@@ -50,7 +52,7 @@ onBeforeUnmount(() => {
               stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
-    <div class="model-menu" :class="{ 'is-open': open }" role="listbox" aria-label="选择模型"
+    <div class="model-menu" :class="{ 'is-open': open }" role="listbox" :aria-label="t('model.select')"
          :hidden="!open">
       <button v-for="m in models" :key="m.id" type="button"
               class="model-menu-item"

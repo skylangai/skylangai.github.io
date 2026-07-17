@@ -3,12 +3,15 @@ import { computed } from 'vue';
 
 /* 紧凑分页器：1 ... cur-1 cur cur+1 ... N
  * 既被 StatsView 用，也方便未来其它表格复用 */
+import { useI18n } from '../composables/useI18n.js';
+
 const props = defineProps({
   page: { type: Number, required: true },
   totalPages: { type: Number, required: true },
   pageSize: { type: Number, default: 10 }
 });
 const emit = defineEmits(['update:page']);
+const { t } = useI18n();
 
 const pages = computed(() => buildPageList(props.page, props.totalPages));
 
@@ -42,15 +45,15 @@ function buildPageList(cur, total) {
 
 <template>
   <div class="usage-pager">
-    <span class="page-info">每页 {{ pageSize }} 条</span>
-    <button type="button" :disabled="page <= 1" @click="go('prev')">上一页</button>
+    <span class="page-info">{{ t('pager.pageSize', { n: pageSize }) }}</span>
+    <button type="button" :disabled="page <= 1" @click="go('prev')">{{ t('pager.prev') }}</button>
     <template v-for="(p, i) in pages" :key="i">
       <span v-if="p === '…'" class="page-ellipsis">…</span>
       <button v-else type="button"
               :class="{ 'is-active': p === page }"
               @click="go(p)">{{ p }}</button>
     </template>
-    <button type="button" :disabled="page >= totalPages" @click="go('next')">下一页</button>
+    <button type="button" :disabled="page >= totalPages" @click="go('next')">{{ t('pager.next') }}</button>
   </div>
 </template>
 

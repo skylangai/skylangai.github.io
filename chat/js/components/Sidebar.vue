@@ -3,11 +3,11 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useSessions } from '../composables/useSessions.js';
 import { useView } from '../composables/useView.js';
 import { useAuth } from '../composables/useAuth.js';
-import { ASSISTANT_NAME } from '../mock/fixedAnswer.js';
 import {
   loadMessages as apiLoadMessages,
   deleteSession as apiDeleteSession
 } from '../api/chat.js';
+import { useI18n } from '../composables/useI18n.js';
 
 /* 左侧边栏：能力组 + 对话历史 + 使用统计入口
  *
@@ -23,8 +23,9 @@ const {
   state, sessionList, selectSession,
   replaceMessages, markLoaded, removeSession
 } = useSessions();
-const { state: viewState, goStats, goChat, closeDrawer } = useView();
+const { state: viewState, goStats, goChat, goRecharge, closeDrawer } = useView();
 const { isLoggedIn, displayName, initial, logout } = useAuth();
+const { t } = useI18n();
 
 const collapsed = ref(false);
 /* 防止用户在请求未回来时连点同一个会话，发出多次 POST /chat/messages */
@@ -88,7 +89,7 @@ async function confirmDelete() {
   if (!id || deletingId.value) return;
   const sess = state.sessions[id];
   const title = (sess && sess.title) ? sess.title : id;
-  const ok = window.confirm(`确认删除会话「${title}」？\n该会话的所有消息都会被永久删除。`);
+  const ok = window.confirm(t('nav.deleteConfirm', { title }));
   if (!ok) return;
 
   deletingId.value = id;
@@ -98,10 +99,12 @@ async function confirmDelete() {
       // ok: 后端确实删了；1050: 后端已经没这条 session（可能在别端删过），本地一并清掉
       removeSession(id);
     } else {
-      window.alert('删除失败：' + (res && res.message ? res.message : '未知错误'));
+      window.alert(t('nav.deleteFail', {
+        msg: (res && res.message) ? res.message : t('nav.unknownError')
+      }));
     }
   } catch (e) {
-    window.alert('删除失败：' + (e && e.message || e));
+    window.alert(t('nav.deleteFail', { msg: (e && e.message) || e }));
   } finally {
     deletingId.value = '';
   }
@@ -150,6 +153,10 @@ function onGoStats() {
   closeDrawer();
   goStats();
 }
+function onGoRecharge() {
+  closeDrawer();
+  goRecharge();
+}
 
 function onOpenAuth(e) {
   if (e) e.preventDefault();
@@ -163,23 +170,24 @@ function onLogout(e) {
 }
 
 const isStatsActive = computed(() => viewState.current === 'stats');
+const isRechargeActive = computed(() => viewState.current === 'recharge');
 </script>
 
 <template>
   <aside class="sidebar">
-    <div class="brand">凌云AI</div>
+    <div class="brand">{{ t('brand.name') }}</div>
 
     <nav class="nav">
       <a class="nav-item nav-new" href="#" @click="onNewChat">
-        <span class="ic">＋</span>新消息
+        <span class="ic">＋</span>{{ t('nav.newChat') }}
       </a>
 
       <div class="nav-group">
-        <a class="nav-item" href="#" @click.prevent><span class="ic">⚡</span>能力</a>
+        <a class="nav-item" href="#" @click.prevent><span class="ic">⚡</span>{{ t('nav.capabilities') }}</a>
         <div class="nav-sub">
-          <a href="#" @click="onOpenSkills"><span class="ic">✦</span>技能</a>
-          <a href="#" @click="onDemoNotice('定时任务', $event)"><span class="ic">⏱</span>定时任务</a>
-          <a href="#" @click="onDemoNotice('应用授权', $event)"><span class="ic">🔗</span>应用授权</a>
+          <a href="#" @click="onOpenSkills"><span class="ic">✦</span>{{ t('nav.skills') }}</a>
+          <a href="#" @click="onDemoNotice('cron', $event)"><span class="ic">⏱</span>{{ t('nav.cron') }}</a>
+          <a href="#" @click="onDemoNotice('oauth', $event)"><span class="ic">🔗</span>{{ t('nav.oauth') }}</a>
         </div>
       </div>
 
@@ -190,7 +198,7 @@ const isStatsActive = computed(() => viewState.current === 'stats');
               <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor"
                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </span> 对话历史
+          </span> {{ t('nav.history') }}
         </div>
         <div class="nav-section-body" v-show="!collapsed">
           <!-- 父级（电商智能生意助手）：仅显示标题，去掉未读小红标 -->
@@ -202,7 +210,7 @@ const isStatsActive = computed(() => viewState.current === 'stats');
                 <path d="M12 2.4c.3 0 .55.2.62.49l1.05 4.2a4 4 0 0 0 2.92 2.92l4.2 1.05a.64.64 0 0 1 0 1.24l-4.2 1.05a4 4 0 0 0-2.92 2.92l-1.05 4.2a.64.64 0 0 1-1.24 0l-1.05-4.2a4 4 0 0 0-2.92-2.92l-4.2-1.05a.64.64 0 0 1 0-1.24l4.2-1.05a4 4 0 0 0 2.92-2.92l1.05-4.2A.64.64 0 0 1 12 2.4Z"/>
               </svg>
             </span>
-            <span class="session-title">{{ ASSISTANT_NAME }}</span>
+            <span class="session-title">{{ t('brand.assistant') }}</span>
           </div>
           <div v-for="s in sessionList" :key="s.id"
                class="session-item"
@@ -217,6 +225,23 @@ const isStatsActive = computed(() => viewState.current === 'stats');
 
       <div class="nav-section">
         <div class="nav-section-title is-clickable"
+             :class="{ 'is-active': isRechargeActive }"
+             @click="onGoRecharge">
+          <span class="section-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <!-- 钱包 / 卡片 + 加号：与 "充值" 语义贴合，且不撞 "使用统计" 的柱状图 -->
+              <rect x="3.5" y="6"  width="17" height="12" rx="2"
+                    fill="none" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M3.5 10h17" stroke="currentColor" stroke-width="1.7" fill="none"/>
+              <path d="M16.2 14.2v3M14.7 15.7h3" stroke="currentColor"
+                    stroke-width="1.7" fill="none" stroke-linecap="round"/>
+            </svg>
+          </span> {{ t('nav.recharge') }}
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title is-clickable"
              :class="{ 'is-active': isStatsActive }"
              @click="onGoStats">
           <span class="section-ic" aria-hidden="true">
@@ -225,7 +250,7 @@ const isStatsActive = computed(() => viewState.current === 'stats');
               <rect x="10.4" y="9"  width="3.2" height="11" rx="1" fill="currentColor"/>
               <rect x="16.8" y="5"  width="3.2" height="15" rx="1" fill="currentColor"/>
             </svg>
-          </span> 使用统计
+          </span> {{ t('nav.stats') }}
         </div>
       </div>
     </nav>
@@ -236,13 +261,13 @@ const isStatsActive = computed(() => viewState.current === 'stats');
       <button v-if="isLoggedIn"
               type="button"
               class="auth-action-btn auth-action-btn--ghost"
-              title="退出登录"
-              @click="onLogout">退出</button>
+              :title="t('nav.logoutTitle')"
+              @click="onLogout">{{ t('nav.logout') }}</button>
       <button v-else
               type="button"
               class="auth-action-btn auth-action-btn--primary"
-              title="登录"
-              @click="onOpenAuth">登录</button>
+              :title="t('nav.login')"
+              @click="onOpenAuth">{{ t('nav.login') }}</button>
     </div>
 
     <!-- 右键浮动菜单（fixed 定位，跳出 sidebar 滚动容器） -->
@@ -254,7 +279,7 @@ const isStatsActive = computed(() => viewState.current === 'stats');
            @click.stop>
         <button type="button" class="session-ctx-item is-danger" @click="confirmDelete">
           <span class="ic">🗑</span>
-          <span>删除会话</span>
+          <span>{{ t('nav.deleteSession') }}</span>
         </button>
       </div>
     </Teleport>

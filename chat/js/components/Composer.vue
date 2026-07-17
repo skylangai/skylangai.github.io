@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, nextTick, computed } from 'vue';
 import { useUploads } from '../composables/useUploads.js';
+import { useI18n } from '../composables/useI18n.js';
 import UploadButton from './UploadButton.vue';
 import AttachmentChips from './AttachmentChips.vue';
 import ModelMenu from './ModelMenu.vue';
@@ -20,13 +21,18 @@ import ModelMenu from './ModelMenu.vue';
  *   - text: 本组件内部 ref（每个 composer 实例独立的输入草稿）
  *   - attachments: 来自 useUploads() 的全局 reactive，两处 composer 共享
  */
+const { t } = useI18n();
 const props = defineProps({
-  placeholder: { type: String, default: '输入问题... ' },
+  placeholder: { type: String, default: '' },
   sendIcon:    { type: String, default: '↑' },
   bottomFixed: { type: Boolean, default: false },
   autofocus:   { type: Boolean, default: false }
 });
 const emit = defineEmits(['submit']);
+
+const resolvedPlaceholder = computed(() =>
+  props.placeholder || t('welcome.placeholder')
+);
 
 const text = ref('');
 const inputRef = ref(null);
@@ -99,7 +105,7 @@ defineExpose({ setText, focus, clear });
       ref="inputRef"
       class="composer-input"
       rows="1"
-      :placeholder="placeholder"
+      :placeholder="resolvedPlaceholder"
       v-model="text"
       @input="autosize"
       @keydown="onKeydown"></textarea>
@@ -112,7 +118,7 @@ defineExpose({ setText, focus, clear });
       </div>
       <div class="composer-right">
         <ModelMenu />
-        <button type="button" class="send-btn" title="发送" @click="trySubmit">{{ sendIcon }}</button>
+        <button type="button" class="send-btn" :title="t('chat.send')" @click="trySubmit">{{ sendIcon }}</button>
       </div>
     </div>
   </div>

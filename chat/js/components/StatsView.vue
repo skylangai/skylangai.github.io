@@ -7,6 +7,7 @@ import { useFinance } from '../composables/useFinance.js';
 import { useAuth } from '../composables/useAuth.js';
 import { useView } from '../composables/useView.js';
 import { loadUsageRecords as apiLoadUsageRecords } from '../api/chat.js';
+import { useI18n } from '../composables/useI18n.js';
 import Pager from './Pager.vue';
 
 /* 上栏 5 张概览卡：实时绑定 useFinance 单例 state。
@@ -22,6 +23,7 @@ const fin = useFinance();
 const auth = useAuth();
 const { isStats } = useView();
 const { isLoggedIn } = auth;
+const { t } = useI18n();
 
 const page = ref(1);
 const pageSize = USAGE_PAGE_SIZE;
@@ -91,7 +93,7 @@ async function fetchCurrentPage() {
         fetchCurrentPage();
       }
     } else {
-      recordsError.value = (res && res.message) || '加载失败';
+      recordsError.value = (res && res.message) || t('stats.loadFail');
       remoteRecords.value = [];
       remoteTotal.value = 0;
     }
@@ -153,40 +155,40 @@ const cards = computed(() => {
   return [
     {
       tone: 'tone-balance',
-      label: '剩余额度',
+      label: t('stats.balance'),
       value: formatNumber(remaining),
       subText: total > 0
-        ? `${remainPct.toFixed(1)}% / 总量 ${formatNumber(total)}`
-        : '总量 0',
+        ? t('stats.remainOfTotal', { pct: remainPct.toFixed(1), total: formatNumber(total) })
+        : t('stats.totalZero'),
       progressPct: remainPct,
       icon: ICONS.balance
     },
     {
       tone: 'tone-cost',
-      label: '总消耗',
+      label: t('stats.spend'),
       value: formatNumber(used),
-      subText: '累计消耗金额',
+      subText: t('stats.spendSub'),
       icon: ICONS.cost
     },
     {
       tone: 'tone-req',
-      label: '总请求数',
+      label: t('stats.requests'),
       value: formatNumber(s.request_count),
-      subText: '次调用',
+      subText: t('stats.requestsSub'),
       icon: ICONS.req
     },
     {
       tone: 'tone-in',
-      label: '输入 Tokens',
+      label: t('stats.inTokens'),
       value: formatNumber(s.input_tokens),
-      subText: 'Prompt 总量',
+      subText: t('stats.inTokensSub'),
       icon: ICONS.in
     },
     {
       tone: 'tone-out',
-      label: '输出 Tokens',
+      label: t('stats.outTokens'),
       value: formatNumber(s.output_tokens),
-      subText: '回复总量',
+      subText: t('stats.outTokensSub'),
       icon: ICONS.out
     }
   ];
@@ -214,13 +216,13 @@ watch(isStats, (v) => {
     <div class="stats-scroll">
       <div class="stats-inner">
         <header class="stats-header">
-          <h2 class="stats-title">使用统计</h2>
-          <span class="stats-period">本月数据</span>
+          <h2 class="stats-title">{{ t('stats.title') }}</h2>
+          <span class="stats-period">{{ t('stats.period') }}</span>
         </header>
 
         <!-- 未登录提示：DEBUG 模式下不显示（仍允许展示 mock 数据） -->
         <div v-if="!DEBUG && !isLoggedIn" class="stats-empty-hint">
-          请先登录后查看你的使用统计。
+          {{ t('stats.loginHintTop') }}
         </div>
 
         <!-- 上栏：5 张概览卡 -->
@@ -251,7 +253,7 @@ watch(isStats, (v) => {
                 <path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor"
                       stroke-width="1.8" stroke-linecap="round"/>
               </svg>
-              详细使用记录
+              {{ t('stats.detailTitle') }}
             </span>
             <span class="usage-section-meta">{{ usageMeta }}</span>
           </div>
@@ -260,25 +262,25 @@ watch(isStats, (v) => {
             <table class="usage-table">
               <thead>
                 <tr>
-                  <th class="col-time">请求时间</th>
-                  <th class="col-prompt">提问内容</th>
-                  <th class="col-tokens">总 Tokens</th>
-                  <th class="col-cost">费用</th>
+                  <th class="col-time">{{ t('stats.colTime') }}</th>
+                  <th class="col-prompt">{{ t('stats.colPrompt') }}</th>
+                  <th class="col-tokens">{{ t('stats.colTokens') }}</th>
+                  <th class="col-cost">{{ t('stats.colCost') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="!DEBUG && loadingRecords && pageSlice.length === 0">
-                  <td colspan="4" class="usage-empty">加载中…</td>
+                  <td colspan="4" class="usage-empty">{{ t('stats.loading') }}</td>
                 </tr>
                 <tr v-else-if="!DEBUG && recordsError">
                   <td colspan="4" class="usage-empty" style="color:#ef4444">
-                    加载失败：{{ recordsError }}
+                    {{ t('stats.loadFail') }}：{{ recordsError }}
                   </td>
                 </tr>
                 <tr v-else-if="pageSlice.length === 0">
                   <td colspan="4" class="usage-empty">
-                    <template v-if="!DEBUG && !isLoggedIn">请先登录后查看你的使用记录</template>
-                    <template v-else>暂无使用记录</template>
+                    <template v-if="!DEBUG && !isLoggedIn">{{ t('stats.loginHint') }}</template>
+                    <template v-else>{{ t('stats.empty') }}</template>
                   </td>
                 </tr>
                 <tr v-for="(r, i) in pageSlice" :key="r.ts + '_' + i">

@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue';
 import BaseModal from './BaseModal.vue';
+import { useI18n } from '../composables/useI18n.js';
 
 defineProps({
   open: { type: Boolean, default: false }
 });
 const emit = defineEmits(['update:open']);
+const { t } = useI18n();
 
 const toastShow = ref(false);
 let toastTimer = null;
@@ -38,24 +40,24 @@ function copy(text) {
 
 <template>
   <BaseModal name="contact" :open="open" @update:open="$emit('update:open', $event)" labelledby="contactModalTitle">
-    <button type="button" class="contact-modal-close" aria-label="关闭" @click="close">
+    <button type="button" class="contact-modal-close" :aria-label="t('contact.close')" @click="close">
       <i class="fa fa-times" aria-hidden="true"></i>
     </button>
     <div class="contact-modal-head">
       <div class="contact-modal-icon">
         <i class="fa fa-rocket" aria-hidden="true"></i>
       </div>
-      <h3 id="contactModalTitle" class="contact-modal-title">联系我们</h3>
-      <p class="contact-modal-sub">欢迎随时联系，我们将为您安排 Demo 体验与方案咨询</p>
+      <h3 id="contactModalTitle" class="contact-modal-title">{{ t('contact.title') }}</h3>
+      <p class="contact-modal-sub">{{ t('contact.sub') }}</p>
     </div>
     <ul class="contact-modal-list">
       <li>
         <span class="cm-icon"><i class="fa fa-phone" aria-hidden="true"></i></span>
         <div class="cm-meta">
-          <span class="cm-label">联系电话</span>
-          <a class="cm-value" href="tel:13609756994">刘生 · 13609756994</a>
+          <span class="cm-label">{{ t('contact.phone') }}</span>
+          <a class="cm-value" href="tel:13609756994">{{ t('contact.phoneVal') }}</a>
         </div>
-        <button type="button" class="cm-copy" aria-label="复制电话"
+        <button type="button" class="cm-copy" :aria-label="t('contact.copyPhone')"
                 @click.stop.prevent="copy('13609756994')">
           <i class="fa fa-clone" aria-hidden="true"></i>
         </button>
@@ -63,17 +65,17 @@ function copy(text) {
       <li>
         <span class="cm-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span>
         <div class="cm-meta">
-          <span class="cm-label">邮箱</span>
+          <span class="cm-label">{{ t('contact.email') }}</span>
           <a class="cm-value" href="mailto:contact@mails.skylangai.cn">contact@mails.skylangai.cn</a>
         </div>
-        <button type="button" class="cm-copy" aria-label="复制邮箱"
+        <button type="button" class="cm-copy" :aria-label="t('contact.copyEmail')"
                 @click.stop.prevent="copy('contact@mails.skylangai.cn')">
           <i class="fa fa-clone" aria-hidden="true"></i>
         </button>
       </li>
     </ul>
     <div class="contact-modal-foot">
-      <span class="cm-toast" :class="{ 'is-show': toastShow }">已复制到剪贴板</span>
+      <span class="cm-toast" :class="{ 'is-show': toastShow }">{{ t('contact.copied') }}</span>
     </div>
   </BaseModal>
 </template>

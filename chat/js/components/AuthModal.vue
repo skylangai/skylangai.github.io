@@ -5,6 +5,7 @@ import Vcode from 'vue3-puzzle-vcode';
 import 'vue3-puzzle-vcode/css';
 import { useAuth } from '../composables/useAuth.js';
 import { classifyIdentifier, sendCode as apiSendCode } from '../api/auth.js';
+import { useI18n } from '../composables/useI18n.js';
 
 /* 登录 / 注册 弹窗
  * - 两个 tab：登录页 / 注册页，默认登录页
@@ -23,6 +24,7 @@ const props = defineProps({
 const emit = defineEmits(['update:open']);
 
 const { loginAction, registerAction } = useAuth();
+const { t } = useI18n();
 
 const tab = ref('login');
 
@@ -55,8 +57,8 @@ const loginIdentityKind = computed(() => classifyIdentifier(loginForm.identity).
 const registerIdentityKind = computed(() => classifyIdentifier(registerForm.identity).kind);
 
 function channelHint(kind) {
-  if (kind === 'phone') return '将发送短信验证码';
-  if (kind === 'email') return '将发送邮件验证码';
+  if (kind === 'phone') return t('auth.hintSms');
+  if (kind === 'email') return t('auth.hintEmail');
   return '';
 }
 const registerChannelHint = computed(() => channelHint(registerIdentityKind.value));
@@ -86,7 +88,7 @@ const canSendCode = computed(() =>
   cooldown.value === 0 && registerIdentityKind.value !== 'unknown'
 );
 const codeBtnLabel = computed(() =>
-  cooldown.value > 0 ? `${cooldown.value}s 后重发` : '发送验证码'
+  cooldown.value > 0 ? t('auth.resendIn', { sec: cooldown.value }) : t('auth.sendCode')
 );
 
 /* 拼图验证状态：点击"获取验证码"先开拼图，验证通过再 _sendCodeNow */
@@ -100,7 +102,7 @@ function onSendCode() {
   okMsg.value = '';
   const body = payloadFromIdentity(registerForm.identity);
   if (!body) {
-    errorMsg.value = '请输入正确的手机号或邮箱';
+    errorMsg.value = t('auth.errIdentity');
     return;
   }
   // 先做人机验证，通过后再发；倒计时也等到验证通过再启动
@@ -119,14 +121,14 @@ async function onPuzzleSuccess() {
   try {
     const res = await apiSendCode(body);
     if (res && res.ok) {
-      okMsg.value = res.message || '验证码已发送';
+      okMsg.value = res.message || t('auth.codeSent');
     } else {
-      errorMsg.value = (res && res.message) || '验证码发送失败';
+      errorMsg.value = (res && res.message) || t('auth.codeFail');
       cooldown.value = 0;
       if (cooldownTimer) { clearInterval(cooldownTimer); cooldownTimer = null; }
     }
   } catch (e) {
-    errorMsg.value = '网络异常，请稍后重试';
+    errorMsg.value = t('auth.network');
     cooldown.value = 0;
     if (cooldownTimer) { clearInterval(cooldownTimer); cooldownTimer = null; }
   }
@@ -161,11 +163,11 @@ async function onLogin() {
   errorMsg.value = '';
   const body = payloadFromIdentity(loginForm.identity);
   if (!body) {
-    errorMsg.value = '请输入正确的手机号或邮箱';
+    errorMsg.value = t('auth.errIdentity');
     return;
   }
   if (!loginForm.password) {
-    errorMsg.value = '请输入密码';
+    errorMsg.value = t('auth.errPassword');
     return;
   }
   submitting.value = true;
@@ -175,7 +177,7 @@ async function onLogin() {
       password: loginForm.password
     });
     if (res.ok) {
-      okMsg.value = '登录成功';
+      okMsg.value = t('auth.okLogin');
       setTimeout(() => close(), 200);
     } else {
       errorMsg.value = res.message;
@@ -190,19 +192,19 @@ async function onRegister() {
   errorMsg.value = '';
   const body = payloadFromIdentity(registerForm.identity);
   if (!body) {
-    errorMsg.value = '请输入正确的手机号或邮箱';
+    errorMsg.value = t('auth.errIdentity');
     return;
   }
   if (!registerForm.code || registerForm.code.length < 4) {
-    errorMsg.value = '请输入 4-6 位验证码';
+    errorMsg.value = t('auth.errCode');
     return;
   }
   if (!registerForm.username) {
-    errorMsg.value = '请输入用户名';
+    errorMsg.value = t('auth.errUsername');
     return;
   }
   if (!registerForm.password || registerForm.password.length < 6) {
-    errorMsg.value = '密码至少 6 位';
+    errorMsg.value = t('auth.errPwdLen');
     return;
   }
   submitting.value = true;
@@ -214,7 +216,7 @@ async function onRegister() {
       password: registerForm.password
     });
     if (res.ok) {
-      okMsg.value = '注册成功';
+      okMsg.value = t('auth.okRegister');
       setTimeout(() => close(), 200);
     } else {
       errorMsg.value = res.message;
@@ -231,9 +233,9 @@ async function onRegister() {
        为确保拼图永远在登录窗之上，下面显式把 zIndex 推到 10000。 -->
   <Vcode :show="puzzleOpen"
          :zIndex="10000"
-         sliderText="拖动滑块完成拼图后再获取验证码"
-         successText="验证通过，正在发送验证码…"
-         failText="拼图未对齐，请重新尝试"
+         :sliderText="t('auth.sliderText')"
+         :successText="t('auth.successText')"
+         :failText="t('auth.failText')"
          @success="onPuzzleSuccess"
          @close="onPuzzleClose"
          @fail="() => { /* 失败时让用户看到失败文案，由组件内部 1s 后自动重置；不用我们做啥 */ }" />
@@ -241,7 +243,7 @@ async function onRegister() {
   <BaseModal name="auth" :open="open"
              @update:open="$emit('update:open', $event)"
              labelledby="authModalTitle">
-    <button type="button" class="auth-modal-close" aria-label="关闭" @click="close">
+    <button type="button" class="auth-modal-close" :aria-label="t('auth.close')" @click="close">
       <i class="fa fa-times" aria-hidden="true"></i>
     </button>
 
@@ -250,10 +252,10 @@ async function onRegister() {
         <i class="fa fa-user"></i>
       </div>
       <h3 id="authModalTitle" class="auth-modal-title">
-        {{ tab === 'login' ? '欢迎回来' : '创建账号' }}
+        {{ tab === 'login' ? t('auth.welcomeBack') : t('auth.createAccount') }}
       </h3>
       <p class="auth-modal-sub">
-        {{ tab === 'login' ? '登录后享受完整 AI 助手能力' : '注册凌云 AI 账号，开启智能办公之旅' }}
+        {{ tab === 'login' ? t('auth.loginSub') : t('auth.registerSub') }}
       </p>
     </div>
 
@@ -263,13 +265,13 @@ async function onRegister() {
               role="tab"
               :class="{ 'is-active': tab === 'login' }"
               :aria-selected="tab === 'login'"
-              @click="switchTab('login')">登录</button>
+              @click="switchTab('login')">{{ t('auth.tabLogin') }}</button>
       <button type="button"
               class="auth-tab"
               role="tab"
               :class="{ 'is-active': tab === 'register' }"
               :aria-selected="tab === 'register'"
-              @click="switchTab('register')">注册</button>
+              @click="switchTab('register')">{{ t('auth.tabRegister') }}</button>
       <span class="auth-tab-indicator" :class="{ 'is-right': tab === 'register' }"></span>
     </div>
 
@@ -277,25 +279,25 @@ async function onRegister() {
     <form v-if="tab === 'login'" class="auth-form" @submit.prevent="onLogin">
       <label class="auth-field">
         <span class="auth-field-label">
-          手机号 / 邮箱
+          {{ t('auth.identityLabel') }}
           <span v-if="loginIdentityKind !== 'unknown'" class="auth-field-hint">
-            （识别为{{ loginIdentityKind === 'email' ? '邮箱' : '手机号' }}）
+            {{ t('auth.recognizedAs', { kind: loginIdentityKind === 'email' ? t('auth.asEmail') : t('auth.asPhone') }) }}
           </span>
         </span>
         <input v-model="loginForm.identity"
                class="auth-input"
                type="text"
                maxlength="64"
-               placeholder="请输入手机号或邮箱"
+               :placeholder="t('auth.placeholderIdentity')"
                autocomplete="username" />
       </label>
 
       <label class="auth-field">
-        <span class="auth-field-label">密码</span>
+        <span class="auth-field-label">{{ t('auth.password') }}</span>
         <input v-model="loginForm.password"
                class="auth-input"
                type="password"
-               placeholder="请输入密码"
+               :placeholder="t('auth.placeholderPassword')"
                autocomplete="current-password" />
       </label>
 
@@ -303,12 +305,12 @@ async function onRegister() {
       <p v-else-if="okMsg" class="auth-msg auth-msg-ok">{{ okMsg }}</p>
 
       <button type="submit" class="auth-submit" :disabled="submitting">
-        {{ submitting ? '登录中…' : '登 录' }}
+        {{ submitting ? t('auth.loggingIn') : t('auth.loginBtn') }}
       </button>
 
       <p class="auth-foot">
-        还没有账号？
-        <a href="#" @click.prevent="switchTab('register')">立即注册</a>
+        {{ t('auth.noAccount') }}
+        <a href="#" @click.prevent="switchTab('register')">{{ t('auth.registerNow') }}</a>
       </p>
     </form>
 
@@ -316,7 +318,7 @@ async function onRegister() {
     <form v-else class="auth-form" @submit.prevent="onRegister">
       <label class="auth-field">
         <span class="auth-field-label">
-          手机号 / 邮箱
+          {{ t('auth.identityLabel') }}
           <span v-if="registerChannelHint" class="auth-field-hint">
             （{{ registerChannelHint }}）
           </span>
@@ -325,19 +327,19 @@ async function onRegister() {
                class="auth-input"
                type="text"
                maxlength="64"
-               placeholder="请输入手机号或邮箱"
+               :placeholder="t('auth.placeholderIdentity')"
                autocomplete="username" />
       </label>
 
       <label class="auth-field">
-        <span class="auth-field-label">验证码</span>
+        <span class="auth-field-label">{{ t('auth.code') }}</span>
         <div class="auth-input-with-action">
           <input v-model="registerForm.code"
                  class="auth-input"
                  type="text"
                  inputmode="numeric"
                  maxlength="6"
-                 placeholder="请输入验证码"
+                 :placeholder="t('auth.placeholderCode')"
                  autocomplete="one-time-code" />
           <button type="button"
                   class="auth-code-btn"
@@ -348,21 +350,21 @@ async function onRegister() {
       </label>
 
       <label class="auth-field">
-        <span class="auth-field-label">用户名</span>
+        <span class="auth-field-label">{{ t('auth.username') }}</span>
         <input v-model="registerForm.username"
                class="auth-input"
                type="text"
                maxlength="20"
-               placeholder="请输入用户名"
+               :placeholder="t('auth.placeholderUsername')"
                autocomplete="nickname" />
       </label>
 
       <label class="auth-field">
-        <span class="auth-field-label">密码</span>
+        <span class="auth-field-label">{{ t('auth.password') }}</span>
         <input v-model="registerForm.password"
                class="auth-input"
                type="password"
-               placeholder="至少 6 位"
+               :placeholder="t('auth.placeholderPwdMin')"
                autocomplete="new-password" />
       </label>
 
@@ -370,12 +372,12 @@ async function onRegister() {
       <p v-else-if="okMsg" class="auth-msg auth-msg-ok">{{ okMsg }}</p>
 
       <button type="submit" class="auth-submit" :disabled="submitting">
-        {{ submitting ? '注册中…' : '注 册' }}
+        {{ submitting ? t('auth.registering') : t('auth.registerBtn') }}
       </button>
 
       <p class="auth-foot">
-        已经有账号了？
-        <a href="#" @click.prevent="switchTab('login')">直接登录</a>
+        {{ t('auth.hasAccount') }}
+        <a href="#" @click.prevent="switchTab('login')">{{ t('auth.loginDirect') }}</a>
       </p>
     </form>
   </BaseModal>
